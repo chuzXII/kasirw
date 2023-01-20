@@ -6,7 +6,9 @@ import {
     TouchableOpacity,
     View,
     ScrollView,
-    Button
+    Button,
+    Modal,
+    ToastAndroid
   } from 'react-native';
   import React, {useEffect, useState} from 'react';
   import dbConn from '../../sqlite';
@@ -14,81 +16,61 @@ import {
   import Label from '../../component/label';
   import {useNavigation} from '@react-navigation/native';
   import {useDispatch, useSelector} from 'react-redux';
-  import {setForm} from '../../redux/action';
-  import {launchImageLibrary} from 'react-native-image-picker';
   import RNFS from 'react-native-fs';
   import DatePicker from 'react-native-modern-datepicker';
+  import moment from 'moment'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
   
   const PengeluaranPage = () => {
     const navigation = useNavigation();
-    const FormReducer = useSelector(state => state.FormReducer);
-    const dispatch = useDispatch();
-    const [NameImg, setNameImg] = useState();
-    const [FileImgOri, setFileImgOri] = useState();
-    const [urlimg, setUrlImg] = useState();
-    const [date, setDate] = useState(new Date())
-    const [open, setOpen] = useState(false)
+    const [Form, setForm] = useState({
+      tgl:selectDate,
+      namabarang:'',
+      hargabarang:0,
+      jumlahbarang:0,
+      keterangan:'',
+    })
+
+    const [selectDate, setSelectDate] = useState(moment(new Date()).format('DD-MM-yyyy'))
+    const [modalVisible, setModalVisible] = useState(false)
   
     const onPress = async () => {
-      try {
-        const cekdir = await RNFS.exists(
-          RNFS.DownloadDirectoryPath + '/dataimg/',
-        );
-  
-        if (cekdir == false) {
-          RNFS.mkdir(RNFS.DownloadDirectoryPath + '/dataimg/');
-        }
-        console.log('res');
-  
-        dbConn.transaction(tx => {
-          tx.executeSql(
-            'INSERT INTO produk (namaproduk, hargaproduk, deskproduk, imgname) VALUES(?,?,?,?);',
-            [
-              FormReducer.form.namaproduk,
-              FormReducer.form.hargaproduk,
-              FormReducer.form.deskproduk,
-              NameImg,
-            ],
-            (tx, rs) => {
-              navigation.navigate('dashboard');
-            },
-            (tx, e) => {
-              console.log(tx.message);
-            },
-          );
-        });
-        // console.log(FormReducer.imgdirori)
-  
-        RNFS.copyFile(
-          FileImgOri,
-          RNFS.DownloadDirectoryPath + '/dataimg/' + NameImg,
-        );
-      } catch (e) {
-        console.log('EE' + e);
-      }
+      
+        const sheetid = await AsyncStorage.getItem('TokenSheet');
+        const token = await AsyncStorage.getItem('tokenAccess');
+        const data=[[selectDate,Form.namabarang,Form.jumlahbarang,Form.hargabarang,Form.hargabarang*Form.jumlahbarang,Form.keterangan]]
+        axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
+        sheetid +
+        '/values/Sheet2!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
+          values: data,
+        }),
+        {
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+        },).catch((e)=>{console.log(e) 
+          ToastAndroid.show('Gagal', ToastAndroid.SHORT)}).then(()=>{
+            ToastAndroid.show('Berhasil', ToastAndroid.SHORT)
+            setForm({
+              namabarang:'',
+              hargabarang:'',
+              jumlahbarang:'',
+              keterangan:''
+          })
+      })
+    
     };
     const onInputChange = (value, input) => {
-      // setForm({
-      //     ...form,
-      //     [input]:value
-      // })
-      dispatch(setForm(input, value));
+      setForm({
+          ...Form,
+          [input]:value
+      })
+      
     };
-    const onPressimg = async () => {
-      await launchImageLibrary({mediaType: 'photo', saveToPhotos: true}, res => {
-        if (res.didCancel) {
-          console.log('User cancelled image picker');
-        } else if (res.errorCode) {
-          console.log('ImagePicker Error: ', res.errorMessage);
-        } else {
-          const a = res.assets[0].type.split('/');
-          setFileImgOri(res.assets[0].uri);
-          setNameImg(FormReducer.form.namaproduk + '.' + a[1]);
-          setUrlImg(res.assets[0].uri);
-        }
-      });
-    };
+ 
     return (
       <View style={styles.conatiner}>
         <View>
@@ -99,53 +81,48 @@ import {
         
           <View style={styles.warpcard}>
           <Label label={'Tanggal'} />
-            <TouchableOpacity>
-                <Text>12-01-23</Text>
+            <TouchableOpacity style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#a9e893',padding:12,borderRadius:12}}>
+                <Text style={{color:'#000',fontSize:18}} onPress={()=>setModalVisible(true)}>{selectDate}</Text>
             </TouchableOpacity>
      
             <Label label={'Nama Barang'} />
             <Input
-              input={'Nama Produk'}
+              input={'Nama Barang'}
               numberOfLines={1}
-              value={FormReducer.namaproduk}
-              onChangeText={value => onInputChange(value, 'namaproduk')}
+              value={Form.namabarang}
+              onChangeText={value => onInputChange(value, 'namabarang')}
             />
             <Label label={'Harga Produk'} />
             <Input
-              input={'Harga Produk'}
+              input={'Harga Barang'}
               numberOfLines={1}
-              value={FormReducer.hargaproduk}
-              onChangeText={value => onInputChange(value, 'hargaproduk')}
+              value={Form.hargabarang}
+              onChangeText={value => onInputChange(value, 'hargabarang')}
               keyboardType={'number-pad'}
             />
-            <Label label={'Jumlah'} />
+            <Label label={'Jumlah Barang'} />
             <Input
-              input={'Harga Produk'}
+              input={'Jumlah Brang'}
               numberOfLines={1}
-              value={FormReducer.hargaproduk}
-              onChangeText={value => onInputChange(value, 'hargaproduk')}
+              value={Form.jumlahbarang}
+              onChangeText={value => onInputChange(value, 'jumlahbarang')}
               keyboardType={'number-pad'}
             />
             <Label label={'Keterangan'} />
             <Input
-              input={'Deskripsi Produk'}
+              input={'Keterangan'}
               numberOfLines={4}
-              value={FormReducer.deskproduk}
-              onChangeText={value => onInputChange(value, 'deskproduk')}
+              value={Form.keterangan}
+              onChangeText={value => onInputChange(value, 'keterangan')}
             />
             <View style={styles.wrapbutton}>
-              {FormReducer.form.namaproduk == null ||
-              FormReducer.form.namaproduk
+              {Form.namabarang == null ||
+              Form.namabarang
                 .replace(/^\s+/, '')
                 .replace(/\s+$/, '') == '' ||
-              FormReducer.form.hargaproduk == null ||
-              FormReducer.form.hargaproduk
-                .replace(/^\s+/, '')
-                .replace(/\s+$/, '') == '' ||
-              FormReducer.form.deskproduk == null ||
-              FormReducer.form.deskproduk
-                .replace(/^\s+/, '')
-                .replace(/\s+$/, '') == '' ? (
+                Form.hargabarang == 0 ||
+                Form.jumlahbarang == 0 
+                ? (
                 <View style={styles.wrapbuttonsub}>
                   <View
                     style={[styles.button,{backgroundColor: 'rgba(37,150,190,0.5)'}]}>
@@ -167,7 +144,41 @@ import {
   
         </View>
         </ScrollView>
-  
+        <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}>
+          <View style={{backgroundColor: 'rgba(0, 0, 0, 0.5)', flex: 1}}>
+          <View style={styles.modalView}>
+            <View style={{marginTop:12}}>
+            <DatePicker
+           
+           options={{
+             borderColor: 'rgba(255, 255, 255, 1)',
+           }}
+           onSelectedChange={(date)=>setSelectDate(date.split('/')[2]+'-'+date.split('/')[1]+'-'+date.split('/')[0])}
+          current={moment(new Date()).format('yyyy-MM-DD')}
+           selected={moment(new Date()).format('yyyy-MM-DD')}
+           mode="calendar"
+           minuteInterval={30}
+           style={{ borderRadius: 10 }}
+         />
+         <TouchableOpacity style={{marginLeft:24,marginBottom:12,}} onPress={()=>setModalVisible(!modalVisible)}>
+         <Text style={{color:'#000',fontSize:18}}>
+      OK
+    </Text>
+         </TouchableOpacity>
+         
+            </View>
+          
+    
+           </View>
+          </View>
+           
+          </Modal>
        
       </View>
     );
@@ -246,6 +257,13 @@ import {
     buttontxt: {
       color: '#fff',
       fontSize: 20,
+    },
+    modalView: {
+      marginTop: 200,
+      marginHorizontal: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      elevation: 6,
     },
   });
   

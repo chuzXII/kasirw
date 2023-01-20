@@ -31,11 +31,17 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const CartReducer = useSelector(state => state.CartReducer);
   const currency = new Intl.NumberFormat('id-ID');
-
+  const isPortrait = () => {
+    const dim = Dimensions.get('screen');
+    return dim.height >= dim.width;
+  };
+  const [Oriented, setOriented] = useState(isPortrait() ? 'portrait' : 'landscape');
+  
+  Dimensions.addEventListener('change',()=>{
+    setOriented(isPortrait()?'portrait' : 'landscape')
+  })
 
   const get = async () => {
-    const rawdate = new Date()
-    console.log(moment(rawdate).format('DD-MM-YY').split('-'))
     
     // await AsyncStorage.removeItem('iddiskon')
     // await AsyncStorage.removeItem('formdiskon')
@@ -94,10 +100,11 @@ const Dashboard = () => {
               </View>
             </View>
           ) : (item.map((itemw, i) => {
-              return  (<View key={i}><Cardcatalog item={itemw} /></View> );
+              return  (<View key={i}><Cardcatalog item={itemw} oriented={Oriented} /></View> );
             })
           )}
         </View>
+       
       </ScrollView>
 
       {CartReducer.cartitem.reduce((result, item) => item.count + result, 0) ? (
@@ -145,6 +152,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flex: 1,
     marginTop: 10,
+   
     marginHorizontal: Dwidth * 0.02,
   },
   wrapCard: {
@@ -160,10 +168,6 @@ const styles = StyleSheet.create({
     height: Dheight * 0.2,
     backgroundColor: '#A19A9A',
   },
-  wrapHeadRiwayat: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   wrapContentCard: {
     marginHorizontal: 8,
   },
@@ -173,9 +177,8 @@ const styles = StyleSheet.create({
   },
   CardKatalog: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
     flexWrap: 'wrap',
-    marginHorizontal: Dwidth * 0.005,
+   
   },
   ScrollView: {},
 
@@ -199,6 +202,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonChart: {
+    position:'absolute',
+    bottom:0,
+    width:'100%',
     padding: 12,
     marginBottom: 10,
     backgroundColor: '#18AECF',

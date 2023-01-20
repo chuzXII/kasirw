@@ -3,9 +3,9 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import RNFS from 'react-native-fs'
 import moment from 'moment';
+import { useState } from 'react';
 
-const Cardcatalog = ({item}) => {
-  
+const Cardcatalog = ({item,oriented}) => {
   const dispatch = useDispatch()
   const currency= new Intl.NumberFormat('id-ID')
 
@@ -47,21 +47,24 @@ const Cardcatalog = ({item}) => {
       setCart(item,idpproduk,count,harga,id_tensaksi)
   }
   return (
-    <TouchableOpacity style={styles.wrapCard} onPress={()=>handdlebutton()}>
-      <View style={styles.wrapImg}>
+    <TouchableOpacity style={styles.wrapCard(oriented)} onPress={()=>handdlebutton()}>
+      <View style={styles.wrapImg(oriented)}>
         <Image  source={{
             uri:
               'file://' +
               RNFS.DownloadDirectoryPath +
               '/dataimg/' +
               item.imgname+ '?' + new Date()
-          }} style={{flex:1,borderRadius: 6,}}></Image>
+          }} style={{flex:1,borderRadius: 6}}></Image>
       </View>
    
     <View style={styles.wrapContentCard}>
       <Text style={styles.textTitle}>{item.namaproduk}</Text>
       <Text style={styles.textStok}>{item.deskproduk}</Text>
       <Text style={styles.textHarga}>Rp.{currency.format(item.hargaproduk)}</Text>
+      
+
+
     </View>
   </TouchableOpacity>
   )
@@ -72,9 +75,9 @@ const Dwidth = Dimensions.get('window').width;
 const Dheight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
-    wrapCard: {
-      maxWidth: Dwidth * 0.46,
-        marginHorizontal: 5,
+    wrapCard :(Oriented)=>({
+      maxWidth:Oriented=='portrait'? Dwidth * 0.47: Dwidth * 0.5,
+        marginLeft: 8,
         marginTop: 8,
         marginBottom: 8,
         borderWidth: 1,
@@ -89,15 +92,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.27,
         shadowRadius: 4.65,
         
-        elevation: 6,
+        elevation: 6,    
+    }),
+    wrapImg: (Oriented)=>({
+        width:Oriented=='portrait'? Dwidth * 0.44:Dwidth * 0.48,
+        height:Oriented=='portrait'? Dheight * 0.2:Dheight * 0.28,
         
-        
-    },
-    wrapImg: {
-        width: Dwidth * 0.44,
-        height: Dheight * 0.2,
-        
-    },
+    }),
     wrapContentCard: {
         marginHorizontal: 8,
     },textTitle: {
