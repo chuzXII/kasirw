@@ -41,27 +41,28 @@ const Cardcatalog = ({item,oriented}) => {
       Math.floor(Math.random() * 1000000) +
       1;
       setidproduk(id_tensaksi)
-      var idpproduk = item.id_produk;
-      var harga = item.hargaproduk
+      var idpproduk = item[0];
+      var harga = item[2]
       var count = 1
       setCart(item,idpproduk,count,harga,id_tensaksi)
   }
   return (
     <TouchableOpacity style={styles.wrapCard(oriented)} onPress={()=>handdlebutton()}>
       <View style={styles.wrapImg(oriented)}>
-        <Image  source={{
-            uri:
-              'file://' +
-              RNFS.DownloadDirectoryPath +
-              '/dataimg/' +
-              item.imgname+ '?' + new Date()
-          }} style={{flex:1,borderRadius: 6}}></Image>
+        {item[3]==undefined?item[1].split(' ').length<=1?
+         <View style={{flex:1,borderRadius: 6,backgroundColor:'#252525',alignItems:'center',justifyContent:'center'}}>
+         <Text style={{fontSize:32,fontWeight:'bold'}}>{item[1].slice(0,1).toUpperCase()+item[1].slice(1,2).toUpperCase()}</Text>
+        </View>: <View style={{flex:1,borderRadius: 6,backgroundColor:'#252525',alignItems:'center',justifyContent:'center'}}>
+          <Text style={{fontSize:32,fontWeight:'bold'}}>{item[1].split(' ')[0].slice(0,1).toUpperCase()+item[1].split(' ')[1].slice(0,1).toUpperCase()}</Text>
+        </View>:<Image  source={{uri:item[3]}} style={{flex:1,borderRadius: 6}}></Image> 
+        }
+       
       </View>
    
     <View style={styles.wrapContentCard}>
-      <Text style={styles.textTitle}>{item.namaproduk}</Text>
-      <Text style={styles.textStok}>{item.deskproduk}</Text>
-      <Text style={styles.textHarga}>Rp.{currency.format(item.hargaproduk)}</Text>
+      <Text style={styles.textTitle}>{item[1]}</Text>
+      <Text style={styles.textStok}></Text>
+      <Text style={styles.textHarga}>Rp.{currency.format(item[2])}</Text>
       
 
 

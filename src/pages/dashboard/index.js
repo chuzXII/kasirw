@@ -10,6 +10,9 @@ import {
   FlatList,
   Image,
   LogBox,
+  RefreshControl,
+  ActivityIndicator,
+  Modal,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Cardcatalog from '../../component/CardCatalog';
@@ -21,9 +24,11 @@ import RNFS from 'react-native-fs';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {emptyproduct} from '../../assets/image';
 import moment from 'moment';
+import axios from 'axios';
 
 
 const Dashboard = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [item, setItems] = useState([]);
   const [Total, setTotal] = useState();
   const isFocused = useIsFocused();
@@ -31,6 +36,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const CartReducer = useSelector(state => state.CartReducer);
   const currency = new Intl.NumberFormat('id-ID');
+  const [modalVisibleLoading, setModalVisibleLoading] = useState(false);
   const isPortrait = () => {
     const dim = Dimensions.get('screen');
     return dim.height >= dim.width;
@@ -42,37 +48,59 @@ const Dashboard = () => {
   })
 
   const get = async () => {
-    
-    // await AsyncStorage.removeItem('iddiskon')
-    // await AsyncStorage.removeItem('formdiskon')
-    // await AsyncStorage.removeItem('cartt')
-    // console.log(JSON.parse(await AsyncStorage.getItem('cartt')))
-
-    // SQLite.DEBUG(true);
-    // SQLite.enablePromise(false);
+    setModalVisibleLoading(true)
     try {
-      dbConn.transaction(tx => {
-        // tx.executeSql('DROP TABLE IF EXISTS produk')
-        tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS produk(id_produk INTEGER PRIMARY KEY AUTOINCREMENT,namaproduk VARCHAR(100) NOT NULL,hargaproduk VARCHAR(50) NOT NULL,deskproduk VARCHAR(255) NOT NULL,imgname VARCHAR(255) NOT NULL);',
-        );
-      });
-      dbConn.transaction(tx => {
-        tx.executeSql('SELECT * FROM produk', [], (tr, result) => {
-          // console.log('exe berhasil')
-          var rows = result.rows;
-          var total = 0;
-          var data = [];
-          for (let i = 0; i < rows.length; i++) {
-            let item = rows.item(i);
-            data.push(item);
-            total += parseInt(data[i].hargaproduk);
-          }
-          setItems(data);
-        });
-      });
+      // dbConn.transaction(tx => {
+      //   // tx.executeSql('DROP TABLE IF EXISTS produk')
+      //   tx.executeSql(
+      //     'CREATE TABLE IF NOT EXISTS produk(id_produk INTEGER PRIMARY KEY AUTOINCREMENT,namaproduk VARCHAR(100) NOT NULL,hargaproduk VARCHAR(50) NOT NULL,deskproduk VARCHAR(255) NOT NULL,imgname VARCHAR(255) NOT NULL);',
+      //   );
+      // });
+      // dbConn.transaction(tx => {
+      //   tx.executeSql('SELECT * FROM produk', [], (tr, result) => {
+      //     // console.log('exe berhasil')
+      //     var rows = result.rows;
+      //     var total = 0;
+      //     var data = [];
+      //     for (let i = 0; i < rows.length; i++) {
+      //       let item = rows.item(i);
+      //       data.push(item);
+      //       total += parseInt(data[i].hargaproduk);
+      //     }
+      //     setItems(data);
+      //   });
+      // });
+      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const token = await AsyncStorage.getItem('tokenAccess');
+      await axios
+      .get(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+          sheetid +
+          '/values/Sheet4',
+        {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      ).then((res)=>{
+        if(res.data.values==undefined){
+          setItems([])
+          setRefreshing(false)
+          
+    setModalVisibleLoading(false)
+
+        }
+        else{
+          setItems(res.data.values)
+          setRefreshing(false)
+  
+    setModalVisibleLoading(false)
+
+        }
+      })
     } catch (e) {
       console.log(e);
+
     }
   };
 
@@ -82,6 +110,10 @@ const Dashboard = () => {
   const renderitem=()=>{
     
   }
+  const onRefresh = ()=>{
+    setRefreshing(true);
+    get()
+  }
 
   useEffect(() => {
     get();
@@ -90,6 +122,9 @@ const Dashboard = () => {
   return (
     <View style={styles.wrap}>
       <ScrollView
+     refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={'#252525'} colors={["#79D1F1","#D358FF"]} />
+    }
         style={styles.ScrollView}
         showsVerticalScrollIndicator={false}>
         <View style={styles.CardKatalog}>
@@ -139,6 +174,17 @@ const Dashboard = () => {
           </View>
         </TouchableOpacity>
       ) : null}
+      <Modal transparent={true} visible={modalVisibleLoading}>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+          }}>
+          <ActivityIndicator size={100} color={'#9B5EFF'} />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -207,7 +253,7 @@ const styles = StyleSheet.create({
     width:'100%',
     padding: 12,
     marginBottom: 10,
-    backgroundColor: '#18AECF',
+    backgroundColor: '#9B5EFF',
     borderRadius: 15,
   },
   wrapTextTra: {

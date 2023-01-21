@@ -74,7 +74,7 @@ const GuidePage = ({navigation}) => {
           bottom: 0
         }}
           bounces={true}
-          activeDotColor="#18AECF"
+          activeDotColor="#9B5EFF"
           activeDotStyle={{ width: 20, height: 8 }}
           loop={false}
           onIndexChanged={(i) => { setIndexCard(i) }}>
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   btn: {
     marginTop:14,
     padding: 18,
-    backgroundColor: '#18AECF',
+    backgroundColor: '#9B5EFF',
     justifyContent: 'center',
     alignItems: 'center',
     
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: DWidth * 0.7,
     height: DHeight / 15,
-    backgroundColor: '#18AECF'
+    backgroundColor: '#9B5EFF'
   },
   buttontxt: {
     color: '#fff',

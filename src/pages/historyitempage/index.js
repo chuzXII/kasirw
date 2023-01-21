@@ -48,14 +48,14 @@ const HistoryItemPage = ({route}) => {
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['CHILL'],
+        ['WIJAYA VAPE'],
         {},
       );
       await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['Perum Tegal Asri Blok D22, RT.007/RW.002, Ds.karanganyar, Kec.Tegalampel, Kab.Bondowoso'],
+        ['Deket Sama Bundaran Polres, Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
         {},
       );
       await BluetoothEscposPrinter.setBlob(0);
@@ -259,6 +259,7 @@ const HistoryItemPage = ({route}) => {
         setPesan(j[0][8]);
         const rawdiskon = j[0][7].split(' ');
         let sDiskon;
+        let Total;
         const subtotal = j.reduce(
           (result, item) => parseInt(item[3]) * parseInt(item[2]) + result,
           0,
@@ -266,17 +267,25 @@ const HistoryItemPage = ({route}) => {
         if (rawdiskon.length == 1) {
           setDiskon(rawdiskon[0]);
           setDiskonPersen(rawdiskon[0]);
-          sDiskon = (subtotal * rawdiskon[0]) / 100;
+          Total = (subtotal - rawdiskon[0]);
         } else {
-          setNamaDiskon(rawdiskon[0]);
-          setDiskon(rawdiskon[1] / 100);
-          setDiskonPersen(rawdiskon[1]);
-          sDiskon = (subtotal * rawdiskon[1]) / 100;
+          if(rawdiskon[1].split('-').length<=1){
+            setNamaDiskon(rawdiskon[0]);
+            setDiskon(rawdiskon[1].split('-')[0]);
+            setDiskonPersen(rawdiskon[1].split('-'));
+            Total = (subtotal - rawdiskon[1].split('-')[0] )
+          }else{
+            setNamaDiskon(rawdiskon[0]);
+            setDiskon(rawdiskon[1].split('-')[0] / 100);
+            setDiskonPersen(rawdiskon[1].split('-'));
+            Total = subtotal-(subtotal * rawdiskon[1].split('-')[0] ) / 100;
+          }
+         
         }
 
-        const total = subtotal - sDiskon;
+       
         setSubTotal(subtotal);
-        setTotal(total);
+        setTotal(Total);
 
         var result = [];
         j.forEach(
@@ -355,7 +364,7 @@ const HistoryItemPage = ({route}) => {
           <View>
             <Text style={{color: '#000', fontFamily: 'InknutAntiqua-Regular'}}>
               Rp.
-              {currency.format(SubTotal)}
+              {currency.format(Total)}
             </Text>
             <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Light'}}>
               {Owner}
@@ -386,6 +395,7 @@ const HistoryItemPage = ({route}) => {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
+                    alignItems:'center',
                     paddingVertical: 4,
                   }}
                   key={index}>
@@ -394,22 +404,28 @@ const HistoryItemPage = ({route}) => {
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       paddingVertical: 4,
+                    
                     }}>
-                    <Text
+                   
+                   <View>
+                   <Text
                       style={{
                         color: '#000',
                         fontFamily: 'TitilliumWeb-Regular',
                       }}>
-                      {item[2]}
-                    </Text>
-                    <Text
-                      style={{
-                        color: '#000',
-                        fontFamily: 'TitilliumWeb-Regular',
-                      }}>
-                      {' '}
+                 
                       {item[1]}
                     </Text>
+                   <Text
+                      style={{
+                        color: '#000',
+                        fontFamily: 'TitilliumWeb-Regular',
+                      }}>
+                      {item[2]}x Rp.{item[3]}
+                    </Text>
+                    </View>
+
+                    
                   </View>
 
                   <Text
@@ -441,9 +457,12 @@ const HistoryItemPage = ({route}) => {
               <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
                 Diskon
               </Text>
-              <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                {DiskonPersen}%
-              </Text>
+              {DiskonPersen.length==1?<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+                -Rp.{DiskonPersen}
+              </Text>:<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+                {DiskonPersen}
+              </Text>}
+              
             </View>
           </View>
         </View>

@@ -16,6 +16,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import {setForm} from '../../redux/action';
 import {launchImageLibrary} from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Formkasir = () => {
   const navigation = useNavigation();
@@ -24,41 +26,82 @@ const Formkasir = () => {
   const [NameImg, setNameImg] = useState();
   const [FileImgOri, setFileImgOri] = useState();
   const [urlimg, setUrlImg] = useState();
+  const [ID, setid] = useState(0);
+  const [Check, setCheck] = useState(false);
 
+
+
+  const get=async()=>{
+    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    const token = await AsyncStorage.getItem('tokenAccess');
+    axios.get('https://sheets.googleapis.com/v4/spreadsheets/' +
+    sheetid + '/values/Sheet4',
+    {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    },).then((res)=>{
+      if(res.data.values==undefined){
+        setid(0)
+      }
+      else{
+        setid(res.data.values.splice(res.data.values.length-1)[0][0])
+
+      }
+    })
+  }
   const onPress = async () => {
     try {
-      const cekdir = await RNFS.exists(
-        RNFS.DownloadDirectoryPath + '/dataimg/',
-      );
+      // const cekdir = await RNFS.exists(
+      //   RNFS.DownloadDirectoryPath + '/dataimg/',
+      // );
 
-      if (cekdir == false) {
-        RNFS.mkdir(RNFS.DownloadDirectoryPath + '/dataimg/');
-      }
-      console.log('res');
+      // if (cekdir == false) {
+      //   RNFS.mkdir(RNFS.DownloadDirectoryPath + '/dataimg/');
+      // }
+      // console.log('res');
 
-      dbConn.transaction(tx => {
-        tx.executeSql(
-          'INSERT INTO produk (namaproduk, hargaproduk, deskproduk, imgname) VALUES(?,?,?,?);',
-          [
-            FormReducer.form.namaproduk,
-            FormReducer.form.hargaproduk,
-            FormReducer.form.deskproduk,
-            NameImg,
-          ],
-          (tx, rs) => {
-            navigation.navigate('dashboard');
-          },
-          (tx, e) => {
-            console.log(tx.message);
-          },
-        );
-      });
-      // console.log(FormReducer.imgdirori)
+      // dbConn.transaction(tx => {
+      //   tx.executeSql(
+      //     'INSERT INTO produk (namaproduk, hargaproduk, deskproduk, imgname) VALUES(?,?,?,?);',
+      //     [
+      //       FormReducer.form.namaproduk,
+      //       FormReducer.form.hargaproduk,
+      //       FormReducer.form.deskproduk,
+      //       NameImg,
+      //     ],
+      //     (tx, rs) => {
+      //       navigation.navigate('dashboard');
+      //     },
+      //     (tx, e) => {
+      //       console.log(tx.message);
+      //     },
+      //   );
+      // });
+      // // console.log(FormReducer.imgdirori)
 
-      RNFS.copyFile(
-        FileImgOri,
-        RNFS.DownloadDirectoryPath + '/dataimg/' + NameImg,
-      );
+      // RNFS.copyFile(
+      //   FileImgOri,
+      //   RNFS.DownloadDirectoryPath + '/dataimg/' + NameImg,
+      // );
+      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const token = await AsyncStorage.getItem('tokenAccess');
+    const data=[[parseInt(ID)+1,FormReducer.form.namaproduk,FormReducer.form.hargaproduk]]
+      
+      axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
+    sheetid +
+    '/values/Sheet4!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
+      values: data,
+    }),
+    {
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+    },).then(()=>{
+      navigation.navigate('dashboard');
+      setCheck(!Check)
+    })
     } catch (e) {
       console.log('EE' + e);
     }
@@ -84,6 +127,9 @@ const Formkasir = () => {
       }
     });
   };
+  useEffect(()=>{
+    get()
+  },[Check])
   return (
     <View style={styles.conatiner}>
       <View>
@@ -108,15 +154,15 @@ const Formkasir = () => {
             onChangeText={value => onInputChange(value, 'hargaproduk')}
             keyboardType={'number-pad'}
           />
-          <Label label={'Deskripsi Produk'} />
-          <Input
+          {/* <Label label={'Deskripsi Produk'} /> */}
+          {/* <Input
             input={'Deskripsi Produk'}
             numberOfLines={4}
             value={FormReducer.deskproduk}
             onChangeText={value => onInputChange(value, 'deskproduk')}
-          />
+          /> */}
           <View style={styles.wrapbutton}>
-            <View style={styles.wrapimg}>
+            {/* <View style={styles.wrapimg}>
               {FormReducer.form.namaproduk == null ||
               FormReducer.form.namaproduk
                 .replace(/^\s+/, '')
@@ -161,7 +207,7 @@ const Formkasir = () => {
                   />
                 </View>
               )}
-            </View>
+            </View> */}
             {FormReducer.form.namaproduk == null ||
             FormReducer.form.namaproduk
               .replace(/^\s+/, '')
@@ -169,14 +215,15 @@ const Formkasir = () => {
             FormReducer.form.hargaproduk == null ||
             FormReducer.form.hargaproduk
               .replace(/^\s+/, '')
-              .replace(/\s+$/, '') == '' ||
-            FormReducer.form.deskproduk == null ||
-            FormReducer.form.deskproduk
-              .replace(/^\s+/, '')
-              .replace(/\s+$/, '') == '' ? (
+              .replace(/\s+$/, '') == '' 
+            // || FormReducer.form.deskproduk == null ||
+            // FormReducer.form.deskproduk
+            //   .replace(/^\s+/, '')
+            //   .replace(/\s+$/, '') == '' ? 
+            ?(
               <View style={styles.wrapbuttonsub}>
                 <View
-                  style={[styles.button,{backgroundColor: 'rgba(37,150,190,0.5)'}]}>
+                  style={[styles.button,{backgroundColor: 'rgba(127, 17, 224, 0.5)'}]}>
                   <Text style={styles.buttontxt}>Simpan</Text>
                 </View>
               </View>
@@ -269,7 +316,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: DWidth * 0.7,
     height: DHeight / 15,
-    backgroundColor: '#18AECF',
+    backgroundColor: '#9B5EFF',
   },
   buttontxt: {
     color: '#fff',

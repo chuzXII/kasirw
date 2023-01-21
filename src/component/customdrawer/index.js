@@ -22,7 +22,7 @@ setUser(user)
   return (
     <View style={{flex:1}}>
    
-        <ImageBackground source={bgdrawer} style={{height:150,justifyContent:'center',}}>
+        <View style={{height:150,justifyContent:'center',backgroundColor:'#9B5EFF'}}>
           <View style={{alignItems:'center',flexDirection:'row'}}>
           <Image source={{uri:user.photo}} style={{height:65,width:65,borderRadius:50,marginLeft:12}}/>
           <View style={{marginLeft:12}}>
@@ -33,13 +33,13 @@ setUser(user)
           </View>
          
 
-        </ImageBackground>
+        </View>
         
 
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
-      <View style={{alignItems:'center',backgroundColor:'#27AE60'}}>
+      <View style={{alignItems:'center',backgroundColor:'#6098FF'}}>
         <Text style={{color:'#fff',marginTop:8,fontWeight:'500',fontFamily:'TitilliumWeb-Bold'}}>Create By Me</Text>
         <Text style={{color:'#fff',marginBottom:8,fontWeight:'500',fontFamily:'TitilliumWeb-Bold'}}>Copyright@2022</Text>
       </View>

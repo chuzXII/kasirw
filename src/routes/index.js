@@ -45,20 +45,20 @@ const Routes = ({navigation}) => {
       <Drawer.Screen name='dashboard' component={Dashboard} options={({navigation})=>({
         drawerIcon:({focused, size})=>(<Ihome/>),
         title: 'Home', headerStyle: {
-          backgroundColor: '#c2ff94',
+          backgroundColor: '#A5ACFF',
           
         }, headerLeft: () => (
           <TouchableOpacity onPress={() => navigation.openDrawer()} style={{alignItems: 'center', justifyContent: 'center', marginHorizontal: 12 }}>
             <Idrawer/>
           </TouchableOpacity>
         ), headerRight: () => (
-          <TouchableOpacity onPress={() => Navigation.navigate('formkasir')} style={{ borderRadius: 15, backgroundColor: '#18AECF', width: 85, height: 30, alignItems: 'center', justifyContent: 'center',marginHorizontal: 12 }}>
+          <TouchableOpacity onPress={() => Navigation.navigate('formkasir')} style={{ borderRadius: 15, backgroundColor: '#9B5EFF', width: 85, height: 30, alignItems: 'center', justifyContent: 'center',marginHorizontal: 12 }}>
             <Text style={{ color: '#fff' }}>KATALOG</Text>
           </TouchableOpacity>
         ),
       })}/>
-      <Drawer.Screen name='listkatalog' component={ListKatalog} options={{ title: 'Daftar Katalog',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
-      <Drawer.Screen name='historypage' component={HistoryPage} options={{ title: 'Riwayat',drawerIcon:({focused, size})=>(<Ihistory/>) }}/>
+      {/* <Drawer.Screen name='listkatalog' component={ListKatalog} options={{ title: 'Daftar Katalog',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
+      <Drawer.Screen name='historypage' component={HistoryPage} options={{ title: 'Riwayat',drawerIcon:({focused, size})=>(<Ihistory/>)}}/>
       <Drawer.Screen name='diskonpage' component={DiskonPage} options={{ title: 'Diskon',drawerIcon:({focused, size})=>(<Idiskon/>)}}/>
       <Drawer.Screen name='pengeluaranpage' component={PengeluaranPage} options={{ title: 'Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
       <Drawer.Screen name='setupage' component={Setupage} options={{ title: 'Setup Spreedsheet',headerShown: false ,drawerIcon:({focused, size})=>(<Isexcel/>)}}/>

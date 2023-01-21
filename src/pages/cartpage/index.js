@@ -89,10 +89,11 @@ const Cartpage = () => {
     //     ]);
     //   }
     // }
+    console.log('test')
    
     for (let i = 0; i < CartReducer.cartitem.length; i++) {
-        const  namaproduk = CartReducer.cartitem[i].item.namaproduk;
-        const  hargaproduk= CartReducer.cartitem[i].item.hargaproduk;
+        const  namaproduk = CartReducer.cartitem[i].item[1];
+        const  hargaproduk= CartReducer.cartitem[i].item[2];
         const count= CartReducer.cartitem[i].count;
         const tglorder= moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
         const timestamp= Date.parse(moment().format('yyyy-MM-DD'));
@@ -113,7 +114,7 @@ const Cartpage = () => {
       .post(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
-          '/values/a1:append?valueInputOption=USER_ENTERED',
+          '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
         JSON.stringify({
           values: data,
         }),
@@ -152,15 +153,31 @@ const Cartpage = () => {
   const onPressTunai = type => {
     setModalVisibleLoading(true)
     if (type === 'PAS') {
-      const diskon = CartReducer.cartitem.reduce(
+     let total
+      if(Diskon==0){ 
+        total = CartReducer.cartitem.reduce(
         (result, item) => item.count * item.subTotal + result,
         0,
-      )*Diskon/100;
-      const total = CartReducer.cartitem.reduce(
-        (result, item) => item.count * item.subTotal + result,
-        0,
-      )-diskon;
-
+      )-Diskon}
+      else{
+        if(Diskon.split('-').length<=1){
+          total = CartReducer.cartitem.reduce(
+           (result, item) => item.count * item.subTotal + result,
+           0,
+         )-Diskon.split('-')[0];
+       } 
+       else{
+         total = CartReducer.cartitem.reduce(
+           (result, item) => item.count * item.subTotal + result,
+           0,
+         )-(CartReducer.cartitem.reduce(
+           (result, item) => item.count * item.subTotal + result,
+           0,
+         )*Diskon.split('-')[0]/100)
+       }
+      }
+     
+     
       checkout(total);
     } else {
       if (
@@ -194,7 +211,7 @@ const Cartpage = () => {
   return (
     <View style={styles.container}>
       <View style={styles.box1}>
-        <StatusBar backgroundColor={'#27AE60'} barStyle="light-content" />
+        <StatusBar backgroundColor={'#5C67E4'} barStyle="light-content" />
         <FlatList
           key={'flatlist'}
           data={CartReducer.cartitem}
@@ -259,7 +276,7 @@ const Cartpage = () => {
 
               style={{
                 textAlign: 'center',
-                borderColor: '#18AECF',
+                borderColor: '#9B5EFF',
                 borderTopWidth: 1,
                 backgroundColor: '#fff',
                 color: '#fff',
@@ -289,12 +306,23 @@ const Cartpage = () => {
                 <View style={{
                     flexDirection: 'row',
                   }}>
-                  <Text  style={{
+                    {Diskon==0 ?<Text  style={{
                       fontSize: 16,
                       paddingRight:8,
                       color: '#000',
                       fontFamily:'TitilliumWeb-Bold'
-                    }}>{Diskon}%</Text>
+                    }}>Rp.{Diskon}</Text> :Diskon.split('-').length<=1? <Text  style={{
+                      fontSize: 16,
+                      paddingRight:8,
+                      color: '#000',
+                      fontFamily:'TitilliumWeb-Bold'
+                    }}>Rp.{Diskon.split('-')[0]}</Text>:<Text  style={{
+                      fontSize: 16,
+                      paddingRight:8,
+                      color: '#000',
+                      fontFamily:'TitilliumWeb-Bold'
+                    }}>{Diskon.split('-')[0]}%</Text>}
+                 
 
                   <Text
                     style={{
@@ -313,7 +341,7 @@ const Cartpage = () => {
 
               style={{
                 textAlign: 'center',
-                borderColor: '#18AECF',
+                borderColor: '#9B5EFF',
                 borderTopWidth: 1,
                 backgroundColor: '#fff',
                 color: '#fff',
@@ -365,14 +393,23 @@ const Cartpage = () => {
             <View style={{width: '50%'}}>
               <Text style={styles.total_price}>
                 Total: Rp.
-                {currency.format(
+                {currency.format(Diskon==0 ? CartReducer.cartitem.reduce(
+                    (result, item) => item.count * item.subTotal + result,
+                    0,
+                  )-0: Diskon.split('-').length<=1?
+                
+                  CartReducer.cartitem.reduce(
+                    (result, item) => item.count * item.subTotal + result,
+                    0,
+                  )-Diskon.split('-')[0]
+                :
                   CartReducer.cartitem.reduce(
                     (result, item) => item.count * item.subTotal + result,
                     0,
                   )-(CartReducer.cartitem.reduce(
                     (result, item) => item.count * item.subTotal + result,
                     0,
-                  )*Diskon/100)
+                  )*Diskon.split('-')[0]/100)
                 )}
               </Text>
             </View>
@@ -449,7 +486,8 @@ const Cartpage = () => {
                 key={i}
                 onPress={() => onPressDiskon(item.nama,item.diskon)}>
                 <Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>{item.nama}</Text>
-                <Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>{item.diskon}%</Text>
+                {item.diskon.split('-').length<=1?<Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>Rp.{item.diskon.split('-')[0]}</Text>:<Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>{item.diskon.split('-')[0]}%</Text>}
+                
               </TouchableOpacity>
               
              
@@ -485,7 +523,7 @@ const Cartpage = () => {
           <View style={{justifyContent:'space-between',flex:1}}>
           <TextInput placeholderTextColor={"#000"} multiline={true} numberOfLines={4} style={{borderWidth:1,borderColor:'#000',marginHorizontal:14,maxHeight:150,borderRadius:12,textAlignVertical:'top',fontSize:18,paddingHorizontal:12,color:'#000',fontFamily:'TitilliumWeb-Regular'}} placeholder={'SIlahkan Ketik Catatan'} onChangeText={(value)=>setNote(value)} value={Note}/>
           
-          <TouchableOpacity style={{backgroundColor:'#18AECF',padding:12,alignItems:'center',justifyContent:'center'}} onPress={()=>setModalVisibleNote(!modalVisibleNote)}>
+          <TouchableOpacity style={{backgroundColor:'#9B5EFF',padding:12,alignItems:'center',justifyContent:'center'}} onPress={()=>setModalVisibleNote(!modalVisibleNote)}>
           <Text style={{color:'#fff',fontFamily:'TitilliumWeb-Bold',fontSize:24}}>OK</Text>
           </TouchableOpacity>
           </View>
@@ -537,7 +575,7 @@ const Cartpage = () => {
                 }}>
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#18AECF',
+                    backgroundColor: '#9B5EFF',
                     padding: 6,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -552,7 +590,7 @@ const Cartpage = () => {
                 nominal.replace(/^\s+/, '').replace(/\s+$/, '') == '' ? (
                   <View
                     style={{
-                      backgroundColor: 'rgba(37,150,190,0.5)',
+                      backgroundColor: 'rgba(127, 17, 224, 0.5)',
                       width: '50%',
                       padding: 6,
                       alignItems: 'center',
@@ -564,7 +602,7 @@ const Cartpage = () => {
                 ) : (
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#18AECF',
+                      backgroundColor: '#9B5EFF',
                       padding: 6,
                       width: '50%',
                       alignItems: 'center',
@@ -603,7 +641,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   box2: {
-    width: Dimensions.get('window').width,
+    width: '100%',
     height: 50,
     flexDirection: 'row',
     display: 'flex',
@@ -616,12 +654,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily:'TitilliumWeb-Bold',
     backgroundColor: '#fff',
-    color: '#18AECF',
+    color: '#9B5EFF',
   },
   checkout_container: {
     textAlign: 'center',
     height: 50,
-    backgroundColor: '#18AECF',
+    backgroundColor: '#9B5EFF',
     color: '#fff',
   },
   checkout: {

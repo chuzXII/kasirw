@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
@@ -28,6 +29,7 @@ const HistoryPage = () => {
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const currency = new Intl.NumberFormat('id-ID');
+  const [refreshing, setRefreshing] = useState(false);
 
   const get = async () => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
@@ -50,6 +52,12 @@ const HistoryPage = () => {
         const StartTimeStamp = Date.parse(StartDate);
         const EndTimeStamp = Date.parse(EndDate);
         // console.log(Date.parse(StartDate.startOf()))
+       if(res.data.values==undefined){
+        Alert.alert('','Belum Ada Data Silahkan Input Terlebih Dahulu',[
+          {text:'Cancel',onPress:()=>console.log('cancel')},
+            {text:'OK',onPress:()=>navigation.navigate('dashboard')}
+        ],{cancelable:false})
+       }else{
         const j = res.data.values.filter(
           fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
         );
@@ -99,6 +107,10 @@ const HistoryPage = () => {
         });
         setData(k);
         setModalVisibleLoading(false);
+      setRefreshing(false);
+
+       }
+        
       })
       .catch(error => {
         if (error.response) {
@@ -108,20 +120,30 @@ const HistoryPage = () => {
           console.log(error.response.status);
           console.log(error.response.headers);
           alert(error.message);
+    setRefreshing(false);
+
         } else if (error.request) {
           // The request was made but no response was received
           // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
           // http.ClientRequest in node.js
           console.log(error.request);
           alert(error.message);
+    setRefreshing(false);
+
         } else {
           // Something happened in setting up the request that triggered an Error
           console.log('Error', error.message);
           alert(error.message);
+    setRefreshing(false);
+
         }
         // console.log(error.config);
       });
   };
+  const onRefresh = ()=>{
+    setRefreshing(true);
+    get()
+  }
   useEffect(() => {
     get();
   }, [isFocused, StartDate]);
@@ -152,7 +174,9 @@ const HistoryPage = () => {
           </View>
         </TouchableOpacity>
       </View>
-      <ScrollView style={{marginHorizontal: 18}}>
+      <ScrollView style={{marginHorizontal: 18}}  refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={'#252525'} colors={["#79D1F1","#D358FF"]} />
+    }>
         {Data == undefined || Data.length == 0 ? (
           <View style={styles.imgContainerStyle}>
             <View style={styles.imgwarpStyle}>
@@ -194,18 +218,17 @@ const HistoryPage = () => {
                       {currency.format(
                         
                         item.data.reduce(
-                          (result, item) =>
-                            item[0][7].split('').length == 1
-                              ? parseInt(item[1])+result
-                              : parseInt(item[1]) -
-                                (parseInt(item[1])  *
-                                  item[0][7].split(' ')[1]) /
-                                  100 +
-                                result,
+                          (result, item) => 
+                          item[0][7].split(' ').length==1?
+                          parseInt(item[1])+result
+                          :item[0][7].split(' ')[1].split('-').length==1?
+                          parseInt(item[1])-item[0][7].split(' ')[1].split('-')[0]+result:
+                          parseInt(item[1])- parseInt(item[1])*item[0][7].split(' ')[1].split('-')[0]/100+result,
                           0,
                         ),
-                      )}
+            )}
                     </Text>
+                  
                   </View>
 
                   {item.data.map((itemdata, indexdata) => {
@@ -244,9 +267,9 @@ const HistoryPage = () => {
                                   fontFamily: 'TitilliumWeb-Bold',
                                 }}>
                                 Rp.
-                                {itemdata[0][7].split(' ').length == 1
-                                  ? currency.format(itemdata[1])
-                                  : currency.format(itemdata[1]-itemdata[1]*itemdata[0][7].split(' ')[1]/100)}
+                                {itemdata[0][7].split(' ').length == 1? currency.format(itemdata[1])
+                                  :itemdata[0][7].split(' ')[1].split('-').length<=1? currency.format(itemdata[1]-itemdata[0][7].split(' ')[1])
+                                  :currency.format(itemdata[1]-itemdata[1]*itemdata[0][7].split(' ')[1].split('-')[0]/100)}
                               </Text>
                               <Text
                                 style={{
@@ -291,7 +314,7 @@ const HistoryPage = () => {
             flex: 1,
             backgroundColor: 'rgba(0,0,0,0.8)',
           }}>
-          <ActivityIndicator size={100} color={'#44dfff'} />
+          <ActivityIndicator size={100} color={'#9B5EFF'} />
         </View>
       </Modal>
       <Modal

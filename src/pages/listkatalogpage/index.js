@@ -63,7 +63,7 @@ const ListKatalog = ({navigation}) => {
       })}
     </ScrollView>
      <TouchableOpacity
-     style={{backgroundColor: '#18AECF', padding: 18, alignItems: 'center'}}
+     style={{backgroundColor: '#9B5EFF', padding: 18, alignItems: 'center'}}
      onPress={() => navigation.navigate('formkasir')}>
      <Text style={{color: '#fff', fontSize: 18, fontWeight: '500'}}>
        Tambah Katalog

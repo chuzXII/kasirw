@@ -26,7 +26,7 @@ const TRXReducer = (state = initialStateidtrx, action) => {
 }
 const initialStateDiskon = {
     nama_diskon: '',
-    diskon: 0,
+    diskon: '',
 
 }
 const DiskonReducer = (state = initialStateDiskon, action) => {

@@ -94,7 +94,7 @@ const App = () => {
   return (
     <Provider store={store}>
       
-      <StatusBar backgroundColor={'#53DE35'} animated={true} barStyle="dark-content" />
+      <StatusBar backgroundColor={'#4D5AFF'} animated={true} barStyle="light-content" />
       <NavigationContainer >
         <Routes />
       </NavigationContainer>

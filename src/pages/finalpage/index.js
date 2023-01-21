@@ -9,7 +9,7 @@ import {
   TouchableOpacity
 } from 'react-native';
 import React from 'react';
-import {Logo} from '../../assets';
+import {Logo, logosplash} from '../../assets';
 import {useDispatch, useSelector} from 'react-redux';
 import { Iprinter } from '../../assets/icon';
 import printer from '../printerpage';
@@ -48,14 +48,14 @@ const FinalPage = ({navigation}) => {
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['CHILL'],
+        ['WIJAYA VAPE'],
         {},
       );
       await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['Perum Tegal Asri Blok D22, RT.007/RW.002, Ds.karanganyar, Kec.Tegalampel, Kab.Bondowoso'],
+        ['Deket Sama Bundaran Polres, Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
         {},
       );
       await BluetoothEscposPrinter.setBlob(0);
@@ -171,7 +171,7 @@ const FinalPage = ({navigation}) => {
       await BluetoothEscposPrinter.printColumn(
           [32],
           [BluetoothEscposPrinter.ALIGN.CENTER],
-          ['"'+'Terimakasih Atas Pesanan Anda'+'"'],
+          ['"'+'Terimakasih Atas Pembeliannya'+'"'],
           {},
         );
       await BluetoothEscposPrinter.printText('\r\n\r\n', {});
@@ -191,18 +191,39 @@ const FinalPage = ({navigation}) => {
   }
   const renderitem = items => {
     return (
-      <View style={{flexDirection: 'row'}}>
-        <Text style={{color: '#000', flex: 3}}>{items.item.namaproduk}</Text>
-        <Text style={{color: '#000', flex: 1}}>{items.count}</Text>
-        <Text style={{color: '#000', flex: 2}}>Rp.{currency.format(items.subTotal)}</Text>
+      <View style={{flexDirection: 'row',alignItems:'center'}}>
+        <View style={{flex: 4}}>
+          <Text style={{color: '#000'}}>{items.item[1]}</Text>
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{color: '#000'}}>{items.count}x </Text>
+              <Text style={{color: '#000'}}>Rp.{currency.format(items.subTotal)}</Text>
+            </View>
+        </View>
+        <View style={{flex: 2}}>
+          <Text style={{color: '#000'}}>Rp.{currency.format(items.subTotal*items.count)}</Text>
+        </View>
+        
       </View>
     );
   };
   const get=async()=>{
     const subtotal =CartReducer.cartitem.reduce((result, item) => item.count * item.subTotal + result,0, )
     const diskonpersen =DiskonReducer.diskon;
-    const diskon = subtotal * (DiskonReducer.diskon/100)
-    const total =subtotal-diskon
+    const diskon = DiskonReducer.diskon
+    let total
+    if(DiskonReducer.diskon==0){
+      total = subtotal - (DiskonReducer.diskon)
+    }
+    else{
+      if(DiskonReducer.diskon.split('-').length<=1){
+        total = subtotal - (DiskonReducer.diskon.split('-')[0])
+      }
+      else{
+        total = subtotal - (subtotal * DiskonReducer.diskon.split('-')[0]/100)
+      }
+    }
+   
+    
     const tunai = TunaiReducer.nominal
     const kembalian  =tunai-total
     setCurrencystate({
@@ -223,15 +244,15 @@ const FinalPage = ({navigation}) => {
     <View style={{flex: 1}}>
       <ScrollView>
         <View style={{alignItems: 'center'}}>
-          <Text style={{color: '#000',fontSize:28,marginVertical:16,fontFamily:'InknutAntiqua-Regular'}}>BERHASIL</Text>
+          <Text style={{color: '#000',fontSize:28,marginVertical:2,fontFamily:'InknutAntiqua-Regular'}}>BERHASIL</Text>
           <Image source={Logo} />
         </View>
 
-        <View style={{backgroundColor: '#fff', marginHorizontal: 25,borderRadius:8,elevation:6}}>
+        <View style={{backgroundColor: '#fff', marginHorizontal: 25,marginTop:12,borderRadius:8,elevation:6}}>
           <View style={{marginHorizontal: 12, marginVertical: 12}}>
             <View style={{flexDirection: 'row'}}>
-              <Text style={{color: '#000', flex: 3,fontFamily:'TitilliumWeb-Bold'}}>Items</Text>
-              <Text style={{color: '#000', flex: 1,fontFamily:'TitilliumWeb-Bold'}}>Qty</Text>
+              <Text style={{color: '#000', flex: 4,fontFamily:'TitilliumWeb-Bold'}}>Items</Text>
+             
               <Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Bold'}}>Harga</Text>
             </View>
             {CartReducer.cartitem.map((items, index) => {
@@ -253,10 +274,17 @@ const FinalPage = ({navigation}) => {
             <View
               style={{flexDirection: 'row', justifyContent: 'space-between'}}>
               <Text style={{color: '#000', flex: 4,fontFamily:'TitilliumWeb-Regular'}}>Diskon</Text>
-
-              <Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Regular'}}>
-              -Rp.{currency.format(currencystate.diskon)}
+              {DiskonReducer.diskon==0?
+                <Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Regular'}}>
+                -Rp.{currency.format(currencystate.diskon)}
+                </Text>: DiskonReducer.diskon.split('-').length<=1?  
+                <Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Regular'}}>
+                -Rp.{currency.format(currencystate.diskon)}
+                </Text>:<Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Regular'}}>
+                {DiskonReducer.diskon.split('-')}
               </Text>
+              }
+             
             </View>
             <View style={{ borderBottomWidth: StyleSheet.hairlineWidth,marginVertical:6}}></View>
 
@@ -290,7 +318,7 @@ const FinalPage = ({navigation}) => {
         <View style={{alignItems: 'center',marginVertical:12}}>
         <TouchableOpacity
           style={{
-            backgroundColor: '#18AECF',
+            backgroundColor: '#9B5EFF',
             width: 50,
             height: 50,
             borderRadius: 30,
@@ -305,7 +333,7 @@ const FinalPage = ({navigation}) => {
       
       
 
-      <TouchableOpacity style={{backgroundColor: '#18AECF',padding:16, alignItems: 'center',
+      <TouchableOpacity style={{backgroundColor: '#9B5EFF',padding:16, alignItems: 'center',
             justifyContent: 'center',borderTopEndRadius:24,borderTopLeftRadius:24}} onPress={()=>Submit()}>
         <Text style={{color: '#fff',fontSize:18,fontFamily:'TitilliumWeb-Bold'}}>OK</Text>
       </TouchableOpacity>

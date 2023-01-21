@@ -19,9 +19,9 @@ export default Input
 const styles = StyleSheet.create({
     formgroup: {
         borderWidth:1,
-        borderColor:'#a9e893',
+        borderColor:'#9371FB',
         borderRadius: 12,
-        backgroundColor: '#f4fff0',
+        backgroundColor: '#B3D6FF',
         
     },
 })

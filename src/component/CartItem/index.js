@@ -32,15 +32,25 @@ const CardItem = ({item}) => {
         <View style={styles.container}>
           <View style={styles.box2}>
             <View>
-              <Image
+            {item.item[3]==undefined?item.item[1].split(' ').length<=1?
+         <View  style={styles.productImage}>
+         <Text style={{fontSize:32,fontWeight:'bold'}}>{item.item[1].slice(0,1).toUpperCase()+item.item[1].slice(1,2).toUpperCase()}</Text>
+        </View>: <View style={styles.productImage}>
+          <Text style={{fontSize:32,fontWeight:'bold'}}>{item.item[1].split(' ')[0].slice(0,1).toUpperCase()+item.item[1].split(' ')[1].slice(0,1).toUpperCase()}</Text>
+        </View>:<Image
+                style={styles.productImage}
+                source={{uri:item.item[3]}} 
+              />
+        }
+              {/* <Image
                 style={styles.productImage}
                 source={{uri:'file://'+RNFS.DownloadDirectoryPath+'/dataimg/'+item.item.imgname}}
-              />
+              /> */}
             </View>
             <View style={{flex: 1, display: 'flex', flexDirection: 'column'}}>
-              <Text style={styles.title}>{item.item.namaproduk}</Text>
+              <Text style={styles.title}>{item.item[1]}</Text>
               <Text style={styles.attribute}>
-              {'1pcs - ' + 'Rp. ' + currency.format(item.item.hargaproduk)}
+              {'1pcs - ' + 'Rp. ' + currency.format(item.item[2])}
               </Text>
               <View style={styles.quantitContainer}>
                 <TouchableOpacity
@@ -152,6 +162,9 @@ const styles = StyleSheet.create({
         borderRadius:8,
         borderWidth:1,
         borderColor:'#000',
+        backgroundColor:'#252525',
+        alignItems:'center',
+        justifyContent:'center',
         height: 70,
         width: 70,
       },

@@ -81,8 +81,8 @@ import axios from 'axios';
         
           <View style={styles.warpcard}>
           <Label label={'Tanggal'} />
-            <TouchableOpacity style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#a9e893',padding:12,borderRadius:12}}>
-                <Text style={{color:'#000',fontSize:18}} onPress={()=>setModalVisible(true)}>{selectDate}</Text>
+            <TouchableOpacity style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#8D60FF',padding:12,borderRadius:12}}>
+                <Text style={{color:'#fff',fontSize:18}} onPress={()=>setModalVisible(true)}>{selectDate}</Text>
             </TouchableOpacity>
      
             <Label label={'Nama Barang'} />
@@ -125,7 +125,7 @@ import axios from 'axios';
                 ? (
                 <View style={styles.wrapbuttonsub}>
                   <View
-                    style={[styles.button,{backgroundColor: 'rgba(37,150,190,0.5)'}]}>
+                    style={[styles.button,{backgroundColor: 'rgba(127, 17, 224, 0.5)'}]}>
                     <Text style={styles.buttontxt}>Simpan</Text>
                   </View>
                 </View>
@@ -225,26 +225,6 @@ import axios from 'axios';
       flexDirection: 'row',
       marginBottom: 12,
     },
-    buttonimg: {
-      marginVertical: 14,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 12,
-      backgroundColor: '#18AECF',
-      width: DWidth * 0.3,
-      height: DHeight / 20,
-    },
-    prvimg:{
-        width: DWidth*0.331,
-        height: DWidth*0.331,
-        backgroundColor: '#bdbbbb',
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginLeft: 10,
-        elevation: 3,
-    },
-  
     button: {
       marginBottom:14,
       alignItems: 'center',
@@ -252,7 +232,7 @@ import axios from 'axios';
       borderRadius: 12,
       width: DWidth * 0.7,
       height: DHeight / 15,
-      backgroundColor: '#18AECF',
+      backgroundColor: '#9B5EFF',
     },
     buttontxt: {
       color: '#fff',
