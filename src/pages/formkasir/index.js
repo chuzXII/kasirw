@@ -35,7 +35,7 @@ const Formkasir = () => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
     axios.get('https://sheets.googleapis.com/v4/spreadsheets/' +
-    sheetid + '/values/Sheet4',
+    sheetid + '/values/Sheet3',
     {
       headers: {
         Authorization: 'Bearer ' + token,
@@ -90,7 +90,7 @@ const Formkasir = () => {
       
       axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
     sheetid +
-    '/values/Sheet4!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
+    '/values/Sheet3!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
       values: data,
     }),
     {
