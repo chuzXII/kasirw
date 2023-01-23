@@ -29,7 +29,6 @@ const FinalPage = ({navigation}) => {
   const DiskonReducer = useSelector(state => state.DiskonReducer);
   const [currencystate,setCurrencystate] = useState({
     subtotal:0,
-    diskonpersen:0,
     diskon:0,
     total:0,
     tunai:0,
@@ -137,12 +136,30 @@ const FinalPage = ({navigation}) => {
         ['Subtotal','Rp.'+currency.format(currencystate.subtotal).toString()],
         {},
       );
-      await BluetoothEscposPrinter.printColumn(
-        [16, 16],
-        [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-        ['Diskon',currencystate.diskonpersen+'%'],
-        {},
-      );
+      if(DiskonReducer.diskon==0){
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          ['Diskon','Rp.'+currencystate.diskon],
+          {},
+        );
+      }
+      else if( DiskonReducer.diskon.split('-').length<=1){
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          ['Diskon','-Rp.'+currencystate.diskon],
+          {},
+        );
+      }else{
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          ['Diskon',currencystate.diskon+'%'],
+          {},
+        );
+      }
+     
       await BluetoothEscposPrinter.printText(
         '================================',
         {},
@@ -208,18 +225,17 @@ const FinalPage = ({navigation}) => {
   };
   const get=async()=>{
     const subtotal =CartReducer.cartitem.reduce((result, item) => item.count * item.subTotal + result,0, )
-    const diskonpersen =DiskonReducer.diskon;
     const diskon = DiskonReducer.diskon
     let total
-    if(DiskonReducer.diskon==0){
-      total = subtotal - (DiskonReducer.diskon)
+    if(diskon==0){
+      total = subtotal - (diskon)
     }
     else{
-      if(DiskonReducer.diskon.split('-').length<=1){
-        total = subtotal - (DiskonReducer.diskon.split('-')[0])
+      if(diskon.split('-').length<=1){
+        total = subtotal - (diskon.split('-')[0])
       }
       else{
-        total = subtotal - (subtotal * DiskonReducer.diskon.split('-')[0]/100)
+        total = subtotal - (subtotal * diskon.split('-')[0]/100)
       }
     }
    
@@ -228,7 +244,6 @@ const FinalPage = ({navigation}) => {
     const kembalian  =tunai-total
     setCurrencystate({
       subtotal:subtotal,
-      diskonpersen:diskonpersen,
       diskon:diskon,
       total:total,
       tunai:tunai,
@@ -276,7 +291,7 @@ const FinalPage = ({navigation}) => {
               <Text style={{color: '#000', flex: 4,fontFamily:'TitilliumWeb-Regular'}}>Diskon</Text>
               {DiskonReducer.diskon==0?
                 <Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Regular'}}>
-                -Rp.{currency.format(currencystate.diskon)}
+                Rp.{currency.format(currencystate.diskon)}
                 </Text>: DiskonReducer.diskon.split('-').length<=1?  
                 <Text style={{color: '#000', flex: 2,fontFamily:'TitilliumWeb-Regular'}}>
                 -Rp.{currency.format(currencystate.diskon)}

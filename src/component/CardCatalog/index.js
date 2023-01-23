@@ -49,12 +49,12 @@ const Cardcatalog = ({item,oriented}) => {
   return (
     <TouchableOpacity style={styles.wrapCard(oriented)} onPress={()=>handdlebutton()}>
       <View style={styles.wrapImg(oriented)}>
-        {item[3]==undefined?item[1].split(' ').length<=1?
+        {item[6]==undefined?item[1].split(' ').length<=1?
          <View style={{flex:1,borderRadius: 6,backgroundColor:'#252525',alignItems:'center',justifyContent:'center'}}>
          <Text style={{fontSize:32,fontWeight:'bold'}}>{item[1].slice(0,1).toUpperCase()+item[1].slice(1,2).toUpperCase()}</Text>
         </View>: <View style={{flex:1,borderRadius: 6,backgroundColor:'#252525',alignItems:'center',justifyContent:'center'}}>
           <Text style={{fontSize:32,fontWeight:'bold'}}>{item[1].split(' ')[0].slice(0,1).toUpperCase()+item[1].split(' ')[1].slice(0,1).toUpperCase()}</Text>
-        </View>:<Image  source={{uri:item[3]}} style={{flex:1,borderRadius: 6}}></Image> 
+        </View>:<Image  source={{uri:item[6]}} style={{flex:1,borderRadius: 6}}></Image> 
         }
        
       </View>

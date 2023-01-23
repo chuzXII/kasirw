@@ -61,6 +61,7 @@ const HistoryPage = () => {
         const j = res.data.values.filter(
           fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
         );
+        console.log(j)
         let b = Object.values(
           j.reduce((acc, item) => {
             if (!acc[item[0]])
@@ -288,7 +289,14 @@ const HistoryPage = () => {
                               </Text>
                             </View>
                           </View>
+                          <View style={{alignItems:'flex-end'}}>
                           <Text style={{color: '#000'}}>{itemdata[0][0]}</Text>
+                          <View style={{backgroundColor:itemdata[0][10]=="Lunas"?'#00CB00':'#CB0000',paddingVertical:6,paddingHorizontal:itemdata[0][10]=="Lunas"?10:6,marginTop:4,borderRadius:4}}>
+                          <Text style={{color: '#fff'}}>{itemdata[0][10]}</Text>
+
+                          </View>
+                          </View>
+                          
                         </View>
                       </TouchableOpacity>
                     );

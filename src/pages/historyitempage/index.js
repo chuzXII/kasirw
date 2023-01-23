@@ -14,8 +14,9 @@ import moment from 'moment';
 import {useIsFocused} from '@react-navigation/native';
 import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
 moment.suppressDeprecationWarnings = true;
-const HistoryItemPage = ({route}) => {
+const HistoryItemPage = ({route,navigation}) => {
   const [Data, setData] = useState([]);
+  const [RawData, setRawData] = useState([]);
   const [DataTotal, setDataTotal] = useState([]);
   const [modalVisibleLoading, setModalVisibleLoading] = useState(false);
 
@@ -24,11 +25,12 @@ const HistoryItemPage = ({route}) => {
   const [IdTrx, setIdTrx] = useState();
   const [Owner, setOwner] = useState();
   const [Pesan, setPesan] = useState();
+  const [Status, setStatus] = useState();
 
 
   const [NamaDiskon, setNamaDiskon] = useState('');
   const [Diskon, setDiskon] = useState(0);
-  const [DiskonPersen, setDiskonPersen] = useState(0);
+  const [ValueDiskon, setValueDiskon] = useState(0);
 
   const [SubTotal, setSubTotal] = useState(0);
   const [Total, setTotal] = useState(0);
@@ -164,12 +166,31 @@ const HistoryItemPage = ({route}) => {
         ['Subtotal', 'Rp.' + currency.format(SubTotal).toString()],
         {},
       );
-      await BluetoothEscposPrinter.printColumn(
-        [16, 16],
-        [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-        ['Diskon', DiskonPersen + '%'],
-        {},
-      );
+      if(ValueDiskon==0){
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          ['Diskon', 'Rp.'+ValueDiskon ],
+          {},
+        );
+      }
+      else if(ValueDiskon.length==1){
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          ['Diskon', '-Rp.'+ValueDiskon ],
+          {},
+        );
+      }
+      else{
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          ['Diskon', ValueDiskon +'%'],
+          {},
+        );
+      }
+    
       await BluetoothEscposPrinter.printText(
         '================================',
         {},
@@ -221,6 +242,40 @@ const HistoryItemPage = ({route}) => {
         alert('Make sure Whatsapp installed on your device');
       });
   };
+  const onPressdelete=async()=>{
+    try{
+    var indexs = [];
+   const a = RawData.filter((element,index,array)=>{
+    if(element[0] == idtrx) {
+      indexs.push(index+1);
+  }
+   })
+    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    const token = await AsyncStorage.getItem('tokenAccess');
+    indexs.map(e=>{
+      axios.post('https://sheets.googleapis.com/v4/spreadsheets/193U-hvY1-HbXF44_dbHUxwFeUimLXgr4Pmlc4GZpZog/values:batchUpdate', JSON.stringify({
+        data: {
+          values:[['Refund']],
+          range:'k'+e
+        },
+        valueInputOption:'USER_ENTERED'
+      }),
+      {
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+      },)
+    })
+    // https://sheets.googleapis.com/v4/spreadsheets/193U-hvY1-HbXF44_dbHUxwFeUimLXgr4Pmlc4GZpZog/values/k1:append
+   
+    navigation.navigate('historypage')
+   console.log(indexs)
+  }catch(e){
+    console.log(e)
+  }
+}
+
   const msg = () => {
     console.log(Data);
     Data.map((item, index) => {
@@ -244,6 +299,7 @@ const HistoryItemPage = ({route}) => {
         },
       )
       .then(res => {
+        setRawData(res.data.values)
         const j = res.data.values.filter(fill => fill[0] == idtrx);
         setDataTotal(j);
         const srawdate = j[0][5].split(' ');
@@ -257,6 +313,7 @@ const HistoryItemPage = ({route}) => {
         setIdTrx(j[0][0]);
         setOwner(j[0][9]);
         setPesan(j[0][8]);
+        setStatus(j[0][10]);
         const rawdiskon = j[0][7].split(' ');
         let sDiskon;
         let Total;
@@ -266,18 +323,18 @@ const HistoryItemPage = ({route}) => {
         );
         if (rawdiskon.length == 1) {
           setDiskon(rawdiskon[0]);
-          setDiskonPersen(rawdiskon[0]);
+          setValueDiskon(rawdiskon[0]);
           Total = (subtotal - rawdiskon[0]);
         } else {
           if(rawdiskon[1].split('-').length<=1){
             setNamaDiskon(rawdiskon[0]);
             setDiskon(rawdiskon[1].split('-')[0]);
-            setDiskonPersen(rawdiskon[1].split('-'));
+            setValueDiskon(rawdiskon[1].split('-'));
             Total = (subtotal - rawdiskon[1].split('-')[0] )
           }else{
             setNamaDiskon(rawdiskon[0]);
             setDiskon(rawdiskon[1].split('-')[0] / 100);
-            setDiskonPersen(rawdiskon[1].split('-'));
+            setValueDiskon(rawdiskon[1].split('-'));
             Total = subtotal-(subtotal * rawdiskon[1].split('-')[0] ) / 100;
           }
          
@@ -457,10 +514,13 @@ const HistoryItemPage = ({route}) => {
               <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
                 Diskon
               </Text>
-              {DiskonPersen.length==1?<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                -Rp.{DiskonPersen}
+              {ValueDiskon==0?<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+                Rp.{ValueDiskon}
+              </Text>:
+              ValueDiskon.length==1?<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+                -Rp.{ValueDiskon}
               </Text>:<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                {DiskonPersen}
+                {ValueDiskon}
               </Text>}
               
             </View>
@@ -516,7 +576,7 @@ const HistoryItemPage = ({route}) => {
             Rp.{currency.format(Tunai - Total)}
           </Text>
         </View>
-        <View style={{alignItems: 'center'}}>
+        <View style={{alignItems: 'center',flexDirection:Status=='Refund'?'column':'row'}}>
           <TouchableOpacity
             onPress={() => onPressprint()}
             style={{
@@ -524,12 +584,28 @@ const HistoryItemPage = ({route}) => {
               alignItems: 'center',
               padding: 14,
               borderRadius: 12,
-              width: '50%',
+              marginHorizontal:26,
+              width: Status=='Refund'?'50%':'40%',
             }}>
             <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
               Cetak
             </Text>
           </TouchableOpacity>
+          {Status=='Refund'?null: <TouchableOpacity
+            onPress={() => onPressdelete()}
+            style={{
+              borderColor:'#CB0000',
+              borderWidth: 1,
+              alignItems: 'center',
+              padding: 14,
+              borderRadius: 12,
+              width: '40%',
+            }}>
+            <Text style={{color: '#CB0000', fontFamily: 'TitilliumWeb-Bold'}}>
+              Refund
+            </Text>
+          </TouchableOpacity>}
+         
         </View>
 
         {/* <TouchableOpacity onPress={() => onPressKirim()}>

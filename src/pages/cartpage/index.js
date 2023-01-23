@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect} from 'react';
 import CardItem from '../../component/CartItem';
@@ -40,9 +40,7 @@ const Cartpage = () => {
   const [Diskon, setDiskon] = useState(0);
   const [NamaDiskon, setNamaDiskon] = useState(' ');
   const [Note, setNote] = useState('');
-
-
-
+  const [set, setDataMenu] = useState();
 
   const dispatch = useDispatch();
 
@@ -56,128 +54,155 @@ const Cartpage = () => {
   };
   const checkout = async Total => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
-    const user= JSON.parse(await AsyncStorage.getItem('usergooglesignin'))
+    const user = JSON.parse(await AsyncStorage.getItem('usergooglesignin'));
     const token = await AsyncStorage.getItem('tokenAccess');
     const data = [];
-    const rawdate = new Date();
-    // const id_tensaksi =
-    //   'TRX-' +
-    //   rawdate.getDate().toString() +
-    //   rawdate.getMonth().toString() +
-    //   rawdate.getFullYear().toString() +
-    //   Math.floor(Math.random() * 10000) +
-    //   1;
-    dispatch({type: 'NOMINAL', value: Total});
-    // for (let i = 0; i < CartReducer.cartitem.length; i++) {
-    //   for (let u = 0; u < CartReducer.cartitem[i].count; u++) {
-    //     const id_produk = CartReducer.cartitem[i].item.id_produk;
-    //     const namaproduk = CartReducer.cartitem[i].item.namaproduk;
-    //     const deskproduk = CartReducer.cartitem[i].item.deskproduk;
-    //     const hargaproduk = CartReducer.cartitem[i].item.hargaproduk;
-    //     const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
-    //     const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
+    var indexs = [];
+    var stoksisa = [];
+    var datamenu = [];
 
-    //     data.push([
-    //       TRXReducer.id_produk,
-    //       namaproduk,
-    //       hargaproduk,
-    //       parseInt(Total).toString(),
-    //       tglorder,
-    //       timestamp,
-    //       NamaDiskon.concat(' '+Diskon),
-    //       user.name
-    //     ]);
-    //   }
-    // }
-    console.log('test')
-   
-    for (let i = 0; i < CartReducer.cartitem.length; i++) {
-        const  namaproduk = CartReducer.cartitem[i].item[1];
-        const  hargaproduk= CartReducer.cartitem[i].item[2];
-        const count= CartReducer.cartitem[i].count;
-        const tglorder= moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
-        const timestamp= Date.parse(moment().format('yyyy-MM-DD'));
-         data.push([
-          TRXReducer.id_produk,
-          namaproduk,
-          count,
-          hargaproduk,
-          Total.toString(),
-          tglorder,
-          timestamp,
-          NamaDiskon.concat(' '+Diskon),
-          Note,
-          user.name
-        ]);
-    }
-    axios
-      .post(
+    const rawdate = new Date();
+    await axios
+      .get(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
-          '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
-        JSON.stringify({
-          values: data,
-        }),
+          '/values/Sheet3',
         {
           headers: {
-            'Content-type': 'application/json',
             Authorization: 'Bearer ' + token,
           },
         },
       )
       .then(res => {
-        setModalVisibleLoading(false)
-        setModalVisible(!modalVisible);
-        navigation.navigate('finalpage');
-      })
-      .catch(error => {
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-          alert(error.message)
-        } else if (error.request) {
-          // The request was made but no response was received
-          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-          // http.ClientRequest in node.js
-          console.log(error.request);
-          alert(error.message)
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log('Error', error.message);
+        for (let i = 0; i < CartReducer.cartitem.length; i++) {
+          res.data.values.filter((element, index, array) => {
+            if (element[0] == CartReducer.cartitem[i].item[0]) {
+              indexs.push(index + 1);
+              stoksisa.push(array[i][5])
+            }
+          });
         }
+        console.log(stoksisa)
+
+        // dispatch({type: 'NOMINAL', value: Total});
+
+        // for (let i = 0; i < CartReducer.cartitem.length; i++) {
+        //   const namaproduk = CartReducer.cartitem[i].item[1];
+        //   const hargaproduk = CartReducer.cartitem[i].item[2];
+        //   const count = CartReducer.cartitem[i].count;
+        //   const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
+        //   const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
+        //   data.push([
+        //     TRXReducer.id_produk,
+        //     namaproduk,
+        //     count,
+        //     hargaproduk,
+        //     Total.toString(),
+        //     tglorder,
+        //     timestamp,
+        //     NamaDiskon.concat(' ' + Diskon),
+        //     Note,
+        //     user.name,
+        //     'Lunas',
+        //   ]);
+        //   datamenu.push([
+        //     count,
+        //   ])
+
+        // }
+        // axios
+        //   .post(
+        //     'https://sheets.googleapis.com/v4/spreadsheets/' +
+        //       sheetid +
+        //       '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
+        //     JSON.stringify({
+        //       values: data,
+        //     }),
+        //     {
+        //       headers: {
+        //         'Content-type': 'application/json',
+        //         Authorization: 'Bearer ' + token,
+        //       },
+        //     },
+        //   )
+        //   .then(res => {
+        //     axios
+        //       .post(
+        //         'https://sheets.googleapis.com/v4/'+
+        //         sheetid +'/values:batchUpdate',
+        //         JSON.stringify({
+        //           data: {
+        //             values:[['Refund']],
+        //             range:'k'+e
+        //           },
+        //           valueInputOption:'USER_ENTERED'
+        //         }),
+        //         {
+        //           headers: {
+        //             'Content-type': 'application/json',
+        //             Authorization: 'Bearer ' + token,
+        //           },
+        //         },
+        //       )
+        //       .then(res => {
+        //         setModalVisibleLoading(false);
+        //         setModalVisible(!modalVisible);
+        //         navigation.navigate('finalpage');
+        //       });
+        //   })
+        //   .catch(error => {
+        //     if (error.response) {
+        //       // The request was made and the server responded with a status code
+        //       // that falls out of the range of 2xx
+        //       console.log(error.response.data);
+        //       console.log(error.response.status);
+        //       console.log(error.response.headers);
+        //       alert(error.message);
+        //     } else if (error.request) {
+        //       // The request was made but no response was received
+        //       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        //       // http.ClientRequest in node.js
+        //       console.log(error.request);
+        //       alert(error.message);
+        //     } else {
+        //       // Something happened in setting up the request that triggered an Error
+        //       console.log('Error', error.message);
+        //     }
+        //   });
       });
   };
   const onPressTunai = type => {
-    setModalVisibleLoading(true)
+    // setModalVisibleLoading(true)
     if (type === 'PAS') {
-     let total
-      if(Diskon==0){ 
-        total = CartReducer.cartitem.reduce(
-        (result, item) => item.count * item.subTotal + result,
-        0,
-      )-Diskon}
-      else{
-        if(Diskon.split('-').length<=1){
-          total = CartReducer.cartitem.reduce(
-           (result, item) => item.count * item.subTotal + result,
-           0,
-         )-Diskon.split('-')[0];
-       } 
-       else{
-         total = CartReducer.cartitem.reduce(
-           (result, item) => item.count * item.subTotal + result,
-           0,
-         )-(CartReducer.cartitem.reduce(
-           (result, item) => item.count * item.subTotal + result,
-           0,
-         )*Diskon.split('-')[0]/100)
-       }
+      let total;
+      if (Diskon == 0) {
+        total =
+          CartReducer.cartitem.reduce(
+            (result, item) => item.count * item.subTotal + result,
+            0,
+          ) - Diskon;
+      } else {
+        if (Diskon.split('-').length <= 1) {
+          total =
+            CartReducer.cartitem.reduce(
+              (result, item) => item.count * item.subTotal + result,
+              0,
+            ) - Diskon.split('-')[0];
+        } else {
+          total =
+            CartReducer.cartitem.reduce(
+              (result, item) => item.count * item.subTotal + result,
+              0,
+            ) -
+            (CartReducer.cartitem.reduce(
+              (result, item) => item.count * item.subTotal + result,
+              0,
+            ) *
+              Diskon.split('-')[0]) /
+              100;
+        }
       }
-     
-     
+
       checkout(total);
     } else {
       if (
@@ -198,15 +223,15 @@ const Cartpage = () => {
     setDataDiskon(JSON.parse(datadiskon));
     setModalDiskonVisible(true);
   };
-  const onPressDiskon = (nama,diskon) => {
-    setNamaDiskon(nama.replace(/\s+/g, '-'))
-    setDiskon(diskon)
-    dispatch({type:'DISKON',valuenama:nama,valuediskon:diskon})
+  const onPressDiskon = (nama, diskon) => {
+    setNamaDiskon(nama.replace(/\s+/g, '-'));
+    setDiskon(diskon);
+    dispatch({type: 'DISKON', valuenama: nama, valuediskon: diskon});
     setModalDiskonVisible(!modalDiskonVisible);
   };
-  const onLongPressDiskon=()=>{
-    setDiskon(0)
-  }
+  const onLongPressDiskon = () => {
+    setDiskon(0);
+  };
 
   return (
     <View style={styles.container}>
@@ -218,7 +243,12 @@ const Cartpage = () => {
           renderItem={({item, index}) => renderCartItem(item, index)}
           keyExtractor={item => item.id}
           contentInset={{bottom: 150}}
-          contentContainerStyle={{paddingBottom:CartReducer.cartitem.length > 0 ? Dimensions.get('screen').height/3.5:0}}
+          contentContainerStyle={{
+            paddingBottom:
+              CartReducer.cartitem.length > 0
+                ? Dimensions.get('screen').height / 3.5
+                : 0,
+          }}
         />
       </View>
 
@@ -233,8 +263,8 @@ const Cartpage = () => {
               backgroundColor: '#fff',
               borderTopRightRadius: 20,
               borderTopLeftRadius: 20,
-              flexDirection:'row',
-              justifyContent:'space-between',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
               paddingHorizontal: 15,
               elevation: 2.5,
             }}>
@@ -243,7 +273,7 @@ const Cartpage = () => {
                 color: '#000',
                 fontSize: 16,
                 fontWeight: '500',
-                fontFamily:'TitilliumWeb-Bold',
+                fontFamily: 'TitilliumWeb-Bold',
                 paddingVertical: 8,
               }}>
               SUBTOTAL
@@ -253,15 +283,16 @@ const Cartpage = () => {
                 color: '#000',
                 fontSize: 16,
                 fontWeight: '500',
-                fontFamily:'TitilliumWeb-Bold',
+                fontFamily: 'TitilliumWeb-Bold',
                 paddingVertical: 8,
               }}>
-               Rp.{currency.format(
-                  CartReducer.cartitem.reduce(
-                    (result, item) => item.count * item.subTotal + result,
-                    0,
-                  ),
-                )}
+              Rp.
+              {currency.format(
+                CartReducer.cartitem.reduce(
+                  (result, item) => item.count * item.subTotal + result,
+                  0,
+                ),
+              )}
             </Text>
             {/* <FlatList
               key={'flatlist'}
@@ -271,9 +302,8 @@ const Cartpage = () => {
               contentInset={{bottom: 150}}
             /> */}
           </View>
-          <View style={{  backgroundColor: '#fff',}}>
+          <View style={{backgroundColor: '#fff'}}>
             <TouchableOpacity
-
               style={{
                 textAlign: 'center',
                 borderColor: '#9B5EFF',
@@ -281,7 +311,7 @@ const Cartpage = () => {
                 backgroundColor: '#fff',
                 color: '#fff',
               }}
-              onLongPress={()=>onLongPressDiskon()}
+              onLongPress={() => onLongPressDiskon()}
               onPress={() => onPressModalDiskon()}>
               <View
                 style={{
@@ -292,37 +322,52 @@ const Cartpage = () => {
                 <View
                   style={{
                     flexDirection: 'row',
-                    flex:1
+                    flex: 1,
                   }}>
                   <Text
                     style={{
                       fontSize: 16,
                       color: '#000',
-                      fontFamily:'TitilliumWeb-Bold'
+                      fontFamily: 'TitilliumWeb-Bold',
                     }}>
                     Diskon
-                  </Text> 
+                  </Text>
                 </View>
-                <View style={{
+                <View
+                  style={{
                     flexDirection: 'row',
                   }}>
-                    {Diskon==0 ?<Text  style={{
-                      fontSize: 16,
-                      paddingRight:8,
-                      color: '#000',
-                      fontFamily:'TitilliumWeb-Bold'
-                    }}>Rp.{Diskon}</Text> :Diskon.split('-').length<=1? <Text  style={{
-                      fontSize: 16,
-                      paddingRight:8,
-                      color: '#000',
-                      fontFamily:'TitilliumWeb-Bold'
-                    }}>Rp.{Diskon.split('-')[0]}</Text>:<Text  style={{
-                      fontSize: 16,
-                      paddingRight:8,
-                      color: '#000',
-                      fontFamily:'TitilliumWeb-Bold'
-                    }}>{Diskon.split('-')[0]}%</Text>}
-                 
+                  {Diskon == 0 ? (
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        paddingRight: 8,
+                        color: '#000',
+                        fontFamily: 'TitilliumWeb-Bold',
+                      }}>
+                      Rp.{Diskon}
+                    </Text>
+                  ) : Diskon.split('-').length <= 1 ? (
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        paddingRight: 8,
+                        color: '#000',
+                        fontFamily: 'TitilliumWeb-Bold',
+                      }}>
+                      Rp.{Diskon.split('-')[0]}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        paddingRight: 8,
+                        color: '#000',
+                        fontFamily: 'TitilliumWeb-Bold',
+                      }}>
+                      {Diskon.split('-')[0]}%
+                    </Text>
+                  )}
 
                   <Text
                     style={{
@@ -336,9 +381,8 @@ const Cartpage = () => {
               </View>
             </TouchableOpacity>
           </View>
-          <View style={{  backgroundColor: '#fff',}}>
+          <View style={{backgroundColor: '#fff'}}>
             <TouchableOpacity
-
               style={{
                 textAlign: 'center',
                 borderColor: '#9B5EFF',
@@ -356,25 +400,27 @@ const Cartpage = () => {
                 <View
                   style={{
                     flexDirection: 'row',
-                    flex:1
+                    flex: 1,
                   }}>
                   <Text
                     style={{
                       fontSize: 16,
                       color: '#000',
-                      fontFamily:'TitilliumWeb-Bold'
+                      fontFamily: 'TitilliumWeb-Bold',
                     }}>
                     Catatan
-                  </Text> 
+                  </Text>
                 </View>
-                <View style={{
+                <View
+                  style={{
                     flexDirection: 'row',
                   }}>
-                  <Text  style={{
+                  <Text
+                    style={{
                       fontSize: 16,
-                      paddingRight:8,
+                      paddingRight: 8,
                       color: '#000',
-                      fontFamily:'TitilliumWeb-Bold'
+                      fontFamily: 'TitilliumWeb-Bold',
                     }}></Text>
 
                   <Text
@@ -393,23 +439,27 @@ const Cartpage = () => {
             <View style={{width: '50%'}}>
               <Text style={styles.total_price}>
                 Total: Rp.
-                {currency.format(Diskon==0 ? CartReducer.cartitem.reduce(
-                    (result, item) => item.count * item.subTotal + result,
-                    0,
-                  )-0: Diskon.split('-').length<=1?
-                
-                  CartReducer.cartitem.reduce(
-                    (result, item) => item.count * item.subTotal + result,
-                    0,
-                  )-Diskon.split('-')[0]
-                :
-                  CartReducer.cartitem.reduce(
-                    (result, item) => item.count * item.subTotal + result,
-                    0,
-                  )-(CartReducer.cartitem.reduce(
-                    (result, item) => item.count * item.subTotal + result,
-                    0,
-                  )*Diskon.split('-')[0]/100)
+                {currency.format(
+                  Diskon == 0
+                    ? CartReducer.cartitem.reduce(
+                        (result, item) => item.count * item.subTotal + result,
+                        0,
+                      ) - 0
+                    : Diskon.split('-').length <= 1
+                    ? CartReducer.cartitem.reduce(
+                        (result, item) => item.count * item.subTotal + result,
+                        0,
+                      ) - Diskon.split('-')[0]
+                    : CartReducer.cartitem.reduce(
+                        (result, item) => item.count * item.subTotal + result,
+                        0,
+                      ) -
+                      (CartReducer.cartitem.reduce(
+                        (result, item) => item.count * item.subTotal + result,
+                        0,
+                      ) *
+                        Diskon.split('-')[0]) /
+                        100,
                 )}
               </Text>
             </View>
@@ -427,7 +477,7 @@ const Cartpage = () => {
           style={{
             flex: 1,
             alignItems: 'center',
-            justifyContent:'center'
+            justifyContent: 'center',
           }}>
           <View style={styles.imgContainerStyle}>
             <Image style={styles.imageStyle} source={emptycart} />
@@ -443,13 +493,16 @@ const Cartpage = () => {
           />
         </View>
       )}
-       <Modal
-      transparent={true}
-      visible={modalVisibleLoading}>
-        <View style={{justifyContent:'center',alignItems:'center',flex:1,backgroundColor:'rgba(0,0,0,0.8)'}}>
-        <ActivityIndicator size={100} color={'#44dfff'} />
+      <Modal transparent={true} visible={modalVisibleLoading}>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+          }}>
+          <ActivityIndicator size={100} color={'#44dfff'} />
         </View>
-     
       </Modal>
       <Modal
         animationType="fade"
@@ -458,41 +511,83 @@ const Cartpage = () => {
           console.log('close');
           setModalDiskonVisible(!modalDiskonVisible);
         }}>
-        <View style={{flex: 1,backgroundColor:'#ededed'}}>
-          <View style={{width:'100%',backgroundColor:'#fff',flexDirection:'row',alignItems:'center',elevation: 6,}}>
-          <TouchableOpacity
-         
-            onPress={() => setModalDiskonVisible(!modalDiskonVisible)}
-            style={{padding:12}}>
-         
-              <Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>Back</Text>
-              
-
-          </TouchableOpacity>
-          <Text style={{color:'#000',fontSize:18,fontWeight:'500',marginLeft:12}}>Diskon</Text>
+        <View style={{flex: 1, backgroundColor: '#ededed'}}>
+          <View
+            style={{
+              width: '100%',
+              backgroundColor: '#fff',
+              flexDirection: 'row',
+              alignItems: 'center',
+              elevation: 6,
+            }}>
+            <TouchableOpacity
+              onPress={() => setModalDiskonVisible(!modalDiskonVisible)}
+              style={{padding: 12}}>
+              <Text style={{color: '#000', fontSize: 18, fontWeight: '500'}}>
+                Back
+              </Text>
+            </TouchableOpacity>
+            <Text
+              style={{
+                color: '#000',
+                fontSize: 18,
+                fontWeight: '500',
+                marginLeft: 12,
+              }}>
+              Diskon
+            </Text>
           </View>
-         
-          <ScrollView style={{marginTop:12}}>
-            {DataDiskon==null?<View style={styles.imgContainerStyle}>
-              <View style={styles.imgwarpStyle}>
-                <Image style={styles.imageStyle} source={emptyproduct} />
+
+          <ScrollView style={{marginTop: 12}}>
+            {DataDiskon == null ? (
+              <View style={styles.imgContainerStyle}>
+                <View style={styles.imgwarpStyle}>
+                  <Image style={styles.imageStyle} source={emptyproduct} />
+                </View>
               </View>
-            </View>:
-          DataDiskon.map((item, i) => {
-            return (
-              
- <TouchableOpacity
-                style={{flexDirection: 'row', justifyContent: 'space-between',marginHorizontal:16,backgroundColor:'#FFF',padding:12,marginBottom:12,borderRadius:12,elevation:4}}
-                key={i}
-                onPress={() => onPressDiskon(item.nama,item.diskon)}>
-                <Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>{item.nama}</Text>
-                {item.diskon.split('-').length<=1?<Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>Rp.{item.diskon.split('-')[0]}</Text>:<Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>{item.diskon.split('-')[0]}%</Text>}
-                
-              </TouchableOpacity>
-              
-             
-            );
-          })}
+            ) : (
+              DataDiskon.map((item, i) => {
+                return (
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      marginHorizontal: 16,
+                      backgroundColor: '#FFF',
+                      padding: 12,
+                      marginBottom: 12,
+                      borderRadius: 12,
+                      elevation: 4,
+                    }}
+                    key={i}
+                    onPress={() => onPressDiskon(item.nama, item.diskon)}>
+                    <Text
+                      style={{color: '#000', fontSize: 18, fontWeight: '500'}}>
+                      {item.nama}
+                    </Text>
+                    {item.diskon.split('-').length <= 1 ? (
+                      <Text
+                        style={{
+                          color: '#000',
+                          fontSize: 18,
+                          fontWeight: '500',
+                        }}>
+                        Rp.{item.diskon.split('-')[0]}
+                      </Text>
+                    ) : (
+                      <Text
+                        style={{
+                          color: '#000',
+                          fontSize: 18,
+                          fontWeight: '500',
+                        }}>
+                        {item.diskon.split('-')[0]}%
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </ScrollView>
         </View>
       </Modal>
@@ -500,36 +595,90 @@ const Cartpage = () => {
         animationType="fade"
         visible={modalVisibleNote}
         onRequestClose={() => {
-          setModalVisibleNote(!modalVisibleNote)
-          setNote('')
+          setModalVisibleNote(!modalVisibleNote);
+          setNote('');
         }}>
-        <View style={{flex: 1,backgroundColor:'#ededed'}}>
-          <View style={{width:'100%',backgroundColor:'#fff',flexDirection:'row',alignItems:'center',elevation: 6,}}>
-          <TouchableOpacity
-         
-            onPress={() => {setModalVisibleNote(!modalVisibleNote) 
-              setNote('')}}
-            style={{padding:12}}>
-         
-              <Text style={{color:'#000',fontSize:18,fontWeight:'500'}}>Back</Text>
-              
-
-          </TouchableOpacity>
-          <Text style={{color:'#000',fontSize:18,fontWeight:'500',marginLeft:12}}>Tambah Catatan</Text>
+        <View style={{flex: 1, backgroundColor: '#ededed'}}>
+          <View
+            style={{
+              width: '100%',
+              backgroundColor: '#fff',
+              flexDirection: 'row',
+              alignItems: 'center',
+              elevation: 6,
+            }}>
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisibleNote(!modalVisibleNote);
+                setNote('');
+              }}
+              style={{padding: 12}}>
+              <Text style={{color: '#000', fontSize: 18, fontWeight: '500'}}>
+                Back
+              </Text>
+            </TouchableOpacity>
+            <Text
+              style={{
+                color: '#000',
+                fontSize: 18,
+                fontWeight: '500',
+                marginLeft: 12,
+              }}>
+              Tambah Catatan
+            </Text>
           </View>
-          <Text style={{textAlign:'center',alignItems:'center',fontSize:24,marginVertical:16,color:'#000',fontFamily:'TitilliumWeb-Bold'}}>
+          <Text
+            style={{
+              textAlign: 'center',
+              alignItems: 'center',
+              fontSize: 24,
+              marginVertical: 16,
+              color: '#000',
+              fontFamily: 'TitilliumWeb-Bold',
+            }}>
             Catatan
           </Text>
-          <View style={{justifyContent:'space-between',flex:1}}>
-          <TextInput placeholderTextColor={"#000"} multiline={true} numberOfLines={4} style={{borderWidth:1,borderColor:'#000',marginHorizontal:14,maxHeight:150,borderRadius:12,textAlignVertical:'top',fontSize:18,paddingHorizontal:12,color:'#000',fontFamily:'TitilliumWeb-Regular'}} placeholder={'SIlahkan Ketik Catatan'} onChangeText={(value)=>setNote(value)} value={Note}/>
-          
-          <TouchableOpacity style={{backgroundColor:'#9B5EFF',padding:12,alignItems:'center',justifyContent:'center'}} onPress={()=>setModalVisibleNote(!modalVisibleNote)}>
-          <Text style={{color:'#fff',fontFamily:'TitilliumWeb-Bold',fontSize:24}}>OK</Text>
-          </TouchableOpacity>
+          <View style={{justifyContent: 'space-between', flex: 1}}>
+            <TextInput
+              placeholderTextColor={'#000'}
+              multiline={true}
+              numberOfLines={4}
+              style={{
+                borderWidth: 1,
+                borderColor: '#000',
+                marginHorizontal: 14,
+                maxHeight: 150,
+                borderRadius: 12,
+                textAlignVertical: 'top',
+                fontSize: 18,
+                paddingHorizontal: 12,
+                color: '#000',
+                fontFamily: 'TitilliumWeb-Regular',
+              }}
+              placeholder={'SIlahkan Ketik Catatan'}
+              onChangeText={value => setNote(value)}
+              value={Note}
+            />
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#9B5EFF',
+                padding: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => setModalVisibleNote(!modalVisibleNote)}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontFamily: 'TitilliumWeb-Bold',
+                  fontSize: 24,
+                }}>
+                OK
+              </Text>
+            </TouchableOpacity>
           </View>
-          
         </View>
-        
       </Modal>
       <Modal
         animationType="fade"
@@ -560,7 +709,7 @@ const Cartpage = () => {
                   color: '#000',
                   marginVertical: 24,
                   borderRadius: 12,
-                  fontFamily:'TitilliumWeb-Regular'
+                  fontFamily: 'TitilliumWeb-Regular',
                 }}
                 onChangeText={value => setNominal(value)}
                 value={nominal}
@@ -583,7 +732,14 @@ const Cartpage = () => {
                     width: '48%',
                   }}
                   onPress={() => onPressTunai('PAS')}>
-                  <Text style={{color: '#fff', fontSize: 24,fontFamily:'TitilliumWeb-Bold'}}>Uang Pas</Text>
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontSize: 24,
+                      fontFamily: 'TitilliumWeb-Bold',
+                    }}>
+                    Uang Pas
+                  </Text>
                 </TouchableOpacity>
                 {nominal == null ||
                 nominal == '' ||
@@ -597,7 +753,14 @@ const Cartpage = () => {
                       justifyContent: 'center',
                       borderRadius: 12,
                     }}>
-                    <Text style={{color: '#fff', fontSize: 24,fontFamily:'TitilliumWeb-Bold'}}>OK</Text>
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: 24,
+                        fontFamily: 'TitilliumWeb-Bold',
+                      }}>
+                      OK
+                    </Text>
                   </View>
                 ) : (
                   <TouchableOpacity
@@ -610,7 +773,14 @@ const Cartpage = () => {
                       borderRadius: 12,
                     }}
                     onPress={() => onPressTunai('nopas')}>
-                    <Text style={{color: '#fff', fontSize: 24,fontFamily:'TitilliumWeb-Bold'}}>OK</Text>
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: 24,
+                        fontFamily: 'TitilliumWeb-Bold',
+                      }}>
+                      OK
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -652,7 +822,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     textAlign: 'center',
     fontSize: 18,
-    fontFamily:'TitilliumWeb-Bold',
+    fontFamily: 'TitilliumWeb-Bold',
     backgroundColor: '#fff',
     color: '#9B5EFF',
   },
@@ -667,7 +837,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     textAlign: 'center',
     fontSize: 20,
-    fontFamily:'TitilliumWeb-Bold',
+    fontFamily: 'TitilliumWeb-Bold',
     color: '#fff',
   },
   imgContainerStyle: {
