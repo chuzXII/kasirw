@@ -61,7 +61,7 @@ const Cardcatalog = ({item,oriented}) => {
    
     <View style={styles.wrapContentCard}>
       <Text style={styles.textTitle}>{item[1]}</Text>
-      <Text style={styles.textStok}></Text>
+      <Text style={styles.textStok}>Stok : {item[4]}</Text>
       <Text style={styles.textHarga}>Rp.{currency.format(item[2])}</Text>
       
 

@@ -61,7 +61,6 @@ const HistoryPage = () => {
         const j = res.data.values.filter(
           fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
         );
-        console.log(j)
         let b = Object.values(
           j.reduce((acc, item) => {
             if (!acc[item[0]])

@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   Linking,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -402,6 +403,7 @@ const HistoryItemPage = ({route,navigation}) => {
   }, [isFocused]);
   return (
     <View style={{backgroundColor: '#fff', flex: 1}}>
+      <ScrollView>
       <View style={{marginHorizontal: 14}}>
         <View
           style={{
@@ -443,7 +445,7 @@ const HistoryItemPage = ({route,navigation}) => {
             backgroundColor: '#EEFFFC',
             marginTop: 22,
             paddingVertical: 16,
-            borderRadius: 4,
+            borderRadius: 8,
           }}>
           <View style={{marginHorizontal: 14}}>
             {DataTotal.map((item, index) => {
@@ -576,7 +578,7 @@ const HistoryItemPage = ({route,navigation}) => {
             Rp.{currency.format(Tunai - Total)}
           </Text>
         </View>
-        <View style={{alignItems: 'center',flexDirection:Status=='Refund'?'column':'row'}}>
+        <View style={{alignItems: 'center',flexDirection:Status=='Refund'?'column':'row',marginBottom:62}}>
           <TouchableOpacity
             onPress={() => onPressprint()}
             style={{
@@ -612,6 +614,9 @@ const HistoryItemPage = ({route,navigation}) => {
           <Text style={{color: '#000'}}>Kirim</Text>
         </TouchableOpacity> */}
       </View>
+      </ScrollView>
+     
+
       <Modal transparent={true} visible={modalVisibleLoading}>
         <View
           style={{

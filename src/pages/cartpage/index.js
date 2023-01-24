@@ -52,6 +52,59 @@ const Cartpage = () => {
     // let count = Cart.getItemCount(this.state.cartList, item);
     return <CardSub item={item} />;
   };
+  const input = ({sheetid, token, Data, indexs, listcount,stoksisa}) => {
+    axios
+      .post(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+          sheetid +
+          '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
+        JSON.stringify({
+          values: Data,
+        }),
+        {
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      )
+      .then(res => {
+        indexs.forEach((e, i) => {
+          axios
+            .post(
+              'https://sheets.googleapis.com/v4/spreadsheets/' +
+                sheetid +
+                '/values:batchUpdate',
+              JSON.stringify({
+                data: {
+                  values: [[listcount[i], stoksisa[i]]],
+                  range: 'Sheet3!D' + e,
+                },
+                valueInputOption: 'USER_ENTERED',
+              }),
+              {
+                headers: {
+                  'Content-type': 'application/json',
+                  Authorization: 'Bearer ' + token,
+                },
+              },
+            )
+            .then(res => {
+              setTimeout(() => {
+                setModalVisibleLoading(false);
+                setModalVisible(!modalVisible);
+                navigation.navigate('finalpage');
+              }, 3000);
+            })
+            .catch(e => {
+              console.log(e);
+            });
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  };
   const checkout = async Total => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const user = JSON.parse(await AsyncStorage.getItem('usergooglesignin'));
@@ -59,8 +112,7 @@ const Cartpage = () => {
     const data = [];
     var indexs = [];
     var stoksisa = [];
-    var datamenu = [];
-
+    var listcount = [];
     const rawdate = new Date();
     await axios
       .get(
@@ -74,105 +126,50 @@ const Cartpage = () => {
         },
       )
       .then(res => {
+        
         for (let i = 0; i < CartReducer.cartitem.length; i++) {
           res.data.values.filter((element, index, array) => {
             if (element[0] == CartReducer.cartitem[i].item[0]) {
               indexs.push(index + 1);
-              stoksisa.push(array[i][5])
+              var value = CartReducer.cartitem.sort((a, b) =>
+                a.id > b.id ? 1 : -1,
+              );
+              listcount.push(parseInt(value[i].item[3]) + value[i].count);
+              stoksisa.push(value[i].item[4] - value[i].count);
             }
           });
         }
-        console.log(stoksisa)
 
-        // dispatch({type: 'NOMINAL', value: Total});
+        dispatch({type: 'NOMINAL', value: Total});
 
-        // for (let i = 0; i < CartReducer.cartitem.length; i++) {
-        //   const namaproduk = CartReducer.cartitem[i].item[1];
-        //   const hargaproduk = CartReducer.cartitem[i].item[2];
-        //   const count = CartReducer.cartitem[i].count;
-        //   const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
-        //   const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
-        //   data.push([
-        //     TRXReducer.id_produk,
-        //     namaproduk,
-        //     count,
-        //     hargaproduk,
-        //     Total.toString(),
-        //     tglorder,
-        //     timestamp,
-        //     NamaDiskon.concat(' ' + Diskon),
-        //     Note,
-        //     user.name,
-        //     'Lunas',
-        //   ]);
-        //   datamenu.push([
-        //     count,
-        //   ])
-
-        // }
-        // axios
-        //   .post(
-        //     'https://sheets.googleapis.com/v4/spreadsheets/' +
-        //       sheetid +
-        //       '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
-        //     JSON.stringify({
-        //       values: data,
-        //     }),
-        //     {
-        //       headers: {
-        //         'Content-type': 'application/json',
-        //         Authorization: 'Bearer ' + token,
-        //       },
-        //     },
-        //   )
-        //   .then(res => {
-        //     axios
-        //       .post(
-        //         'https://sheets.googleapis.com/v4/'+
-        //         sheetid +'/values:batchUpdate',
-        //         JSON.stringify({
-        //           data: {
-        //             values:[['Refund']],
-        //             range:'k'+e
-        //           },
-        //           valueInputOption:'USER_ENTERED'
-        //         }),
-        //         {
-        //           headers: {
-        //             'Content-type': 'application/json',
-        //             Authorization: 'Bearer ' + token,
-        //           },
-        //         },
-        //       )
-        //       .then(res => {
-        //         setModalVisibleLoading(false);
-        //         setModalVisible(!modalVisible);
-        //         navigation.navigate('finalpage');
-        //       });
-        //   })
-        //   .catch(error => {
-        //     if (error.response) {
-        //       // The request was made and the server responded with a status code
-        //       // that falls out of the range of 2xx
-        //       console.log(error.response.data);
-        //       console.log(error.response.status);
-        //       console.log(error.response.headers);
-        //       alert(error.message);
-        //     } else if (error.request) {
-        //       // The request was made but no response was received
-        //       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        //       // http.ClientRequest in node.js
-        //       console.log(error.request);
-        //       alert(error.message);
-        //     } else {
-        //       // Something happened in setting up the request that triggered an Error
-        //       console.log('Error', error.message);
-        //     }
-        //   });
+        for (let i = 0; i < CartReducer.cartitem.length; i++) {
+          const namaproduk = CartReducer.cartitem[i].item[1];
+          const hargaproduk = CartReducer.cartitem[i].item[2];
+          const count = CartReducer.cartitem[i].count;
+          const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
+          const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
+          data.push([
+            TRXReducer.id_produk,
+            namaproduk,
+            count,
+            hargaproduk,
+            Total.toString(),
+            tglorder,
+            timestamp,
+            NamaDiskon.concat(' ' + Diskon),
+            Note,
+            user.name,
+            'Lunas',
+          ]);
+        }
+        input({sheetid, token, data, indexs, listcount,stoksisa})
+      })
+      .catch(e => {
+        console.log;
       });
   };
   const onPressTunai = type => {
-    // setModalVisibleLoading(true)
+    setModalVisibleLoading(true);
     if (type === 'PAS') {
       let total;
       if (Diskon == 0) {
