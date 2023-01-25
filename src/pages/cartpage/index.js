@@ -90,11 +90,13 @@ const Cartpage = () => {
                 },
               },
             ) .then(res => {
-              setTimeout(()=>{
-                setModalVisibleLoading(false);
-                setModalVisible(!modalVisible);
-                navigation.replace('finalpage');
-              },3000)
+              if(i+1==indexs.length){
+                setTimeout(()=>{
+                    setModalVisibleLoading(false);
+                    setModalVisible(!modalVisible);
+                    navigation.replace('finalpage');
+                  },3000)
+              }
             })
             .catch(e => {
               console.log(e);

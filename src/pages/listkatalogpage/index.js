@@ -88,7 +88,7 @@ const ListKatalog = ({navigation}) => {
             <View style={{marginVertical: 12}} key={i}>
               <ItemKatalog
                 item={item}
-                onLongPress={() => onLongPress(item[0])}
+                // onLongPress={() => onLongPress(item[0])}
                 onPress={() =>
                   navigation.navigate('formedit', {id: item[0],data:item})
                 }

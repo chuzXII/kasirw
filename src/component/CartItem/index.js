@@ -32,14 +32,14 @@ const CardItem = ({item}) => {
         <View style={styles.container}>
           <View style={styles.box2}>
             <View>
-            {item.item[5]==undefined?item.item[1].split(' ').length<=1?
+            {item.item[6]==undefined?item.item[1].split(' ').length<=1?
          <View  style={styles.productImage}>
-         <Text style={{fontSize:32,fontWeight:'bold'}}>{item.item[1].slice(0,1).toUpperCase()+item.item[1].slice(1,2).toUpperCase()}</Text>
+         <Text style={{fontSize:32,fontWeight:'bold',colo:'#151515'}}>{item.item[1].slice(0,1).toUpperCase()+item.item[1].slice(1,2).toUpperCase()}</Text>
         </View>: <View style={styles.productImage}>
           <Text style={{fontSize:32,fontWeight:'bold'}}>{item.item[1].split(' ')[0].slice(0,1).toUpperCase()+item.item[1].split(' ')[1].slice(0,1).toUpperCase()}</Text>
         </View>:<Image
                 style={styles.productImage}
-                source={{uri:item.item[5]}} 
+                source={{uri:item.item[6]}} 
               />
         }
               {/* <Image
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
         borderRadius:8,
         borderWidth:1,
         borderColor:'#000',
-        backgroundColor:'#252525',
+        backgroundColor: '#656565',
         alignItems:'center',
         justifyContent:'center',
         height: 70,
