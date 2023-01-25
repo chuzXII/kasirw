@@ -1,5 +1,8 @@
 import {
   Alert,
+  Dimensions,
+  Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,10 +17,42 @@ import ItemKatalog from '../../component/itemkatalog';
 import {useIsFocused} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {DataProvider, LayoutProvider, RecyclerListView} from 'recyclerlistview';
+import { emptyproduct } from '../../assets/image';
 
 const ListKatalog = ({navigation}) => {
   const [Data, setData] = useState([]);
   const isFocused = useIsFocused();
+  const [refreshing, setRefreshing] = useState(false);
+  const ViewTypes = {
+    FULL: 0,
+    HALF_LEFT: 1,
+    HALF_RIGHT: 2,
+  };
+
+  const renderitem = (type, data, index) => {
+    return (
+      <View>
+        <ItemKatalog
+      item={data}
+      // onLongPress={() => onLongPress(item[0])}
+      onPress={() =>
+        navigation.navigate('formedit', {id: data[0],data:data})
+      }
+    />
+      </View>
+    );
+  };
+  const layoutProvider = new LayoutProvider(
+    () => 0,
+    (type, dim) => {
+      dim.width = Dwidth;
+      dim.height = 100;
+    },
+  );
+  const dataDataProvider = new DataProvider((r1, r2) => {
+    return r1 !== r2;
+  }).cloneWithRows(Data);
 
   const get = async () => {
     try {
@@ -35,19 +70,17 @@ const ListKatalog = ({navigation}) => {
           },
         )
         .then(res => {
-          if (res.data.values == undefined) {
-            setData([]);
-            // setRefreshing(false);
-            // setModalVisibleLoading(false);
-          } else {
-            setData(res.data.values);
-            // setRefreshing(false);
-            // setModalVisibleLoading(false);
-          }
+          setData(res.data.values);
+          // setRefreshing(false);
+          // setModalVisibleLoading(false);
         });
     } catch (error) {
       console.log(error);
     }
+  };
+  const onRefresh = async () => {
+    setRefreshing(true);
+    get();
   };
   const onpressdelete = id => {
     try {
@@ -79,24 +112,35 @@ const ListKatalog = ({navigation}) => {
   };
   useEffect(() => {
     get();
-  }, [isFocused]);
+  }, [1]);
   return (
     <View style={{flex: 1}}>
-      <ScrollView style={{flex: 1, marginHorizontal: 12}}>
-        {Data.map((item, i) => {
-          return (
-            <View style={{marginVertical: 12}} key={i}>
-              <ItemKatalog
-                item={item}
-                // onLongPress={() => onLongPress(item[0])}
-                onPress={() =>
-                  navigation.navigate('formedit', {id: item[0],data:item})
-                }
-              />
+      <View style={{flex: 1,marginHorizontal:8}}>
+      {Data == 0 ? (
+          <View style={styles.imgContainerStyle}>
+            <View style={styles.imgwarpStyle}>
+              <Image style={styles.imageStyle} source={emptyproduct} />
             </View>
-          );
-        })}
-      </ScrollView>
+          </View>
+        ) : (
+      <RecyclerListView
+        rowRenderer={(type, data, index) => renderitem(type, data, index)}
+        dataProvider={dataDataProvider}
+        layoutProvider={layoutProvider}
+        style={{paddingTop:12}}
+
+        // scrollViewProps={{
+        //   refreshControl: (
+        //     <RefreshControl
+        //       refreshing={refreshing}
+        //       onRefresh={onRefresh}
+        //     />
+        //   )
+        // }}
+      />)}
+      </View>
+       
+
       <TouchableOpacity
         style={{backgroundColor: '#9B5EFF', padding: 18, alignItems: 'center'}}
         onPress={() => navigation.navigate('formkasir')}>
@@ -109,5 +153,6 @@ const ListKatalog = ({navigation}) => {
 };
 
 export default ListKatalog;
-
+const Dwidth = Dimensions.get('window').width;
+const Dheight = Dimensions.get('window').height;
 const styles = StyleSheet.create({});

@@ -19,15 +19,14 @@ import Cardcatalog from '../../component/CardCatalog';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
 import {useDispatch} from 'react-redux';
-import dbConn from '../../sqlite';
-import RNFS from 'react-native-fs';
+// import dbConn from '../../sqlite';
+// import RNFS from 'react-native-fs';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {emptyproduct} from '../../assets/image';
 import moment from 'moment';
 import axios from 'axios';
 import {
   DataProvider,
-  GridLayoutManager,
   LayoutProvider,
   RecyclerListView,
 } from 'recyclerlistview';
@@ -165,12 +164,12 @@ const Dashboard = () => {
   };
   const renderitem = (type, data, index) => {
     return (
-      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+      <View >
         <Cardcatalog item={data} oriented={Oriented} />
       </View>
     );
   };
-  const onRefresh = () => {
+  const onRefresh = async() => {
     setRefreshing(true);
     get();
   };
@@ -216,21 +215,14 @@ const Dashboard = () => {
             dataProvider={dataDataProvider}
             layoutProvider={layoutProvider}
             style={{flex: 1}}
-            column={2}
-
-            // scrollViewProps={{
-            //   refreshControl: (
-            //     <RefreshControl
-            //       refreshing={loading}
-            //       onRefresh={async () => {
-            //         this.setState({ loading: true });
-            //         analytics.logEvent('Event_Stagg_pull_to_refresh');
-            //         await refetchQueue();
-            //         this.setState({ loading: false });
-            //       }}
-            //     />
-            //   )
-            // }}
+            scrollViewProps={{
+              refreshControl: (
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                />
+              )
+            }}
           />
         )}
       </View>
