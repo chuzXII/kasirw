@@ -15,7 +15,6 @@ import {useNavigation} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import {setForm} from '../../redux/action';
 import {launchImageLibrary} from 'react-native-image-picker';
-import RNFS from 'react-native-fs';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -23,13 +22,8 @@ const Formkasir = () => {
   const navigation = useNavigation();
   const FormReducer = useSelector(state => state.FormReducer);
   const dispatch = useDispatch();
-  const [NameImg, setNameImg] = useState();
-  const [FileImgOri, setFileImgOri] = useState();
-  const [urlimg, setUrlImg] = useState();
   const [ID, setid] = useState(0);
   const [Check, setCheck] = useState(false);
-
-
 
   const get=async()=>{
     const sheetid = await AsyncStorage.getItem('TokenSheet');
@@ -52,41 +46,9 @@ const Formkasir = () => {
   }
   const onPress = async () => {
     try {
-      // const cekdir = await RNFS.exists(
-      //   RNFS.DownloadDirectoryPath + '/dataimg/',
-      // );
-
-      // if (cekdir == false) {
-      //   RNFS.mkdir(RNFS.DownloadDirectoryPath + '/dataimg/');
-      // }
-      // console.log('res');
-
-      // dbConn.transaction(tx => {
-      //   tx.executeSql(
-      //     'INSERT INTO produk (namaproduk, hargaproduk, deskproduk, imgname) VALUES(?,?,?,?);',
-      //     [
-      //       FormReducer.form.namaproduk,
-      //       FormReducer.form.hargaproduk,
-      //       FormReducer.form.deskproduk,
-      //       NameImg,
-      //     ],
-      //     (tx, rs) => {
-      //       navigation.navigate('dashboard');
-      //     },
-      //     (tx, e) => {
-      //       console.log(tx.message);
-      //     },
-      //   );
-      // });
-      // // console.log(FormReducer.imgdirori)
-
-      // RNFS.copyFile(
-      //   FileImgOri,
-      //   RNFS.DownloadDirectoryPath + '/dataimg/' + NameImg,
-      // );
       const sheetid = await AsyncStorage.getItem('TokenSheet');
       const token = await AsyncStorage.getItem('tokenAccess');
-    const data=[[parseInt(ID)+1,FormReducer.form.namaproduk,FormReducer.form.hargaproduk]]
+    const data=[[parseInt(ID)+1,FormReducer.form.namaproduk,FormReducer.form.hargaproduk,0,FormReducer.form.stokproduk]]
       
       axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
     sheetid +
@@ -153,7 +115,15 @@ const Formkasir = () => {
             value={FormReducer.hargaproduk}
             onChangeText={value => onInputChange(value, 'hargaproduk')}
             keyboardType={'number-pad'}
+            
           />
+          <Label label={'Stok Produk'} />
+          <Input
+            input={'Stok Produk'}
+            numberOfLines={1}
+            value={FormReducer.stokproduk}
+            onChangeText={value => onInputChange(value, 'stokproduk')}
+            keyboardType={'number-pad'}/>
           {/* <Label label={'Deskripsi Produk'} /> */}
           {/* <Input
             input={'Deskripsi Produk'}
@@ -215,7 +185,11 @@ const Formkasir = () => {
             FormReducer.form.hargaproduk == null ||
             FormReducer.form.hargaproduk
               .replace(/^\s+/, '')
-              .replace(/\s+$/, '') == '' 
+              .replace(/\s+$/, '') == '' ||
+              FormReducer.form.stokproduk == null ||
+              FormReducer.form.stokproduk
+                .replace(/^\s+/, '')
+                .replace(/\s+$/, '') == '' 
             // || FormReducer.form.deskproduk == null ||
             // FormReducer.form.deskproduk
             //   .replace(/^\s+/, '')

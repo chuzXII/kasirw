@@ -12,6 +12,7 @@ import {
   Modal,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import React, {useEffect} from 'react';
 import CardItem from '../../component/CartItem';
@@ -52,14 +53,14 @@ const Cartpage = () => {
     // let count = Cart.getItemCount(this.state.cartList, item);
     return <CardSub item={item} />;
   };
-  const input = ({sheetid, token, Data, indexs, listcount,stoksisa}) => {
+  const input = ({sheetid, token, data, indexs, listcount, stoksisa}) => {
     axios
       .post(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
           '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
         JSON.stringify({
-          values: Data,
+          values: data,
         }),
         {
           headers: {
@@ -68,10 +69,10 @@ const Cartpage = () => {
           },
         },
       )
-      .then(res => {
-        indexs.forEach((e, i) => {
-          axios
-            .post(
+      .then((res) => {
+        indexs
+          .forEach((e, i) => {
+            axios.post(
               'https://sheets.googleapis.com/v4/spreadsheets/' +
                 sheetid +
                 '/values:batchUpdate',
@@ -88,18 +89,17 @@ const Cartpage = () => {
                   Authorization: 'Bearer ' + token,
                 },
               },
-            )
-            .then(res => {
-              setTimeout(() => {
+            ) .then(res => {
+              setTimeout(()=>{
                 setModalVisibleLoading(false);
                 setModalVisible(!modalVisible);
-                navigation.navigate('finalpage');
-              }, 3000);
+                navigation.replace('finalpage');
+              },3000)
             })
             .catch(e => {
               console.log(e);
             });
-        });
+          })
       })
       .catch(e => {
         console.log(e);
@@ -113,6 +113,7 @@ const Cartpage = () => {
     var indexs = [];
     var stoksisa = [];
     var listcount = [];
+    var checkstok;
     const rawdate = new Date();
     await axios
       .get(
@@ -126,43 +127,74 @@ const Cartpage = () => {
         },
       )
       .then(res => {
-        
+        var value = CartReducer.cartitem.sort((a, b) => (a.id > b.id ? 1 : -1));
+        var b = [];
         for (let i = 0; i < CartReducer.cartitem.length; i++) {
-          res.data.values.filter((element, index, array) => {
-            if (element[0] == CartReducer.cartitem[i].item[0]) {
-              indexs.push(index + 1);
-              var value = CartReducer.cartitem.sort((a, b) =>
-                a.id > b.id ? 1 : -1,
-              );
-              listcount.push(parseInt(value[i].item[3]) + value[i].count);
-              stoksisa.push(value[i].item[4] - value[i].count);
-            }
-          });
+          const a = res.data.values.filter(
+            element => element[0] == CartReducer.cartitem[i].item[0],
+          );
+          b.push(a);
         }
-
-        dispatch({type: 'NOMINAL', value: Total});
+        const f = b.sort((a, b) => (a[4] > b[4] ? 1 : -1));
 
         for (let i = 0; i < CartReducer.cartitem.length; i++) {
-          const namaproduk = CartReducer.cartitem[i].item[1];
-          const hargaproduk = CartReducer.cartitem[i].item[2];
-          const count = CartReducer.cartitem[i].count;
-          const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
-          const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
-          data.push([
-            TRXReducer.id_produk,
-            namaproduk,
-            count,
-            hargaproduk,
-            Total.toString(),
-            tglorder,
-            timestamp,
-            NamaDiskon.concat(' ' + Diskon),
-            Note,
-            user.name,
-            'Lunas',
-          ]);
+          if (f[0][0][4] == 0) {
+            checkstok = true;
+            break;
+          } else {
+            indexs.push(
+              res.data.values.findIndex(e => e[0] == value[i].item[0]) + 1,
+            );
+            listcount.push(parseInt(value[i].item[3]) + value[i].count);
+            stoksisa.push(value[i].item[4] - value[i].count);
+          }
         }
-        input({sheetid, token, data, indexs, listcount,stoksisa})
+
+        if (!checkstok) {
+          dispatch({type: 'NOMINAL', value: Total});
+
+          for (let i = 0; i < CartReducer.cartitem.length; i++) {
+            const namaproduk = CartReducer.cartitem[i].item[1];
+            const hargaproduk = CartReducer.cartitem[i].item[2];
+            const count = CartReducer.cartitem[i].count;
+            const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
+            const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
+            data.push([
+              TRXReducer.id_produk,
+              namaproduk,
+              count,
+              hargaproduk,
+              Total.toString(),
+              tglorder,
+              timestamp,
+              NamaDiskon.concat(' ' + Diskon),
+              Note,
+              user.name,
+              'Lunas',
+            ]);
+          }
+          input({sheetid, token, data, indexs, listcount, stoksisa});
+        } else {
+          Alert.alert(
+            'STOK HABIS',
+            'Ada Stok Yang Lagi Kosong, Silahkan Tambah Terlebih Dahulu LaLu Lanjutkan Transaksi',
+            [{text: 'OK', onPress: () => navigation.replace('listkatalog')}],
+            {cancelable: false},
+          );
+        }
+
+        // for (let i = 0; i < CartReducer.cartitem.length; i++) {
+        //   res.data.values.filter((element, index, array) => {
+        //     if (element[0] == CartReducer.cartitem[i].item[0]) {
+        //       indexs.push(index + 1);
+        //       var value = CartReducer.cartitem.sort((a, b) =>
+        //         a.id > b.id ? 1 : -1,
+        //       );
+        //       listcount.push(parseInt(value[i].item[3]) + value[i].count);
+        //       stoksisa.push(value[i].item[4] - value[i].count);
+        //     }
+        //   });
+        // }
       })
       .catch(e => {
         console.log;

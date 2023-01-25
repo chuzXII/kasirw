@@ -224,6 +224,12 @@ const FinalPage = ({navigation}) => {
     );
   };
   const get=async()=>{
+    navigation.addListener('beforeRemove', (e) => {
+      dispatch({type:'REMOVEALL'})
+      dispatch({type:'NOMINAL',value:null})
+      dispatch({type:'RMIDPRODUK',value:null})
+      dispatch({type:'DISKON',valuenama:'',valuediskon:0})
+    })
     const subtotal =CartReducer.cartitem.reduce((result, item) => item.count * item.subTotal + result,0, )
     const diskon = DiskonReducer.diskon
     let total

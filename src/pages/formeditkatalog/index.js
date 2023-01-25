@@ -17,6 +17,8 @@ import Input from '../../component/input';
 import {useDispatch, useSelector} from 'react-redux';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FormEdit = ({route, navigation}) => {
   const params = route.params;
@@ -31,55 +33,34 @@ const FormEdit = ({route, navigation}) => {
     id: '',
     namaproduk: '',
     hargaproduk: '',
-    deskproduk: '',
+    stokterjual:'',
+    stok: '',
   });
 
   const onPress = async () => {
     try {
-      const cekdir = await RNFS.exists(
-        RNFS.DownloadDirectoryPath + '/dataimg/',
-      );
-
-      if (cekdir == false) {
-        RNFS.mkdir(RNFS.DownloadDirectoryPath + '/dataimg/');
-      }
-      var newimgname
-      if(FileImgOri!=undefined){
-        newimgname=NameImg
-      }
-      else{
-        newimgname=urlimg
-      }
-
-      dbConn.transaction(tx => {
-        tx.executeSql(
-          'UPDATE produk SET namaproduk=?, hargaproduk=?, deskproduk=?, imgname=? WHERE id_produk=?',
-          [
-            Form.namaproduk,
-            Form.hargaproduk,
-            Form.deskproduk,
-            newimgname,
-            params.id
-          ],
-          (tx, rs) => {
-            if(FileImgOri!=undefined){
-                var path = RNFS.DownloadDirectoryPath+'/dataimg/' + urlimg;
-                RNFS.unlink(path).then(()=>{
-                    RNFS.copyFile(
-                        FileImgOri,
-                        RNFS.DownloadDirectoryPath + '/dataimg/' + NameImg,
-                      );
-                })
-              }
-            navigation.navigate('dashboard');
+      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const token = await AsyncStorage.getItem('tokenAccess');
+      axios.post(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+          sheetid +
+          '/values:batchUpdate',
+        JSON.stringify({
+          data: {
+            values: [[Form.id, Form.namaproduk,Form.hargaproduk,Form.stokterjual,Form.stok]],
+            range: 'Sheet3!A' + Form.id,
           },
-          (tx, e) => {
-            console.log(tx.message);
+          valueInputOption: 'USER_ENTERED',
+        }),
+        {
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: 'Bearer ' + token,
           },
-        );
-      });
-      // console.log(FormReducer.imgdirori)
-      
+        },
+      ) .then(res => {
+       navigation.navigate('dashboard');  
+      })  
      
     } catch (e) {
       console.log('EE' + e);
@@ -91,47 +72,30 @@ const FormEdit = ({route, navigation}) => {
       [input]: value,
     });
   };
-  const onPressimg = async () => {
-    await launchImageLibrary({mediaType: 'photo', saveToPhotos: true}, res => {
-      if (res.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (res.errorCode) {
-        console.log('ImagePicker Error: ', res.errorMessage);
-      } else {
-        const a = res.assets[0].type.split('/');
-        setFileImgOri(res.assets[0].uri);
-        setNameImg(Form.namaproduk + '.' + a[1]);
+  // const onPressimg = async () => {
+  //   await launchImageLibrary({mediaType: 'photo', saveToPhotos: true}, res => {
+  //     if (res.didCancel) {
+  //       console.log('User cancelled image picker');
+  //     } else if (res.errorCode) {
+  //       console.log('ImagePicker Error: ', res.errorMessage);
+  //     } else {
+  //       const a = res.assets[0].type.split('/');
+  //       setFileImgOri(res.assets[0].uri);
+  //       setNameImg(Form.namaproduk + '.' + a[1]);
       
-      }
-    });
-  };
+  //     }
+  //   });
+  // };
 
   const get =() => {
     try {
-      dbConn.transaction(tx => {
-        tx.executeSql(
-          'SELECT * FROM produk WHERE id_produk=?',
-          [params.id],
-          (tr, result) => {
-            var rows = result.rows;
-            var total = 0;
-            var data = [];
-            for (let i = 0; i < rows.length; i++) {
-              let item = rows.item(i);
-              data.push(item);
-              total += parseInt(data[i].hargaproduk);
-            }
-
             setForm({
               id: params.id,
-              namaproduk: data[0].namaproduk,
-              hargaproduk: data[0].hargaproduk,
-              deskproduk: data[0].deskproduk,
+              namaproduk: params.data[1],
+              hargaproduk:params.data[2],
+              stokterjual:params.data[3],
+              stok: params.data[4],
             });
-            setUrlImg(data[0].imgname)
-          },
-        );
-      });
     } catch (error) {
       console.log(error);
     }
@@ -147,72 +111,24 @@ const FormEdit = ({route, navigation}) => {
             <Label label={'Nama Produk'} />
             <Input
               input={'Nama Produk'}
-              numberOfLines={1}
               value={Form.namaproduk}
               onChangeText={value => onInputChange(value, 'namaproduk')}
             />
             <Label label={'Harga Produk'} />
             <Input
               input={'Harga Produk'}
-              numberOfLines={1}
               value={Form.hargaproduk}
               onChangeText={value => onInputChange(value, 'hargaproduk')}
               keyboardType={'number-pad'}
             />
-            <Label label={'Deskripsi Produk'} />
+            <Label label={'Stok'} />
             <Input
-              input={'Deskripsi Produk'}
-              numberOfLines={4}
-              value={Form.deskproduk}
-              onChangeText={value => onInputChange(value, 'deskproduk')}
+             keyboardType={'number-pad'}
+              input={'Stok'}
+              value={Form.stok}
+              onChangeText={value => onInputChange(value, 'stok')}
             />
             <View style={styles.wrapbutton}>
-              <View style={styles.wrapimg}>
-                {Form.namaproduk == null ||
-                Form.namaproduk
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '') == '' ? (
-                  <View
-                    style={[
-                      styles.buttonimg,
-                      {backgroundColor: 'rgba(37,150,190,0.5)'},
-                    ]}>
-                    <Text style={styles.buttontxt}>Image</Text>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.buttonimg}
-                    onPress={() => onPressimg()}>
-                    <Text style={styles.buttontxt}>Image</Text>
-                  </TouchableOpacity>
-                )}
-
-                {urlimg == null ? (
-                  <View style={styles.prvimg}>
-                    <Text style={{color: '#000', fontSize: 28}}>Image</Text>
-                  </View>
-                ) : (
-                  <View
-                    style={{
-                      elevation: 4,
-                      width: 130,
-                      height: 130,
-                      borderRadius: 20,
-                      marginLeft: 12,
-                    }}>
-                    <Image
-                      source={{uri:FileImgOri==undefined? 'file://' +RNFS.DownloadDirectoryPath +'/dataimg/' +urlimg:FileImgOri}}
-                      style={{
-                        width: 130,
-                        height: 130,
-                        borderWidth: 1,
-                        borderColor: '#000',
-                        borderRadius: 20,
-                      }}
-                    />
-                  </View>
-                )}
-              </View>
               {Form.namaproduk == null ||
               Form.namaproduk
                 .replace(/^\s+/, '')
@@ -221,8 +137,8 @@ const FormEdit = ({route, navigation}) => {
               Form.hargaproduk
                 .replace(/^\s+/, '')
                 .replace(/\s+$/, '') == '' ||
-                Form.deskproduk == null ||
-                Form.deskproduk
+                Form.stok == null ||
+                Form.stok
                 .replace(/^\s+/, '')
                 .replace(/\s+$/, '') == '' ? (
                 <View style={styles.wrapbuttonsub}>

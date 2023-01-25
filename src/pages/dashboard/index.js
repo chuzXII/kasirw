@@ -26,7 +26,6 @@ import {emptyproduct} from '../../assets/image';
 import moment from 'moment';
 import axios from 'axios';
 
-
 const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [item, setItems] = useState([]);
@@ -41,14 +40,16 @@ const Dashboard = () => {
     const dim = Dimensions.get('screen');
     return dim.height >= dim.width;
   };
-  const [Oriented, setOriented] = useState(isPortrait() ? 'portrait' : 'landscape');
-  
-  Dimensions.addEventListener('change',()=>{
-    setOriented(isPortrait()?'portrait' : 'landscape')
-  })
+  const [Oriented, setOriented] = useState(
+    isPortrait() ? 'portrait' : 'landscape',
+  );
+
+  Dimensions.addEventListener('change', () => {
+    setOriented(isPortrait() ? 'portrait' : 'landscape');
+  });
 
   const get = async () => {
-    setModalVisibleLoading(true)
+    setModalVisibleLoading(true);
     try {
       // dbConn.transaction(tx => {
       //   // tx.executeSql('DROP TABLE IF EXISTS produk')
@@ -73,47 +74,42 @@ const Dashboard = () => {
       const sheetid = await AsyncStorage.getItem('TokenSheet');
       const token = await AsyncStorage.getItem('tokenAccess');
       await axios
-      .get(
-        'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Sheet3',
-        {
-          headers: {
-            Authorization: 'Bearer ' + token,
+        .get(
+          'https://sheets.googleapis.com/v4/spreadsheets/' +
+            sheetid +
+            '/values/Sheet3',
+          {
+            headers: {
+              Authorization: 'Bearer ' + token,
+            },
           },
-        },
-      ).then((res)=>{
-        if(res.data.values==undefined){
-          setItems([])
-          setRefreshing(false)
-          
-    setModalVisibleLoading(false)
+        )
+        .then(res => {
+          if (res.data.values == undefined) {
+            setItems([]);
+            setRefreshing(false);
 
-        }
-        else{
-          setItems(res.data.values)
-          setRefreshing(false)
-  
-    setModalVisibleLoading(false)
+            setModalVisibleLoading(false);
+          } else {
+            setItems(res.data.values);
+            setRefreshing(false);
 
-        }
-      })
+            setModalVisibleLoading(false);
+          }
+        });
     } catch (e) {
       console.log(e);
-
     }
   };
 
   const onlongpress = () => {
-    dispatch({type:'REMOVEALL'})
+    dispatch({type: 'REMOVEALL'});
   };
-  const renderitem=()=>{
-    
-  }
-  const onRefresh = ()=>{
+  const renderitem = () => {};
+  const onRefresh = () => {
     setRefreshing(true);
-    get()
-  }
+    get();
+  };
 
   useEffect(() => {
     get();
@@ -122,9 +118,14 @@ const Dashboard = () => {
   return (
     <View style={styles.wrap}>
       <ScrollView
-     refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={'#252525'} colors={["#79D1F1","#D358FF"]} />
-    }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            progressBackgroundColor={'#252525'}
+            colors={['#79D1F1', '#D358FF']}
+          />
+        }
         style={styles.ScrollView}
         showsVerticalScrollIndicator={false}>
         <View style={styles.CardKatalog}>
@@ -134,12 +135,16 @@ const Dashboard = () => {
                 <Image style={styles.imageStyle} source={emptyproduct} />
               </View>
             </View>
-          ) : (item.map((itemw, i) => {
-              return  (<View key={i}><Cardcatalog item={itemw} oriented={Oriented} /></View> );
+          ) : (
+            item.map((itemw, i) => {
+              return (
+                <View key={i}>
+                  <Cardcatalog item={itemw} oriented={Oriented} />
+                </View>
+              );
             })
           )}
         </View>
-       
       </ScrollView>
 
       {CartReducer.cartitem.reduce((result, item) => item.count + result, 0) ? (
@@ -198,7 +203,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flex: 1,
     marginTop: 10,
-   
+
     marginHorizontal: Dwidth * 0.02,
   },
   wrapCard: {
@@ -224,7 +229,6 @@ const styles = StyleSheet.create({
   CardKatalog: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-   
   },
   ScrollView: {},
 
@@ -248,9 +252,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonChart: {
-    position:'absolute',
-    bottom:0,
-    width:'100%',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
     padding: 12,
     marginBottom: 10,
     backgroundColor: '#9B5EFF',
@@ -303,7 +307,7 @@ const styles = StyleSheet.create({
   textButtonChart: {
     color: '#fff',
     fontSize: 22,
-    fontWeight:'500',
+    fontWeight: '500',
     fontFamily: 'TitilliumWeb-Bold',
   },
   textTitle: {
