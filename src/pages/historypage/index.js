@@ -19,6 +19,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 import DateRangePicker from 'rn-select-date-range';
 import {Icash} from '../../assets/icon';
+import {FlashList} from '@shopify/flash-list';
 
 const HistoryPage = () => {
   const [Data, setData] = useState();
@@ -31,6 +32,149 @@ const HistoryPage = () => {
   const currency = new Intl.NumberFormat('id-ID');
   const [refreshing, setRefreshing] = useState(false);
 
+  const renderSubItem = itemdata => {
+    return (
+      <TouchableOpacity
+        style={{
+          flex:1,
+          backgroundColor: '#fff',
+          marginVertical: 8,
+          padding: 12,
+          elevation: 1.5,
+          borderRadius: 12,
+        }}
+        onPress={() =>
+          navigation.navigate('historyitempage', {
+            idtrx: itemdata[0][0],
+          })
+        }>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+            <Icash />
+            <View style={{marginLeft: 12}}>
+              <Text
+                style={{
+                  color: '#000',
+
+                  fontFamily: 'TitilliumWeb-Bold',
+                }}>
+                Rp.
+                {itemdata[0][7].split(' ').length == 1
+                  ? currency.format(itemdata[1])
+                  : itemdata[0][7].split(' ')[1].split('-').length <= 1
+                  ? currency.format(itemdata[1] - itemdata[0][7].split(' ')[1])
+                  : currency.format(
+                      itemdata[1] -
+                        (itemdata[1] *
+                          itemdata[0][7].split(' ')[1].split('-')[0]) /
+                          100,
+                    )}
+              </Text>
+              <Text
+                style={{
+                  color: '#000',
+                  fontFamily: 'TitilliumWeb-Light',
+                }}>
+                {itemdata[0][5]
+                  .split(' ')[1]
+                  .split(':')[0]
+                  .concat(':' + itemdata[0][5].split(' ')[1].split(':')[1])}
+              </Text>
+            </View>
+          </View>
+          <View style={{alignItems: 'flex-end'}}>
+            <Text style={{color: '#000'}}>{itemdata[0][0]}</Text>
+            <View
+              style={{
+                backgroundColor:
+                  itemdata[0][10] == 'Lunas' ? '#00CB00' : '#CB0000',
+                paddingVertical: 6,
+                paddingHorizontal: itemdata[0][10] == 'Lunas' ? 10 : 6,
+                marginTop: 4,
+                borderRadius: 4,
+              }}>
+              <Text style={{color: '#fff'}}>{itemdata[0][10]}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  const renderItem = Item => {
+    return (
+      <View style={{marginHorizontal: 12,flex:1}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 16,
+          }}>
+          <View style={{flexDirection: 'row'}}>
+            <Text
+              style={{
+                color: '#000',
+                fontFamily: 'TitilliumWeb-Bold',
+              }}>
+              {moment(Item.date).format('dddd') + ', '}
+            </Text>
+            <Text
+              style={{
+                color: '#000',
+                fontFamily: 'TitilliumWeb-Bold',
+              }}>
+              {moment(Item.date).format('DD MMM yyyy')}
+            </Text>
+          </View>
+
+          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
+            Rp.
+            {currency.format(
+              Item.data.reduce(
+                (result, item) =>
+                  item[0][7].split(' ').length == 1
+                    ? parseInt(item[1]) + result
+                    : item[0][7].split(' ')[1].split('-').length == 1
+                    ? parseInt(item[1]) -
+                      item[0][7].split(' ')[1].split('-')[0] +
+                      result
+                    : parseInt(item[1]) -
+                      (parseInt(item[1]) *
+                        item[0][7].split(' ')[1].split('-')[0]) /
+                        100 +
+                      result,
+                0,
+              ),
+            )}
+          </Text>
+        </View>
+        <View style={{flex:1}}>
+        <FlashList
+        style={{flex:1}}
+          data={Item.data}
+          renderItem={item => renderSubItem(item.item)}
+          estimatedItemSize={70}
+        />
+        </View>
+        <View
+          style={{
+            marginTop: 16,
+            borderBottomWidth: 1,
+            borderColor: '#C3C3C3',
+            borderStyle: 'dashed',
+          }}></View>
+      </View>
+    );
+  };
   const get = async () => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
@@ -52,65 +196,68 @@ const HistoryPage = () => {
         const StartTimeStamp = Date.parse(StartDate);
         const EndTimeStamp = Date.parse(EndDate);
         // console.log(Date.parse(StartDate.startOf()))
-       if(res.data.values==undefined){
-        Alert.alert('','Belum Ada Data Silahkan Input Terlebih Dahulu',[
-          {text:'Cancel',onPress:()=>console.log('cancel')},
-            {text:'OK',onPress:()=>navigation.navigate('dashboard')}
-        ],{cancelable:false})
-       }else{
-        const j = res.data.values.filter(
-          fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
-        );
-        let b = Object.values(
-          j.reduce((acc, item) => {
-            if (!acc[item[0]])
-              acc[item[0]] = {
-                job: [],
-              };
-            acc[item[0]].job.push(parseInt(item[3]) * parseInt(item[2]));
-            return acc;
-          }, {}),
-        );
+        if (res.data.values == undefined) {
+          Alert.alert(
+            '',
+            'Belum Ada Data Silahkan Input Terlebih Dahulu',
+            [
+              {text: 'Cancel', onPress: () => console.log('cancel')},
+              {text: 'OK', onPress: () => navigation.navigate('dashboard')},
+            ],
+            {cancelable: false},
+          );
+        } else {
+          const j = res.data.values.filter(
+            fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
+          );
+          let b = Object.values(
+            j.reduce((acc, item) => {
+              if (!acc[item[0]])
+                acc[item[0]] = {
+                  job: [],
+                };
+              acc[item[0]].job.push(parseInt(item[3]) * parseInt(item[2]));
+              return acc;
+            }, {}),
+          );
 
-        const n = b.map((items, i) =>
-          items.job.reduce((result, item) => parseInt(item) + result, 0),
-        );
-        const a = j.filter(
-          (value, index, self) =>
-            index === self.findIndex(t => t[0] === value[0]),
-        );
-        a.sort((a, b) => (a[6] > b[6] ? -1 : -1));
-        n.sort((a, b) => (a[6] > b[6] ? 1 : -1));
-        // console.log(n);
-        let s = 0;
-        const groups = a.reduce((groups, data) => {
-          const timestamp = data[6];
+          const n = b.map((items, i) =>
+            items.job.reduce((result, item) => parseInt(item) + result, 0),
+          );
+          const a = j.filter(
+            (value, index, self) =>
+              index === self.findIndex(t => t[0] === value[0]),
+          );
+          a.sort((a, b) => (a[6] > b[6] ? -1 : -1));
+          n.sort((a, b) => (a[6] > b[6] ? 1 : -1));
+          // console.log(n);
+          let s = 0;
+          const groups = a.reduce((groups, data) => {
+            const timestamp = data[6];
 
-          // if (!groups[date]&&!groups[timestamp]) {
-          if (!groups[timestamp]) {
-            // groups[date] = [];
-            groups[timestamp] = [];
-          }
-          groups[timestamp].push([data, n[s++]]);
-          return groups;
-        }, {});
+            // if (!groups[date]&&!groups[timestamp]) {
+            if (!groups[timestamp]) {
+              // groups[date] = [];
+              groups[timestamp] = [];
+            }
+            groups[timestamp].push([data, n[s++]]);
+            return groups;
+          }, {});
 
-        const groupArrays = Object.keys(groups).map(timestamp => {
-          return {
-            timestamp,
-            date: moment(timestamp / 1000, 'X').toISOString(),
-            data: groups[timestamp],
-          };
-        });
-        const k = groupArrays.sort((a, b) => {
-          return b.timestamp - a.timestamp;
-        });
-        setData(k);
-        setModalVisibleLoading(false);
-      setRefreshing(false);
-
-       }
-        
+          const groupArrays = Object.keys(groups).map(timestamp => {
+            return {
+              timestamp,
+              date: moment(timestamp / 1000, 'X').toISOString(),
+              data: groups[timestamp],
+            };
+          });
+          const k = groupArrays.sort((a, b) => {
+            return b.timestamp - a.timestamp;
+          });
+          setData(k);
+          setModalVisibleLoading(false);
+          setRefreshing(false);
+        }
       })
       .catch(error => {
         if (error.response) {
@@ -120,30 +267,27 @@ const HistoryPage = () => {
           console.log(error.response.status);
           console.log(error.response.headers);
           alert(error.message);
-    setRefreshing(false);
-
+          setRefreshing(false);
         } else if (error.request) {
           // The request was made but no response was received
           // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
           // http.ClientRequest in node.js
           console.log(error.request);
           alert(error.message);
-    setRefreshing(false);
-
+          setRefreshing(false);
         } else {
           // Something happened in setting up the request that triggered an Error
           console.log('Error', error.message);
           alert(error.message);
-    setRefreshing(false);
-
+          setRefreshing(false);
         }
         // console.log(error.config);
       });
   };
-  const onRefresh = ()=>{
+  const onRefresh = () => {
     setRefreshing(true);
-    get()
-  }
+    get();
+  };
   useEffect(() => {
     get();
   }, [isFocused, StartDate]);
@@ -174,145 +318,23 @@ const HistoryPage = () => {
           </View>
         </TouchableOpacity>
       </View>
-      <ScrollView style={{marginHorizontal: 18}}  refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={'#252525'} colors={["#79D1F1","#D358FF"]} />
-    }>
-        {Data == undefined || Data.length == 0 ? (
-          <View style={styles.imgContainerStyle}>
-            <View style={styles.imgwarpStyle}>
-              <Image style={styles.imageStyle} source={emptyproduct} />
-            </View>
+      {Data == undefined || Data.length == 0 ? (
+        <View style={styles.imgContainerStyle}>
+          <View style={styles.imgwarpStyle}>
+            <Image style={styles.imageStyle} source={emptyproduct} />
           </View>
-        ) : (
-          <View>
-            {Data.map((item, index) => {
-              return (
-                <View key={index} style={{paddingHorizontal: 4}}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginTop: 16,
-                    }}>
-                    <View style={{flexDirection: 'row'}}>
-                      <Text
-                        style={{
-                          color: '#000',
-                          fontFamily: 'TitilliumWeb-Bold',
-                        }}>
-                        {moment(item.date).format('dddd') + ', '}
-                      </Text>
-                      <Text
-                        style={{
-                          color: '#000',
-                          fontFamily: 'TitilliumWeb-Bold',
-                        }}>
-                        {moment(item.date).format('DD MMM yyyy')}
-                      </Text>
-                    </View>
-
-                    <Text
-                      style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-                      Rp.
-                      {currency.format(
-                        
-                        item.data.reduce(
-                          (result, item) => 
-                          item[0][7].split(' ').length==1?
-                          parseInt(item[1])+result
-                          :item[0][7].split(' ')[1].split('-').length==1?
-                          parseInt(item[1])-item[0][7].split(' ')[1].split('-')[0]+result:
-                          parseInt(item[1])- parseInt(item[1])*item[0][7].split(' ')[1].split('-')[0]/100+result,
-                          0,
-                        ),
-            )}
-                    </Text>
-                  
-                  </View>
-
-                  {item.data.map((itemdata, indexdata) => {
-                    return (
-                      <TouchableOpacity
-                        key={indexdata}
-                        style={{
-                          backgroundColor: '#fff',
-                          marginVertical: 8,
-                          padding: 12,
-                          elevation: 1.5,
-                          borderRadius: 12,
-                        }}
-                        onPress={() =>
-                          navigation.navigate('historyitempage', {
-                            idtrx: itemdata[0][0],
-                          })
-                        }>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                          }}>
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                            }}>
-                            <Icash />
-                            <View style={{marginLeft: 12}}>
-                              <Text
-                                style={{
-                                  color: '#000',
-
-                                  fontFamily: 'TitilliumWeb-Bold',
-                                }}>
-                                Rp.
-                                {itemdata[0][7].split(' ').length == 1? currency.format(itemdata[1])
-                                  :itemdata[0][7].split(' ')[1].split('-').length<=1? currency.format(itemdata[1]-itemdata[0][7].split(' ')[1])
-                                  :currency.format(itemdata[1]-itemdata[1]*itemdata[0][7].split(' ')[1].split('-')[0]/100)}
-                              </Text>
-                              <Text
-                                style={{
-                                  color: '#000',
-                                  fontFamily: 'TitilliumWeb-Light',
-                                }}>
-                                {itemdata[0][5]
-                                  .split(' ')[1]
-                                  .split(':')[0]
-                                  .concat(
-                                    ':' +
-                                      itemdata[0][5]
-                                        .split(' ')[1]
-                                        .split(':')[1],
-                                  )}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={{alignItems:'flex-end'}}>
-                          <Text style={{color: '#000'}}>{itemdata[0][0]}</Text>
-                          <View style={{backgroundColor:itemdata[0][10]=="Lunas"?'#00CB00':'#CB0000',paddingVertical:6,paddingHorizontal:itemdata[0][10]=="Lunas"?10:6,marginTop:4,borderRadius:4}}>
-                          <Text style={{color: '#fff'}}>{itemdata[0][10]}</Text>
-
-                          </View>
-                          </View>
-                          
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                  <View
-                    style={{
-                      marginTop: 16,
-                      borderBottomWidth: 1,
-                      borderColor: '#C3C3C3',
-                      borderStyle: 'dashed',
-                    }}></View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-      </ScrollView>
+        </View>
+      ) : (
+        <View style={{flex: 1,paddingHorizontal:4}}>
+          <FlashList
+            data={Data}
+            renderItem={item => renderItem(item.item)}
+            estimatedItemSize={70}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        </View>
+      )}
       <Modal transparent={true} visible={modalVisibleLoading}>
         <View
           style={{
@@ -345,7 +367,7 @@ const HistoryPage = () => {
                   setEndDate(range.secondDate);
                 }}
                 onConfirm={() => setModalVisible(!modalVisible)}
-                onClear ={() => setModalVisible(!modalVisible)}
+                onClear={() => setModalVisible(!modalVisible)}
                 responseFormat="YYYY-MM-DD"
                 selectedDateContainerStyle={styles.selectedDateContainerStyle}
                 selectedDateStyle={styles.selectedDateStyle}

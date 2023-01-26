@@ -510,7 +510,7 @@ const Cartpage = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <View style={styles.imgContainerStyle}>
+          <View style={styles.imgwarpStyle}>
             <Image style={styles.imageStyle} source={emptycart} />
           </View>
 
@@ -901,9 +901,8 @@ const styles = StyleSheet.create({
   },
   imgwarpStyle: {
     marginHorizontal: Dwidth * 0.06,
-    marginTop: Dheight / 4.5,
     height: Dheight / 2.5,
-    width: Dwidth / 1.2,
+    width: "100%",
   },
   imageStyle: {
     width: '100%',

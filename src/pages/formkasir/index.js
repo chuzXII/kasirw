@@ -94,9 +94,6 @@ const Formkasir = () => {
   },[Check])
   return (
     <View style={styles.conatiner}>
-      <View>
-        
-      </View>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center'}}>
       <View style={styles.card}>
       

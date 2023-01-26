@@ -61,7 +61,7 @@ const Routes = ({navigation}) => {
       <Drawer.Screen name='listkatalog' component={ListKatalog} options={{ title: 'Daftar Katalog',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
       <Drawer.Screen name='historypage' component={HistoryPage} options={{ title: 'Riwayat Transaksi',drawerIcon:({focused, size})=>(<Ihistory/>)}}/>
       <Drawer.Screen name='diskonpage' component={DiskonPage} options={{ title: 'Diskon',drawerIcon:({focused, size})=>(<Idiskon/>)}}/>
-      <Drawer.Screen name='pengeluaranpage' component={PengeluaranPage} options={{ title: 'Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
+      {/* <Drawer.Screen name='pengeluaranpage' component={PengeluaranPage} options={{ title: 'Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
       {/* <Drawer.Screen name='historypengeluaran' component={HistoryPengeluaran} options={{ title: 'Riwayat Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
       <Drawer.Screen name='setupage' component={Setupage} options={{ title: 'Setup Spreedsheet',headerShown: false ,drawerIcon:({focused, size})=>(<Isexcel/>)}}/>
       <Drawer.Screen name='SetupPrinter' component={SetupPrinter} options={{ title: 'Setup Printer',headerShown: false,drawerIcon:({focused, size})=>(<Isprint/>) }}/>
@@ -82,7 +82,7 @@ const Routes = ({navigation}) => {
       <Stack.Screen name='cartpage' component={Cartpage} options={{ title: 'Keranjang' }} />
       <Stack.Screen name='historyitempage' component={HistoryItemPage} options={{ title: 'Detail History' }} />
       <Stack.Screen name='formdiskon' component={FormDiskon} options={{ title: 'Tambah Diskon' }} />
-      <Stack.Screen name='formedit' component={FormEdit} options={{ headerShown: false }} />
+      <Stack.Screen name='formedit' component={FormEdit} options={{ title: 'Edit Menu' }} />
       <Stack.Screen name='finalpage' component={FinalPage} options={{ headerShown: false }} />
 
     </Stack.Navigator>

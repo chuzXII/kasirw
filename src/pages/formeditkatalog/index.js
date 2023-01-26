@@ -105,7 +105,7 @@ const FormEdit = ({route, navigation}) => {
   }, [isFocused]);
   return (
     <View style={styles.conatiner}>
-      <ScrollView showsVerticalScrollIndicator={false} style={{paddingTop: 14}}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center'}}>
         <View style={styles.card}>
           <View style={styles.warpcard}>
             <Label label={'Nama Produk'} />
@@ -174,7 +174,7 @@ const DHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   conatiner: {
     flex: 1,
-    justifyContent: 'center',
+
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {

@@ -1,18 +1,15 @@
 import {
-  Button,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
   Dimensions,
-  FlatList,
   Image,
   LogBox,
   RefreshControl,
   ActivityIndicator,
   Modal,
+  TextInput,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Cardcatalog from '../../component/CardCatalog';
@@ -25,15 +22,15 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {emptyproduct} from '../../assets/image';
 import moment from 'moment';
 import axios from 'axios';
-import {
-  DataProvider,
-  LayoutProvider,
-  RecyclerListView,
-} from 'recyclerlistview';
+import FloatingBtn from '../../component/FloatingBtn';
+import {ScrollView} from 'react-native-gesture-handler';
+import {MasonryFlashList} from '@shopify/flash-list';
+import { Ifilter} from '../../assets/icon';
 
 const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [item, setItems] = useState([]);
+  const [DumyData, setDumyData] = useState([]);
   const [Total, setTotal] = useState();
   const isFocused = useIsFocused();
   const navigation = useNavigation();
@@ -41,55 +38,17 @@ const Dashboard = () => {
   const CartReducer = useSelector(state => state.CartReducer);
   const currency = new Intl.NumberFormat('id-ID');
   const [modalVisibleLoading, setModalVisibleLoading] = useState(false);
-  const ViewTypes = {
-    FIRST: 0,
-    SECOND: 1,
-    THIRD: 2,
-    FOURTH: 3,
-    FIVETH: 4,
-    SIXTH: 5,
-  };
-  const layoutProvider = new LayoutProvider(
-    index => {
-      var a = item.filter(item => item[0] == index + 1);
-      if (a[0][1].length >= 20 && a[0][1].length <= 21) {
-        return ViewTypes.SECOND;
-      } else if (a[0][1].length >= 22 && a[0][1].length <= 32) {
-        return ViewTypes.THIRD;
-      } else if (a[0][1].length >= 34) {
-        return ViewTypes.FOURTH;
-      } else {
-        return ViewTypes.FIRST;
-      }
-    },
-    (type, dim) => {
-      switch (type) {
-        case ViewTypes.FIRST:
-          dim.width = Dwidth / 2.08;
-          dim.height = 260;
-          break;
-        case ViewTypes.SECOND:
-          dim.width = Dwidth / 2.08;
-          dim.height = 245;
-          break;
-        case ViewTypes.THIRD:
-          dim.width = Dwidth / 2.08;
-          dim.height = 280;
-          break;
-        case ViewTypes.FOURTH:
-          dim.width = Dwidth / 2.08;
-          dim.height = 300;
-          break;
-        default:
-          dim.width = 0;
-          dim.height = 0;
-      }
-    },
-  );
-  const dataDataProvider = new DataProvider((r1, r2) => {
-    return r1 !== r2;
-  }).cloneWithRows(item);
+  const [modalVisibleCategory, setModalVisibleCategory] = useState(false);
 
+  const datacategory = [
+    {id: 1, category: 'All'},
+    {id: 2, category: 'Mod'},
+    {id: 3, category: 'Pod'},
+    {id: 4, category: 'Accecories'},
+    {id: 5, category: 'Authomizer'},
+    {id: 6, category: 'Freebase'},
+    {id: 7, category: 'Saltnic'},
+  ];
   const isPortrait = () => {
     const dim = Dimensions.get('screen');
     return dim.height >= dim.width;
@@ -104,7 +63,6 @@ const Dashboard = () => {
 
   const get = async () => {
     setModalVisibleLoading(true);
-    try {
       // dbConn.transaction(tx => {
       //   // tx.executeSql('DROP TABLE IF EXISTS produk')
       //   tx.executeSql(
@@ -149,27 +107,83 @@ const Dashboard = () => {
           } else {
             setItems(res.data.values);
             setRefreshing(false);
-
+            setDumyData(res.data.values);
             setModalVisibleLoading(false);
           }
+        }).catch(error => {
+          if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+            alert(error.message);
+      setRefreshing(false);
+  
+          } else if (error.request) {
+            // The request was made but no response was received
+            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+            // http.ClientRequest in node.js
+            console.log(error.request);
+            alert(error.message);
+      setRefreshing(false);
+  
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            console.log('Error', error.message);
+            alert(error.message);
+      setRefreshing(false);
+  
+          }
+          // console.log(error.config);
         });
-    } catch (e) {
-      console.log(e);
-    }
+        
   };
   // navigation.addListener('focus', get)
 
   const onlongpress = () => {
     dispatch({type: 'REMOVEALL'});
   };
-  const renderitem = (type, data, index) => {
+  const Filter = (textinput, category) => {
+    if(category.toLowerCase()=='all'){
+      setItems(DumyData)
+      setModalVisibleCategory(!modalVisibleCategory)
+    }
+    else{
+      const a = DumyData.filter(fill=>(fill[5]).toLowerCase()==category.toLowerCase())
+      setItems(a)
+      setModalVisibleCategory(!modalVisibleCategory)
+    }
+    // const input =textinput.toLowerCase()
+  //  if(textinput.toLowerCase()==' '||textinput.toLowerCase()==null){
+  //   setItems(DumyData)
+  //   console.log(DumyData)
+  //  }
+  //  else{
+  //   const it=  DumyData
+  //   var outputText=''
+  //  const a = it
+  //   for (let i = 0; i < a.length; i++) {
+  //     for (let j = 0; j < a[i].length; j++) {
+  //       if (a[i][j].search( textinput.toLowerCase()!=-1)) {
+  //         outputText+='['+a[i]+'],'
+  //         break;
+  //       }
+  //     }
+  //   }
+  //       setItems(outputText)
+  //  }
+  
+  };
+
+  const renderitem = (item) => {
     return (
-      <View >
-        <Cardcatalog item={data} oriented={Oriented} />
+      <View>
+        <Cardcatalog item={item} oriented={Oriented} />
       </View>
     );
   };
-  const onRefresh = async() => {
+  const onRefresh = async () => {
     setRefreshing(true);
     get();
   };
@@ -180,18 +194,24 @@ const Dashboard = () => {
 
   return (
     <View style={styles.wrap}>
-      <View style={{backgroundColor: '#000', width: '100%', height: 50}}></View>
-      {/* <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            progressBackgroundColor={'#252525'}
-            colors={['#79D1F1', '#D358FF']}
+      <View style={styles.wrapheader}>
+        <View style={styles.kontenheader}>
+          <TextInput
+            placeholderTextColor={'#000'}
+            placeholder="Search (In Development...)"
+            style={styles.search}
+            editable={false}
+           onChangeText={(value)=>Filter(value,null)}
           />
-        }
-        style={styles.ScrollView}
-        showsVerticalScrollIndicator={false}> */}
+          <TouchableOpacity
+            style={styles.filter}
+            onPress={() => {
+              setModalVisibleCategory(true);
+            }}>
+           <Ifilter/>
+          </TouchableOpacity>
+        </View>
+      </View>
       <View style={styles.CardKatalog}>
         {item == 0 ? (
           <View style={styles.imgContainerStyle}>
@@ -200,34 +220,15 @@ const Dashboard = () => {
             </View>
           </View>
         ) : (
-          // <FlatList
-          // initialNumToRender={4}
-          // keyExtractor={item => item[0]}
-          // data={item}
-          // horizontal={false}
-          // numColumns={2}
-          // scrollEventThrottle={4}
-          // maxToRenderPerBatch={4}
-          // contentContainerStyle={{ paddingBottom:120}}
-          // renderItem={renderitem}/>
-          <RecyclerListView
-            rowRenderer={(type, data, index) => renderitem(type, data, index)}
-            dataProvider={dataDataProvider}
-            layoutProvider={layoutProvider}
-            style={{flex: 1}}
-            scrollViewProps={{
-              refreshControl: (
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                />
-              )
-            }}
+          <MasonryFlashList
+          data={item}
+          numColumns={2}
+          renderItem={(item) => renderitem(item.item)}
+          estimatedItemSize={70}
+          refreshing={refreshing} onRefresh={onRefresh}
           />
         )}
       </View>
-      {/* </ScrollView> */}
-
       {CartReducer.cartitem.reduce((result, item) => item.count + result, 0) ? (
         <TouchableOpacity
           style={styles.buttonChart}
@@ -260,6 +261,7 @@ const Dashboard = () => {
           </View>
         </TouchableOpacity>
       ) : null}
+
       <Modal transparent={true} visible={modalVisibleLoading}>
         <View
           style={{
@@ -270,6 +272,51 @@ const Dashboard = () => {
           }}>
           <ActivityIndicator size={100} color={'#9B5EFF'} />
         </View>
+      </Modal>
+      <Modal transparent={true} visible={modalVisibleCategory}>
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+          }}
+          onPress={() => setModalVisibleCategory(!modalVisibleCategory)}>
+          <View
+            style={{
+              backgroundColor: '#fff',
+              width: Dwidth / 1.2,
+              height: Dheight / 2.5,
+              borderRadius: 12,
+            }}>
+            <View style={{flex: 1}}>
+              <Text
+                style={{
+                  color: '#000',
+                  fontSize: 20,
+                  fontWeight: '500',
+                  textAlign: 'center',
+                  marginVertical: 12,
+                }}>
+                Category
+              </Text>
+              <ScrollView style={{flex: 1, marginBottom: 42}}>
+                {datacategory.map((item, i) => {
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      style={styles.btnitemcategory}
+                      onPress={() => Filter(null, item.category)}>
+                      <Text style={{color: '#000', textAlign: 'center'}}>
+                        {item.category}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </View>
+        </TouchableOpacity>
       </Modal>
     </View>
   );
@@ -283,7 +330,35 @@ const styles = StyleSheet.create({
   wrap: {
     justifyContent: 'space-between',
     flex: 1,
-    marginHorizontal: Dwidth * 0.02,
+  },
+  wrapheader: {
+    backgroundColor: '#fff',
+    width: '100%',
+    height: 70,
+    alignItems:'center'
+
+  },
+  kontenheader: {
+    flexDirection: 'row',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+  search: {
+    flex: 1,
+    borderRadius: 8,
+    borderColor: '#000',
+    borderWidth: 1,
+    paddingLeft: 14,
+    marginRight: 12,
+    color: '#000',
+  },
+  filter: {
+    borderRadius: 8,
+    borderColor: '#000',
+    borderWidth: 1,
+    padding: 10,
+    alignItems:'center',
+    justifyContent:'center'
   },
   wrapCard: {
     marginHorizontal: 4.2,
@@ -309,6 +384,8 @@ const styles = StyleSheet.create({
     // flexWrap: 'wrap',
     // flexDirection: 'row',
     // flexBasis: '50%',
+    
+    marginLeft: Dwidth * 0.03,
     flex: 1,
   },
   ScrollView: {
@@ -337,7 +414,7 @@ const styles = StyleSheet.create({
   buttonChart: {
     // position: 'absolute',
     // bottom: 0,
-    marginTop:8,
+    marginTop: 8,
     width: '100%',
     padding: 12,
     marginBottom: 10,
@@ -441,5 +518,9 @@ const styles = StyleSheet.create({
     height: '100%',
     overflow: 'hidden',
     alignItems: 'center',
+  },
+  btnitemcategory: {
+    padding: 18,
+    backgroundColor: '#ededed',
   },
 });

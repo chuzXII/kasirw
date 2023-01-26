@@ -11,6 +11,7 @@ import Iabout from './iabout.svg';
 import Idiskon from './idiskon.svg';
 import Icash from './icash.svg';
 import Ilist from './ilist.svg';
+import Ifilter from './ifilter.svg';
 
 
 
@@ -20,4 +21,6 @@ import Ilist from './ilist.svg';
 
 
 
-export{Idrawer,Iprinter,Imail,Igithub,Iweb,Ihome,Ihistory,Isexcel,Isprint,Iabout,Idiskon,Icash,Ilist}
+
+
+export{Idrawer,Iprinter,Imail,Igithub,Iweb,Ihome,Ihistory,Isexcel,Isprint,Iabout,Idiskon,Icash,Ilist,Ifilter}
