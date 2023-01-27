@@ -111,7 +111,7 @@ const HistoryPage = () => {
   };
   const renderItem = Item => {
     return (
-      <View style={{marginHorizontal: 12,flex:1}}>
+      <View style={{marginHorizontal: 12,}}>
         <View
           style={{
             flexDirection: 'row',
@@ -157,14 +157,18 @@ const HistoryPage = () => {
             )}
           </Text>
         </View>
-        <View style={{flex:1}}>
-        <FlashList
-        style={{flex:1}}
+      
+      <View style={{flex:1}}>
+      <FlashList
+      drawDistance={12}
           data={Item.data}
           renderItem={item => renderSubItem(item.item)}
           estimatedItemSize={70}
         />
-        </View>
+      </View>
+       
+        
+    
         <View
           style={{
             marginTop: 16,
@@ -183,7 +187,7 @@ const HistoryPage = () => {
       .get(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
-          '/values/Sheet1',
+          '/values/Transaksi',
         {
           headers: {
             Authorization: 'Bearer ' + token,
@@ -256,6 +260,7 @@ const HistoryPage = () => {
           });
           setData(k);
           setModalVisibleLoading(false);
+          setModalVisible(false)
           setRefreshing(false);
         }
       })
@@ -325,7 +330,8 @@ const HistoryPage = () => {
           </View>
         </View>
       ) : (
-        <View style={{flex: 1,paddingHorizontal:4}}>
+      
+        <View style={{flex:1}}>
           <FlashList
             data={Data}
             renderItem={item => renderItem(item.item)}
@@ -334,6 +340,8 @@ const HistoryPage = () => {
             onRefresh={onRefresh}
           />
         </View>
+          
+  
       )}
       <Modal transparent={true} visible={modalVisibleLoading}>
         <View

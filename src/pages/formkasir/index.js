@@ -29,7 +29,7 @@ const Formkasir = () => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
     axios.get('https://sheets.googleapis.com/v4/spreadsheets/' +
-    sheetid + '/values/Sheet3',
+    sheetid + '/values/Produk',
     {
       headers: {
         Authorization: 'Bearer ' + token,
@@ -52,7 +52,7 @@ const Formkasir = () => {
       
       axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
     sheetid +
-    '/values/Sheet3!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
+    '/values/Produk!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
       values: data,
     }),
     {
@@ -61,6 +61,7 @@ const Formkasir = () => {
         Authorization: 'Bearer ' + token,
       },
     },).then(()=>{
+      dispatch({type:'RM_FORM'})
       navigation.navigate('dashboard');
       setCheck(!Check)
     })
@@ -184,6 +185,7 @@ const Formkasir = () => {
               .replace(/^\s+/, '')
               .replace(/\s+$/, '') == '' ||
               FormReducer.form.stokproduk == null ||
+              FormReducer.form.stokproduk <= 0 ||
               FormReducer.form.stokproduk
                 .replace(/^\s+/, '')
                 .replace(/\s+$/, '') == '' 

@@ -140,6 +140,15 @@ const FormReducer = (state = inistialStateForm, action) => {
             }
         }
     }
+    if(action.type === 'RM_FORM'){
+        return {
+            form: {
+                namaproduk: null,
+                hargaproduk: null,
+                deskproduk: null,
+            }
+        }
+    }
     return state
 }
 const inistialStateCek = {

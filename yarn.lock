@@ -6555,7 +6555,7 @@
     "source-map" "~0.6.1"
     "tslib" "^2.0.1"
 
-"recyclerlistview@^4.2.0", "recyclerlistview@4.2.0":
+"recyclerlistview@4.2.0":
   "integrity" "sha512-uuBCi0c+ggqHKwrzPX4Z/mJOzsBbjZEAwGGmlwpD/sD7raXixdAbdJ6BTcAmuWG50Cg4ru9p12M94Njwhr/27A=="
   "resolved" "https://registry.npmjs.org/recyclerlistview/-/recyclerlistview-4.2.0.tgz"
   "version" "4.2.0"

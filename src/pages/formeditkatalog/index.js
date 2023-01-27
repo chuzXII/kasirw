@@ -48,7 +48,7 @@ const FormEdit = ({route, navigation}) => {
         JSON.stringify({
           data: {
             values: [[Form.id, Form.namaproduk,Form.hargaproduk,Form.stokterjual,Form.stok]],
-            range: 'Sheet3!A' + Form.id,
+            range: 'Produk!A' + Form.id,
           },
           valueInputOption: 'USER_ENTERED',
         }),

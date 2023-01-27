@@ -54,7 +54,7 @@ const FinalPage = ({navigation}) => {
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['Deket Sama Bundaran Polres, Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
+        ['Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
         {},
       );
       await BluetoothEscposPrinter.setBlob(0);
@@ -84,13 +84,13 @@ const FinalPage = ({navigation}) => {
       await BluetoothEscposPrinter.printColumn(
         [16, 16],
         [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-        ['Whatsapp', '082140083902'],
+        ['Whatsapp', '085604745727'],
         {},
       );
       await BluetoothEscposPrinter.printColumn(
         [16, 16],
         [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-        ['Instagram', 'Chill_idn.co'],
+        ['Instagram', 'wijayavape22'],
         {},
       );
       await BluetoothEscposPrinter.printColumn(

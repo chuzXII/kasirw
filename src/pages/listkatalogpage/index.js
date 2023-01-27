@@ -61,7 +61,7 @@ const ListKatalog = ({navigation}) => {
         .get(
           'https://sheets.googleapis.com/v4/spreadsheets/' +
             sheetid +
-            '/values/Sheet3',
+            '/values/Produk',
           {
             headers: {
               Authorization: 'Bearer ' + token,
@@ -92,7 +92,7 @@ const ListKatalog = ({navigation}) => {
       setModalVisibleCategory(!modalVisibleCategory)
     }
     else{
-      const a = DumyData.filter(fill=>(fill[5]).toLowerCase()==category.toLowerCase())
+      const a = DumyData.filter(fill=>fill[5]!=null?fill[5].toLowerCase()==category.toLowerCase():null)
       setData(a)
       setModalVisibleCategory(!modalVisibleCategory)
     }
@@ -163,7 +163,7 @@ const ListKatalog = ({navigation}) => {
         <FlashList
           data={Data}
           renderItem={(item) => renderitem(item)}
-          estimatedItemSize={70}
+          estimatedItemSize={100}
           refreshing={refreshing}
               onRefresh={onRefresh}/>
         )}

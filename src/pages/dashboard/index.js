@@ -32,6 +32,7 @@ const Dashboard = () => {
   const [item, setItems] = useState([]);
   const [DumyData, setDumyData] = useState([]);
   const [Total, setTotal] = useState();
+  const [LengthData, setLengthData] = useState(100);
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -62,6 +63,7 @@ const Dashboard = () => {
   });
 
   const get = async () => {
+    
     setModalVisibleLoading(true);
       // dbConn.transaction(tx => {
       //   // tx.executeSql('DROP TABLE IF EXISTS produk')
@@ -89,7 +91,7 @@ const Dashboard = () => {
         .get(
           'https://sheets.googleapis.com/v4/spreadsheets/' +
             sheetid +
-            '/values/Sheet3',
+            '/values/Produk',
           {
             headers: {
               Authorization: 'Bearer ' + token,
@@ -97,6 +99,8 @@ const Dashboard = () => {
           },
         )
         .then(res => {
+  
+
           // const a = res.data.values.filter(item=>item[0]==3)
           // console.log(a[0][1].length)
           if (res.data.values == undefined) {
@@ -106,6 +110,7 @@ const Dashboard = () => {
             setModalVisibleLoading(false);
           } else {
             setItems(res.data.values);
+            setLengthData(res.data.values.length)
             setRefreshing(false);
             setDumyData(res.data.values);
             setModalVisibleLoading(false);
@@ -150,7 +155,8 @@ const Dashboard = () => {
       setModalVisibleCategory(!modalVisibleCategory)
     }
     else{
-      const a = DumyData.filter(fill=>(fill[5]).toLowerCase()==category.toLowerCase())
+      const a = DumyData.filter(fill=>fill[5]!=null?fill[5].toLowerCase()==category.toLowerCase():null)
+   
       setItems(a)
       setModalVisibleCategory(!modalVisibleCategory)
     }
@@ -190,7 +196,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     get();
-  }, [1]);
+  }, [isFocused]);
 
   return (
     <View style={styles.wrap}>
@@ -224,7 +230,7 @@ const Dashboard = () => {
           data={item}
           numColumns={2}
           renderItem={(item) => renderitem(item.item)}
-          estimatedItemSize={70}
+          estimatedItemSize={LengthData}
           refreshing={refreshing} onRefresh={onRefresh}
           />
         )}
@@ -288,6 +294,7 @@ const Dashboard = () => {
               width: Dwidth / 1.2,
               height: Dheight / 2.5,
               borderRadius: 12,
+             
             }}>
             <View style={{flex: 1}}>
               <Text

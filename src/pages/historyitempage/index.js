@@ -58,7 +58,7 @@ const HistoryItemPage = ({route,navigation}) => {
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['Deket Sama Bundaran Polres, Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
+        ['Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
         {},
       );
       await BluetoothEscposPrinter.setBlob(0);
@@ -95,15 +95,15 @@ const HistoryItemPage = ({route,navigation}) => {
       await BluetoothEscposPrinter.printColumn(
         [16, 16],
         [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-        ['Whatsapp', '081333768128'],
+        ['Whatsapp', '085604745727'],
         {},
       );
-      // await BluetoothEscposPrinter.printColumn(
-      //   [16, 16],
-      //   [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-      //   ['Instagram', 'Chill_idn.co'],
-      //   {},
-      // );
+      await BluetoothEscposPrinter.printColumn(
+        [16, 16],
+        [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+        ['Instagram', 'wijayavape22'],
+        {},
+      );
       // await BluetoothEscposPrinter.printColumn(
       //   [32],
       //   [BluetoothEscposPrinter.ALIGN.LEFT],
@@ -254,7 +254,7 @@ const HistoryItemPage = ({route,navigation}) => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
     indexs.map(e=>{
-      axios.post('https://sheets.googleapis.com/v4/spreadsheets/193U-hvY1-HbXF44_dbHUxwFeUimLXgr4Pmlc4GZpZog/values:batchUpdate', JSON.stringify({
+      axios.post('https://sheets.googleapis.com/v4/spreadsheets/'+sheetid+'/values:batchUpdate', JSON.stringify({
         data: {
           values:[['Refund']],
           range:'k'+e
@@ -271,7 +271,6 @@ const HistoryItemPage = ({route,navigation}) => {
     // https://sheets.googleapis.com/v4/spreadsheets/193U-hvY1-HbXF44_dbHUxwFeUimLXgr4Pmlc4GZpZog/values/k1:append
    
     navigation.navigate('historypage')
-   console.log(indexs)
   }catch(e){
     console.log(e)
   }
@@ -292,7 +291,7 @@ const HistoryItemPage = ({route,navigation}) => {
       .get(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
-          '/values/Sheet1',
+          '/values/Transaksi',
         {
           headers: {
             Authorization: 'Bearer ' + token,

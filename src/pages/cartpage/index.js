@@ -58,7 +58,7 @@ const Cartpage = () => {
       .post(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
-          '/values/Sheet1!A1:append?valueInputOption=USER_ENTERED',
+          '/values/Transaksi!A1:append?valueInputOption=USER_ENTERED',
         JSON.stringify({
           values: data,
         }),
@@ -70,6 +70,7 @@ const Cartpage = () => {
         },
       )
       .then((res) => {
+      if(indexs.length>1){
         indexs
           .forEach((e, i) => {
             axios.post(
@@ -79,7 +80,7 @@ const Cartpage = () => {
               JSON.stringify({
                 data: {
                   values: [[listcount[i], stoksisa[i]]],
-                  range: 'Sheet3!D' + e,
+                  range: 'Produk!D' + e,
                 },
                 valueInputOption: 'USER_ENTERED',
               }),
@@ -102,6 +103,31 @@ const Cartpage = () => {
               console.log(e);
             });
           })
+      }
+      else{
+        axios.post(
+          'https://sheets.googleapis.com/v4/spreadsheets/' +
+            sheetid +
+            '/values:batchUpdate',
+          JSON.stringify({
+            data: {
+              values: [[listcount[0], stoksisa[0]]],
+              range: 'Produk!D' + indexs[0],
+            },
+            valueInputOption: 'USER_ENTERED',
+          }),
+          {
+            headers: {
+              'Content-type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+          },
+        ) .then(res => {
+                setModalVisibleLoading(false);
+                setModalVisible(!modalVisible);
+                navigation.replace('finalpage');
+        })
+      }
       })
       .catch(e => {
         console.log(e);
@@ -121,7 +147,7 @@ const Cartpage = () => {
       .get(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
           sheetid +
-          '/values/Sheet3',
+          '/values/Produk',
         {
           headers: {
             Authorization: 'Bearer ' + token,
@@ -139,11 +165,11 @@ const Cartpage = () => {
         }
         const f = b.sort((a, b) => (a[4] > b[4] ? 1 : -1));
 
-        for (let i = 0; i < CartReducer.cartitem.length; i++) {
+        
           if (f[0][0][4] == 0) {
             checkstok = true;
-            break;
           } else {
+            for (let i = 0; i < CartReducer.cartitem.length; i++) {
             indexs.push(
               res.data.values.findIndex(e => e[0] == value[i].item[0]) + 1,
             );
@@ -199,7 +225,7 @@ const Cartpage = () => {
         // }
       })
       .catch(e => {
-        console.log;
+        console.log(e);
       });
   };
   const onPressTunai = type => {
