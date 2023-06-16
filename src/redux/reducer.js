@@ -126,7 +126,7 @@ const inistialStateForm = {
     form: {
         namaproduk: null,
         hargaproduk: null,
-        deskproduk: null,
+        kategoriproduk: null,
     },
 }
 
@@ -145,7 +145,7 @@ const FormReducer = (state = inistialStateForm, action) => {
             form: {
                 namaproduk: null,
                 hargaproduk: null,
-                deskproduk: null,
+                kategoriproduk: null,
             }
         }
     }

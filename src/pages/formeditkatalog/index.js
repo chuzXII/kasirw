@@ -93,8 +93,7 @@ const FormEdit = ({route, navigation}) => {
               id: params.id,
               namaproduk: params.data[1],
               hargaproduk:params.data[2],
-              stokterjual:params.data[3],
-              stok: params.data[4],
+              kategoriproduk:params.data[3],
             });
     } catch (error) {
       console.log(error);
@@ -121,12 +120,12 @@ const FormEdit = ({route, navigation}) => {
               onChangeText={value => onInputChange(value, 'hargaproduk')}
               keyboardType={'number-pad'}
             />
-            <Label label={'Stok'} />
+            <Label label={'Kategori Produk'} />
             <Input
              keyboardType={'number-pad'}
-              input={'Stok'}
-              value={Form.stok}
-              onChangeText={value => onInputChange(value, 'stok')}
+              input={'Kategori Produk'}
+              value={Form.kategoriproduk}
+              onChangeText={value => onInputChange(value, 'kategoriproduk')}
             />
             <View style={styles.wrapbutton}>
               {Form.namaproduk == null ||
@@ -137,8 +136,8 @@ const FormEdit = ({route, navigation}) => {
               Form.hargaproduk
                 .replace(/^\s+/, '')
                 .replace(/\s+$/, '') == '' ||
-                Form.stok == null ||
-                Form.stok
+                Form.kategoriproduk == null ||
+                Form.kategoriproduk
                 .replace(/^\s+/, '')
                 .replace(/\s+$/, '') == '' ? (
                 <View style={styles.wrapbuttonsub}>

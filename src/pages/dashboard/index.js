@@ -11,21 +11,21 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Cardcatalog from '../../component/CardCatalog';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useSelector} from 'react-redux';
-import {useDispatch} from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // import dbConn from '../../sqlite';
 // import RNFS from 'react-native-fs';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {emptyproduct} from '../../assets/image';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { emptyproduct } from '../../assets/image';
 import moment from 'moment';
 import axios from 'axios';
 import FloatingBtn from '../../component/FloatingBtn';
-import {ScrollView} from 'react-native-gesture-handler';
-import {MasonryFlashList} from '@shopify/flash-list';
-import { Ifilter} from '../../assets/icon';
+import { ScrollView } from 'react-native-gesture-handler';
+import { MasonryFlashList } from '@shopify/flash-list';
+import { Ifilter } from '../../assets/icon';
 
 const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -42,13 +42,13 @@ const Dashboard = () => {
   const [modalVisibleCategory, setModalVisibleCategory] = useState(false);
 
   const datacategory = [
-    {id: 1, category: 'All'},
-    {id: 2, category: 'Mod'},
-    {id: 3, category: 'Pod'},
-    {id: 4, category: 'Accecories'},
-    {id: 5, category: 'Authomizer'},
-    {id: 6, category: 'Freebase'},
-    {id: 7, category: 'Saltnic'},
+    { id: 1, category: 'All' },
+    { id: 2, category: 'Mod' },
+    { id: 3, category: 'Pod' },
+    { id: 4, category: 'Accecories' },
+    { id: 5, category: 'Authomizer' },
+    { id: 6, category: 'Freebase' },
+    { id: 7, category: 'Saltnic' },
   ];
   const isPortrait = () => {
     const dim = Dimensions.get('screen');
@@ -63,123 +63,136 @@ const Dashboard = () => {
   });
 
   const get = async () => {
-    
+
     setModalVisibleLoading(true);
-      // dbConn.transaction(tx => {
-      //   // tx.executeSql('DROP TABLE IF EXISTS produk')
-      //   tx.executeSql(
-      //     'CREATE TABLE IF NOT EXISTS produk(id_produk INTEGER PRIMARY KEY AUTOINCREMENT,namaproduk VARCHAR(100) NOT NULL,hargaproduk VARCHAR(50) NOT NULL,deskproduk VARCHAR(255) NOT NULL,imgname VARCHAR(255) NOT NULL);',
-      //   );
-      // });
-      // dbConn.transaction(tx => {
-      //   tx.executeSql('SELECT * FROM produk', [], (tr, result) => {
-      //     // console.log('exe berhasil')
-      //     var rows = result.rows;
-      //     var total = 0;
-      //     var data = [];
-      //     for (let i = 0; i < rows.length; i++) {
-      //       let item = rows.item(i);
-      //       data.push(item);
-      //       total += parseInt(data[i].hargaproduk);
-      //     }
-      //     setItems(data);
-      //   });
-      // });
-      const sheetid = await AsyncStorage.getItem('TokenSheet');
-      const token = await AsyncStorage.getItem('tokenAccess');
-      await axios
-        .get(
-          'https://sheets.googleapis.com/v4/spreadsheets/' +
-            sheetid +
-            '/values/Produk',
-          {
-            headers: {
-              Authorization: 'Bearer ' + token,
-            },
+    // dbConn.transaction(tx => {
+    //   // tx.executeSql('DROP TABLE IF EXISTS produk')
+    //   tx.executeSql(
+    //     'CREATE TABLE IF NOT EXISTS produk(id_produk INTEGER PRIMARY KEY AUTOINCREMENT,namaproduk VARCHAR(100) NOT NULL,hargaproduk VARCHAR(50) NOT NULL,deskproduk VARCHAR(255) NOT NULL,imgname VARCHAR(255) NOT NULL);',
+    //   );
+    // });
+    // dbConn.transaction(tx => {
+    //   tx.executeSql('SELECT * FROM produk', [], (tr, result) => {
+    //     // console.log('exe berhasil')
+    //     var rows = result.rows;
+    //     var total = 0;
+    //     var data = [];
+    //     for (let i = 0; i < rows.length; i++) {
+    //       let item = rows.item(i);
+    //       data.push(item);
+    //       total += parseInt(data[i].hargaproduk);
+    //     }
+    //     setItems(data);
+    //   });
+    // });
+    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    const token = await AsyncStorage.getItem('tokenAccess');
+    await axios
+      .get(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+        sheetid +
+        '/values/Produk',
+        {
+          headers: {
+            Authorization: 'Bearer ' + token,
           },
-        )
-        .then(res => {
-  
+        },
+      )
+      .then(res => {
 
-          // const a = res.data.values.filter(item=>item[0]==3)
-          // console.log(a[0][1].length)
-          if (res.data.values == undefined) {
-            setItems([]);
-            setRefreshing(false);
 
-            setModalVisibleLoading(false);
-          } else {
-            setItems(res.data.values);
-            setLengthData(res.data.values.length)
-            setRefreshing(false);
-            setDumyData(res.data.values);
-            setModalVisibleLoading(false);
-          }
-        }).catch(error => {
-          if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
-            console.log(error.response.data);
-            console.log(error.response.status);
-            console.log(error.response.headers);
-            alert(error.message);
-      setRefreshing(false);
-  
-          } else if (error.request) {
-            // The request was made but no response was received
-            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-            // http.ClientRequest in node.js
-            console.log(error.request);
-            alert(error.message);
-      setRefreshing(false);
-  
-          } else {
-            // Something happened in setting up the request that triggered an Error
-            console.log('Error', error.message);
-            alert(error.message);
-      setRefreshing(false);
-  
-          }
-          // console.log(error.config);
-        });
-        
+        // const a = res.data.values.filter(item=>item[0]==3)
+        // console.log(a[0][1].length)
+        if (res.data.values == undefined) {
+          setItems([]);
+          setRefreshing(false);
+
+          setModalVisibleLoading(false);
+        } else {
+          setItems(res.data.values);
+          setLengthData(res.data.values.length)
+          setRefreshing(false);
+          setDumyData(res.data.values);
+          setModalVisibleLoading(false);
+        }
+      }).catch(error => {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+          alert(error.message);
+          setRefreshing(false);
+
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log(error.request);
+          alert(error.message);
+          setRefreshing(false);
+
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message);
+          alert(error.message);
+          setRefreshing(false);
+
+        }
+        // console.log(error.config);
+      });
+
   };
   // navigation.addListener('focus', get)
 
   const onlongpress = () => {
-    dispatch({type: 'REMOVEALL'});
+    dispatch({ type: 'REMOVEALL' });
   };
   const Filter = (textinput, category) => {
-    if(category.toLowerCase()=='all'){
-      setItems(DumyData)
-      setModalVisibleCategory(!modalVisibleCategory)
+    if (textinput == null) {
+      if (category.toLowerCase() == 'all') {
+        setItems(DumyData)
+        setModalVisibleCategory(!modalVisibleCategory)
+      }
+      else {
+        const a = DumyData.filter(fill => fill[3] != null ? fill[3].toLowerCase() == category.toLowerCase() : null)
+        setItems(a)
+        // console.log(a)
+        setModalVisibleCategory(!modalVisibleCategory)
+      }
     }
-    else{
-      const a = DumyData.filter(fill=>fill[5]!=null?fill[5].toLowerCase()==category.toLowerCase():null)
-   
-      setItems(a)
-      setModalVisibleCategory(!modalVisibleCategory)
+    else {
+      const input = textinput.toLowerCase()
+      if (textinput.toLowerCase() == ' ' || textinput.toLowerCase() == null) {
+        setItems(DumyData)
+        console.log(DumyData)
+      }
+      else {
+        const results = DumyData.filter(product => {
+          productName = product[1].toLowerCase();
+          return productName.includes(textinput.toLowerCase());
+        });
+
+        // console.log(results)
+        setItems(results)
+        // setSearchResults(results);
+        // const it = DumyData
+        // var outputText = ''
+        // const a = it
+        // for (let i = 0; i < a.length; i++) {
+        //   for (let j = 0; j < a[i].length; j++) {
+        //     if (a[i][j].search(textinput.toLowerCase() != -1)) {
+        //       outputText += '[' + a[i] + '],'
+        //       break;
+        //     }
+        //   }
+        // }
+        // setItems(outputText)
+      }
     }
-    // const input =textinput.toLowerCase()
-  //  if(textinput.toLowerCase()==' '||textinput.toLowerCase()==null){
-  //   setItems(DumyData)
-  //   console.log(DumyData)
-  //  }
-  //  else{
-  //   const it=  DumyData
-  //   var outputText=''
-  //  const a = it
-  //   for (let i = 0; i < a.length; i++) {
-  //     for (let j = 0; j < a[i].length; j++) {
-  //       if (a[i][j].search( textinput.toLowerCase()!=-1)) {
-  //         outputText+='['+a[i]+'],'
-  //         break;
-  //       }
-  //     }
-  //   }
-  //       setItems(outputText)
-  //  }
-  
+
+
   };
 
   const renderitem = (item) => {
@@ -204,17 +217,17 @@ const Dashboard = () => {
         <View style={styles.kontenheader}>
           <TextInput
             placeholderTextColor={'#000'}
-            placeholder="Search (In Development...)"
+            placeholder="Search"
             style={styles.search}
-            editable={false}
-           onChangeText={(value)=>Filter(value,null)}
+            editable={true}
+            onChangeText={(value) => Filter(value, null)}
           />
           <TouchableOpacity
             style={styles.filter}
             onPress={() => {
               setModalVisibleCategory(true);
             }}>
-           <Ifilter/>
+            <Ifilter />
           </TouchableOpacity>
         </View>
       </View>
@@ -227,11 +240,11 @@ const Dashboard = () => {
           </View>
         ) : (
           <MasonryFlashList
-          data={item}
-          numColumns={2}
-          renderItem={(item) => renderitem(item.item)}
-          estimatedItemSize={LengthData}
-          refreshing={refreshing} onRefresh={onRefresh}
+            data={item}
+            numColumns={2}
+            renderItem={(item) => renderitem(item.item)}
+            estimatedItemSize={LengthData}
+            refreshing={refreshing} onRefresh={onRefresh}
           />
         )}
       </View>
@@ -294,9 +307,9 @@ const Dashboard = () => {
               width: Dwidth / 1.2,
               height: Dheight / 2.5,
               borderRadius: 12,
-             
+
             }}>
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   color: '#000',
@@ -307,14 +320,14 @@ const Dashboard = () => {
                 }}>
                 Category
               </Text>
-              <ScrollView style={{flex: 1, marginBottom: 42}}>
+              <ScrollView style={{ flex: 1, marginBottom: 42 }}>
                 {datacategory.map((item, i) => {
                   return (
                     <TouchableOpacity
                       key={i}
                       style={styles.btnitemcategory}
                       onPress={() => Filter(null, item.category)}>
-                      <Text style={{color: '#000', textAlign: 'center'}}>
+                      <Text style={{ color: '#000', textAlign: 'center' }}>
                         {item.category}
                       </Text>
                     </TouchableOpacity>
@@ -342,7 +355,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: '100%',
     height: 70,
-    alignItems:'center'
+    alignItems: 'center'
 
   },
   kontenheader: {
@@ -364,8 +377,8 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     borderWidth: 1,
     padding: 10,
-    alignItems:'center',
-    justifyContent:'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   wrapCard: {
     marginHorizontal: 4.2,
@@ -391,7 +404,7 @@ const styles = StyleSheet.create({
     // flexWrap: 'wrap',
     // flexDirection: 'row',
     // flexBasis: '50%',
-    
+
     marginLeft: Dwidth * 0.03,
     flex: 1,
   },

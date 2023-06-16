@@ -15,7 +15,7 @@ const ItemKatalog = ({item, ...res}) => {
       }}
       {...res}>
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        {item[6] == undefined ? (
+        {item[4] == undefined ? (
           item[1].split(' ').length <= 1 ? (
             <View
               style={{
@@ -52,14 +52,14 @@ const ItemKatalog = ({item, ...res}) => {
             </View>
           )
         ) : (
-          <Image source={{uri: item[6]}} style={styles.image}></Image>
+          <Image source={{uri: item[4]}} style={styles.image}></Image>
         )}
         <View style={{flex: 5, marginLeft: 12}}>
           <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
             {item[1]}
           </Text>
           <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Light'}}>
-            Stok : {item[4]}
+            Kategori : {item[3]}
           </Text>
         </View>
 

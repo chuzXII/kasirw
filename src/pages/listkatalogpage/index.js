@@ -87,16 +87,34 @@ const ListKatalog = ({navigation}) => {
     }
   };
   const Filter = (textinput, category) => {
-    if(category.toLowerCase()=='all'){
-      setData(DumyData)
-      setModalVisibleCategory(!modalVisibleCategory)
+    if (textinput == null) {
+      if (category.toLowerCase() == 'all') {
+        setData(DumyData)
+        setModalVisibleCategory(!modalVisibleCategory)
+      }
+      else {
+        const a = DumyData.filter(fill => fill[3] != null ? fill[3].toLowerCase() == category.toLowerCase() : null)
+        setData(a)
+        // console.log(a)
+        setModalVisibleCategory(!modalVisibleCategory)
+      }
     }
-    else{
-      const a = DumyData.filter(fill=>fill[5]!=null?fill[5].toLowerCase()==category.toLowerCase():null)
-      setData(a)
-      setModalVisibleCategory(!modalVisibleCategory)
+    else {
+      const input = textinput.toLowerCase()
+      if (input == ' ' || input == null) {
+        setData(DumyData)
+      }
+      else {
+        const results = DumyData.filter(product => {
+          productName = product[1].toLowerCase();
+          return productName.includes(input);
+        });
+        setData(results)
+      }
     }
-  }
+
+
+  };
   const onRefresh = async () => {
     setRefreshing(true);
     get();
@@ -138,9 +156,9 @@ const ListKatalog = ({navigation}) => {
         <View style={styles.kontenheader}>
           <TextInput
             placeholderTextColor={'#000'}
-            placeholder="Search (In Development...)"
+            placeholder="Search"
             style={styles.search}
-            editable={false}
+            editable={true}
            onChangeText={(value)=>Filter(value,null)}
           />
           <TouchableOpacity

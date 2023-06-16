@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-const FormDiskon = ({navigation}) => {
+const FormDiskon = ({ navigation }) => {
   const [namadiskon, setnamadiskon] = useState('');
   const [diskon, setdiskon] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
@@ -29,6 +30,33 @@ const FormDiskon = ({navigation}) => {
       [input]: value,
     });
   };
+  const urladd = async(ispersen) => {
+    try {
+      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const token = await AsyncStorage.getItem('tokenAccess');
+      const data = [[namadiskon, ispersen==true?diskon+"-%":diskon]]
+
+      axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
+        sheetid +
+        '/values/Diskon!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
+          values: data,
+        }),
+        {
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+        },).then(() => {
+          navigation.navigate('diskonpage');
+
+          // dispatch({ type: 'RM_FORM' })
+          // navigation.navigate('dashboard');
+          // setCheck(!Check)
+        })
+    } catch (e) {
+      console.log('EE' + e);
+    }
+  }
 
   const onPressSubmit = async () => {
     if (
@@ -39,65 +67,80 @@ const FormDiskon = ({navigation}) => {
     ) {
       alert('Tidak Boleh Kosong');
     } else {
-      if(!isEnabled){
+      if (!isEnabled) {
         if (diskon.replace(/\s/g, '') <= 0 || diskon.replace(/\s/g, '') > 100) {
           alert('Nominal Diskon 1-100');
         } else {
-          await AsyncStorage.getItem('iddiskon').then(async value => {
-            const id = 0;
-            if (value == null) {
-              const u = id + 1;
-              AsyncStorage.setItem('iddiskon', JSON.stringify(u));
-            } else {
-              AsyncStorage.setItem(
-                'iddiskon',
-                JSON.stringify(parseInt(value) + 1),
-              );
-            }
-            await AsyncStorage.getItem('formdiskon').then(async value => {
-              const id = await AsyncStorage.getItem('iddiskon');
-              const c = value ? JSON.parse(value) : [];
-              c.push({iddiskon: id, nama: namadiskon, diskon: diskon.replace(/\s/g, '')+'-%'});
-              AsyncStorage.setItem('formdiskon', JSON.stringify(c));
-            });
-            alert('berhasil');
-            navigation.navigate('diskonpage');
-          });
+          urladd(true)
         }
+
       }
-      else{
+      else {
         if (diskon.replace(/\s/g, '') <= 0) {
           alert('Nominal Diskon Tidak Bisa Nol Atau Negatif');
-        }else{
-          await AsyncStorage.getItem('iddiskon').then(async value => {
-            const id = 0;
-            if (value == null) {
-              const u = id + 1;
-              AsyncStorage.setItem('iddiskon', JSON.stringify(u));
-            } else {
-              AsyncStorage.setItem(
-                'iddiskon',
-                JSON.stringify(parseInt(value) + 1),
-              );
-            }
-            await AsyncStorage.getItem('formdiskon').then(async value => {
-              const id = await AsyncStorage.getItem('iddiskon');
-              const c = value ? JSON.parse(value) : [];
-              c.push({iddiskon: id, nama: namadiskon, diskon: diskon.replace(/\s/g, '')});
-              AsyncStorage.setItem('formdiskon', JSON.stringify(c));
-            });
-            alert('berhasil');
-            navigation.navigate('diskonpage');
-          });
+        } else {
+          urladd(false)
         }
       }
-     
+      // if(!isEnabled){
+      //   if (diskon.replace(/\s/g, '') <= 0 || diskon.replace(/\s/g, '') > 100) {
+      //     alert('Nominal Diskon 1-100');
+      //   } else {
+      // await AsyncStorage.getItem('iddiskon').then(async value => {
+      //   const id = 0;
+      //   if (value == null) {
+      //     const u = id + 1;
+      //     AsyncStorage.setItem('iddiskon', JSON.stringify(u));
+      //   } else {
+      //     AsyncStorage.setItem(
+      //       'iddiskon',
+      //       JSON.stringify(parseInt(value) + 1),
+      //     );
+      //   }
+      //   await AsyncStorage.getItem('formdiskon').then(async value => {
+      //     const id = await AsyncStorage.getItem('iddiskon');
+      //     const c = value ? JSON.parse(value) : [];
+      //     c.push({iddiskon: id, nama: namadiskon, diskon: diskon.replace(/\s/g, '')+'-%'});
+      //     AsyncStorage.setItem('formdiskon', JSON.stringify(c));
+      //   });
+      //   alert('berhasil');
+      //   navigation.navigate('diskonpage');
+      // });
+      //   }
+      // }
+      // else{
+      //   if (diskon.replace(/\s/g, '') <= 0) {
+      //     alert('Nominal Diskon Tidak Bisa Nol Atau Negatif');
+      //   }else{
+      // await AsyncStorage.getItem('iddiskon').then(async value => {
+      //   const id = 0;
+      //   if (value == null) {
+      //     const u = id + 1;
+      //     AsyncStorage.setItem('iddiskon', JSON.stringify(u));
+      //   } else {
+      //     AsyncStorage.setItem(
+      //       'iddiskon',
+      //       JSON.stringify(parseInt(value) + 1),
+      //     );
+      //   }
+      //   await AsyncStorage.getItem('formdiskon').then(async value => {
+      //     const id = await AsyncStorage.getItem('iddiskon');
+      //     const c = value ? JSON.parse(value) : [];
+      //     c.push({iddiskon: id, nama: namadiskon, diskon: diskon.replace(/\s/g, '')});
+      //     AsyncStorage.setItem('formdiskon', JSON.stringify(c));
+      //   });
+      //   alert('berhasil');
+      //   navigation.navigate('diskonpage');
+      // });
+      //   }
+      // }
+
     }
   };
 
   return (
-    <View style={{justifyContent: 'space-between', flex: 1}}>
-      <View style={{marginHorizontal: 18, marginTop: 12}}>
+    <View style={{ justifyContent: 'space-between', flex: 1 }}>
+      <View style={{ marginHorizontal: 18, marginTop: 12 }}>
         <Text
           style={{
             color: '#000',
@@ -120,7 +163,7 @@ const FormDiskon = ({navigation}) => {
           value={namadiskon}
           onChangeText={value => setnamadiskon(value)}
         />
-        <View style={{flexDirection: 'row',justifyContent:'space-between'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text
             style={{
               color: '#000',
@@ -130,7 +173,7 @@ const FormDiskon = ({navigation}) => {
             }}>
             Diskon
           </Text>
-          <View style={{flexDirection: 'row',alignItems:'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text
               style={{
                 color: '#000',
@@ -140,7 +183,7 @@ const FormDiskon = ({navigation}) => {
               Ganti Format
             </Text>
             <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
               thumbColor={isEnabled ? '#9B5EFF' : '#f4f3f4'}
               onValueChange={toggleSwitch}
               value={isEnabled}
@@ -159,12 +202,12 @@ const FormDiskon = ({navigation}) => {
               alignItems: 'center',
               flexDirection: 'row',
             }}>
-            <Text style={{color: '#000'}}>Rp.</Text>
+            <Text style={{ color: '#000' }}>Rp.</Text>
             <TextInput
               placeholder="Masukan Diskon"
               keyboardType="number-pad"
               style={{
-                flex:1,
+                flex: 1,
                 color: '#000',
                 maxWidth: '90%',
               }}
@@ -189,7 +232,7 @@ const FormDiskon = ({navigation}) => {
               placeholder="Masukan Diskon"
               keyboardType="number-pad"
               style={{
-                flex:1,
+                flex: 1,
                 color: '#000',
                 maxWidth: '90%',
               }}
@@ -197,7 +240,7 @@ const FormDiskon = ({navigation}) => {
               value={diskon}
               onChangeText={value => setdiskon(value)}
             />
-            <Text style={{color: '#000', marginRight: 12}}>%</Text>
+            <Text style={{ color: '#000', marginRight: 12 }}>%</Text>
           </View>
         )}
       </View>
@@ -212,7 +255,7 @@ const FormDiskon = ({navigation}) => {
         onPress={() => {
           onPressSubmit();
         }}>
-        <Text style={{color: '#fff', fontSize: 18, fontWeight: '500'}}>
+        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500' }}>
           Simpan
         </Text>
       </TouchableOpacity>

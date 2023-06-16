@@ -11,15 +11,15 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {emptyproduct} from '../../assets';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
+import { emptyproduct } from '../../assets';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import DateRangePicker from 'rn-select-date-range';
-import {Icash} from '../../assets/icon';
-import {FlashList} from '@shopify/flash-list';
+import { Icash } from '../../assets/icon';
+import { FlashList } from '@shopify/flash-list';
 
 const HistoryPage = () => {
   const [Data, setData] = useState();
@@ -36,7 +36,7 @@ const HistoryPage = () => {
     return (
       <TouchableOpacity
         style={{
-          flex:1,
+          flex: 1,
           backgroundColor: '#fff',
           marginVertical: 8,
           padding: 12,
@@ -60,7 +60,7 @@ const HistoryPage = () => {
               alignItems: 'center',
             }}>
             <Icash />
-            <View style={{marginLeft: 12}}>
+            <View style={{ marginLeft: 12 }}>
               <Text
                 style={{
                   color: '#000',
@@ -71,12 +71,12 @@ const HistoryPage = () => {
                 {itemdata[0][7].split(' ').length == 1
                   ? currency.format(itemdata[1])
                   : itemdata[0][7].split(' ')[1].split('-').length <= 1
-                  ? currency.format(itemdata[1] - itemdata[0][7].split(' ')[1])
-                  : currency.format(
+                    ? currency.format(itemdata[1] - itemdata[0][7].split(' ')[1])
+                    : currency.format(
                       itemdata[1] -
-                        (itemdata[1] *
-                          itemdata[0][7].split(' ')[1].split('-')[0]) /
-                          100,
+                      (itemdata[1] *
+                        itemdata[0][7].split(' ')[1].split('-')[0]) /
+                      100,
                     )}
               </Text>
               <Text
@@ -91,8 +91,8 @@ const HistoryPage = () => {
               </Text>
             </View>
           </View>
-          <View style={{alignItems: 'flex-end'}}>
-            <Text style={{color: '#000'}}>{itemdata[0][0]}</Text>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={{ color: '#000' }}>{itemdata[0][0]}</Text>
             <View
               style={{
                 backgroundColor:
@@ -102,7 +102,7 @@ const HistoryPage = () => {
                 marginTop: 4,
                 borderRadius: 4,
               }}>
-              <Text style={{color: '#fff'}}>{itemdata[0][10]}</Text>
+              <Text style={{ color: '#fff' }}>{itemdata[0][10]}</Text>
             </View>
           </View>
         </View>
@@ -111,7 +111,7 @@ const HistoryPage = () => {
   };
   const renderItem = Item => {
     return (
-      <View style={{marginHorizontal: 12,}}>
+      <View style={{ marginHorizontal: 12, }}>
         <View
           style={{
             flexDirection: 'row',
@@ -119,7 +119,7 @@ const HistoryPage = () => {
             alignItems: 'center',
             marginTop: 16,
           }}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
                 color: '#000',
@@ -136,39 +136,28 @@ const HistoryPage = () => {
             </Text>
           </View>
 
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
+          <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
             Rp.
             {currency.format(
               Item.data.reduce(
                 (result, item) =>
-                  item[0][7].split(' ').length == 1
-                    ? parseInt(item[1]) + result
-                    : item[0][7].split(' ')[1].split('-').length == 1
-                    ? parseInt(item[1]) -
-                      item[0][7].split(' ')[1].split('-')[0] +
-                      result
-                    : parseInt(item[1]) -
-                      (parseInt(item[1]) *
-                        item[0][7].split(' ')[1].split('-')[0]) /
-                        100 +
-                      result,
-                0,
-              ),
-            )}
+                  result+item[1],0
+              ))
+            }
           </Text>
         </View>
-      
-      <View style={{flex:1}}>
-      <FlashList
-      drawDistance={12}
-          data={Item.data}
-          renderItem={item => renderSubItem(item.item)}
-          estimatedItemSize={70}
-        />
-      </View>
-       
-        
-    
+
+        <View style={{ flex: 1 }}>
+          <FlashList
+            drawDistance={12}
+            data={Item.data}
+            renderItem={item => renderSubItem(item.item)}
+            estimatedItemSize={70}
+          />
+        </View>
+
+
+
         <View
           style={{
             marginTop: 16,
@@ -186,8 +175,8 @@ const HistoryPage = () => {
     await axios
       .get(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Transaksi',
+        sheetid +
+        '/values/Transaksi',
         {
           headers: {
             Authorization: 'Bearer ' + token,
@@ -205,63 +194,113 @@ const HistoryPage = () => {
             '',
             'Belum Ada Data Silahkan Input Terlebih Dahulu',
             [
-              {text: 'Cancel', onPress: () => console.log('cancel')},
-              {text: 'OK', onPress: () => navigation.navigate('dashboard')},
+              { text: 'Cancel', onPress: () => console.log('cancel') },
+              { text: 'OK', onPress: () => navigation.navigate('dashboard') },
             ],
-            {cancelable: false},
+            { cancelable: false },
           );
         } else {
-          const j = res.data.values.filter(
-            fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
-          );
-          let b = Object.values(
-            j.reduce((acc, item) => {
-              if (!acc[item[0]])
-                acc[item[0]] = {
-                  job: [],
-                };
-              acc[item[0]].job.push(parseInt(item[3]) * parseInt(item[2]));
-              return acc;
-            }, {}),
+          // const j = res.data.values.filter(
+          //   fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
+          // );
+          // let b = Object.values(
+          //   j.reduce((acc, item) => {
+          //     if (!acc[item[0]])
+          //       acc[item[0]] = {
+          //         job: [],
+          //       };
+          //     acc[item[0]].job.push(parseInt(item[3]) * parseInt(item[2]));
+          //     return acc;
+          //   }, {}),
+          // )
+          // const n = b.map((items, i) =>
+          //   items.job.reduce((result, item) => parseInt(item) + result, 0),
+          // );
+          // const a = j.filter(
+          //   (value, index, self) =>
+          //     index === self.findIndex(t => t[0] === value[0]),
+          // );
+          // a.sort((a, b) => (a[6] > b[6] ? -1 : -1));
+          // n.sort((a, b) => (a[6] > b[6] ? 1 : -1));
+          // // console.log(n);
+          // let s = 0;
+          // const groups = a.reduce((groups, data) => {
+          //   const timestamp = data[6];
+
+          //   // if (!groups[date]&&!groups[timestamp]) {
+          //   if (!groups[timestamp]) {
+          //     // groups[date] = [];
+          //     groups[timestamp] = [];
+          //   }
+          //   groups[timestamp].push([data, n[s++]]);
+          //   return groups;
+          // }, {});
+          // // console.log(groups)
+
+          // const groupArrays = Object.keys(groups).map(timestamp => {
+          //   return {
+          //     timestamp,
+          //     date: moment(timestamp / 1000, 'X').toISOString(),
+          //     data: groups[timestamp],
+          //   };
+          // });
+          // const k = groupArrays.sort((a, b) => {
+          //   return b.timestamp - a.timestamp;
+          // });
+          // // setData(k);
+          // setModalVisibleLoading(false);
+          // setModalVisible(false)
+          // setRefreshing(false);
+          const filteredData = res.data.values.filter((fill) => {
+            const timestamp = fill[6];
+            return timestamp >= StartTimeStamp && timestamp <= EndTimeStamp;
+          });
+          
+          const uniqueFilteredData = [...new Set(filteredData.map(item => item[0]))];
+          const groupedData = uniqueFilteredData.map(groupId => {
+            const matchingItem = filteredData.find(item => item[0] === groupId);
+            const jobValue = parseInt(matchingItem[4]);
+            
+            return {
+              groupId,
+              job: [jobValue],
+            };
+          });
+          const totalPerGroup = groupedData.map(group => group.job[0]);
+
+          
+          const uniqueData = filteredData.filter((value, index, self) =>
+            index === self.findIndex(t => t[0] === value[0])
           );
 
-          const n = b.map((items, i) =>
-            items.job.reduce((result, item) => parseInt(item) + result, 0),
-          );
-          const a = j.filter(
-            (value, index, self) =>
-              index === self.findIndex(t => t[0] === value[0]),
-          );
-          a.sort((a, b) => (a[6] > b[6] ? -1 : -1));
-          n.sort((a, b) => (a[6] > b[6] ? 1 : -1));
-          // console.log(n);
-          let s = 0;
-          const groups = a.reduce((groups, data) => {
+          
+          uniqueData.sort((a, b) => a[6] > b[6] ? 1 : -1);
+          totalPerGroup.sort((a, b) => a[6] > b[6] ? 1 : -1);
+          
+          let a = 0;
+          const groups = uniqueData.reduce((groups, data) => {
             const timestamp = data[6];
-
-            // if (!groups[date]&&!groups[timestamp]) {
             if (!groups[timestamp]) {
-              // groups[date] = [];
               groups[timestamp] = [];
             }
-            groups[timestamp].push([data, n[s++]]);
+            groups[timestamp].push([data, totalPerGroup[a++]]);
             return groups;
           }, {});
 
-          const groupArrays = Object.keys(groups).map(timestamp => {
-            return {
-              timestamp,
-              date: moment(timestamp / 1000, 'X').toISOString(),
-              data: groups[timestamp],
-            };
-          });
-          const k = groupArrays.sort((a, b) => {
-            return b.timestamp - a.timestamp;
-          });
-          setData(k);
+          
+          const groupedArrays = Object.keys(groups).map(timestamp => ({
+            timestamp,
+            date: moment(timestamp / 1000, 'X').toISOString(),
+            data: groups[timestamp],
+          }));
+          
+          const sortedData = groupedArrays.sort((a, b) => b.timestamp - a.timestamp);
+          
+          setData(sortedData);
           setModalVisibleLoading(false);
-          setModalVisible(false)
+          setModalVisible(false);
           setRefreshing(false);
+          
         }
       })
       .catch(error => {
@@ -297,8 +336,8 @@ const HistoryPage = () => {
     get();
   }, [isFocused, StartDate]);
   return (
-    <View style={{backgroundColor: '#fff', flex: 1}}>
-      <View style={{elevation: 6, backgroundColor: '#fff'}}>
+    <View style={{ backgroundColor: '#fff', flex: 1 }}>
+      <View style={{ elevation: 6, backgroundColor: '#fff' }}>
         <TouchableOpacity
           onPress={() => setModalVisible(true)}
           style={{
@@ -309,15 +348,15 @@ const HistoryPage = () => {
             margin: 12,
             borderRadius: 12,
           }}>
-          <View style={{flexDirection: 'row'}}>
-            <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
               {moment(StartDate).format('DD-MM-yyyy')}
             </Text>
-            <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+            <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
               {' '}
               ---{' '}
             </Text>
-            <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
+            <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
               {moment(EndDate).format('DD-MM-yyyy')}
             </Text>
           </View>
@@ -330,8 +369,8 @@ const HistoryPage = () => {
           </View>
         </View>
       ) : (
-      
-        <View style={{flex:1}}>
+
+        <View style={{ flex: 1 }}>
           <FlashList
             data={Data}
             renderItem={item => renderItem(item.item)}
@@ -340,8 +379,8 @@ const HistoryPage = () => {
             onRefresh={onRefresh}
           />
         </View>
-          
-  
+
+
       )}
       <Modal transparent={true} visible={modalVisibleLoading}>
         <View
@@ -363,11 +402,11 @@ const HistoryPage = () => {
           setModalVisible(!modalVisible);
         }}>
         <TouchableOpacity
-          style={{backgroundColor: 'rgba(0, 0, 0, 0.5)', flex: 1}}
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', flex: 1 }}
           onPress={() => setModalVisible(!modalVisible)}
           activeOpacity={1}>
           <View style={styles.modalView}>
-            <View style={{marginHorizontal: 20, marginVertical: 18}}>
+            <View style={{ marginHorizontal: 20, marginVertical: 18 }}>
               <DateRangePicker
                 DateRangePicker
                 onSelectDateRange={range => {

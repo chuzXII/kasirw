@@ -23,7 +23,8 @@ import FormDiskon from '../pages/formdiskon';
 import ListKatalog from '../pages/listkatalogpage';
 import FormEdit from '../pages/formeditkatalog';
 import PengeluaranPage from '../pages/pengeluaranpage';
-import HistoryPengeluaran from '../pages/historypengeluaran';
+import StatistikPage from '../pages/statistikpage';
+
 
 
 const Routes = ({navigation}) => {
@@ -61,8 +62,8 @@ const Routes = ({navigation}) => {
       <Drawer.Screen name='listkatalog' component={ListKatalog} options={{ title: 'Daftar Katalog',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
       <Drawer.Screen name='historypage' component={HistoryPage} options={{ title: 'Riwayat Transaksi',drawerIcon:({focused, size})=>(<Ihistory/>)}}/>
       <Drawer.Screen name='diskonpage' component={DiskonPage} options={{ title: 'Diskon',drawerIcon:({focused, size})=>(<Idiskon/>)}}/>
-      {/* <Drawer.Screen name='pengeluaranpage' component={PengeluaranPage} options={{ title: 'Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
-      {/* <Drawer.Screen name='historypengeluaran' component={HistoryPengeluaran} options={{ title: 'Riwayat Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
+      <Drawer.Screen name='pengeluaranpage' component={PengeluaranPage} options={{ title: 'Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
+      {/* <Drawer.Screen name='statistikpage' component={StatistikPage} options={{ title: 'Statistik',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
       <Drawer.Screen name='setupage' component={Setupage} options={{ title: 'Setup Spreedsheet',headerShown: false ,drawerIcon:({focused, size})=>(<Isexcel/>)}}/>
       <Drawer.Screen name='SetupPrinter' component={SetupPrinter} options={{ title: 'Setup Printer',headerShown: false,drawerIcon:({focused, size})=>(<Isprint/>) }}/>
       <Drawer.Screen name='aboutpage' component={AboutPage} options={{ title: 'About',headerShown: false,drawerIcon:({focused, size})=>(<Iabout/>)}}/>

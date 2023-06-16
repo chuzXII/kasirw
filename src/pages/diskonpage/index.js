@@ -8,14 +8,15 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import ItemDiskon from '../../component/ItemDiskon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ScrollView} from 'react-native-gesture-handler';
-import {useIsFocused} from '@react-navigation/native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { useIsFocused } from '@react-navigation/native';
+import axios from 'axios';
 
-const DiskonPage = ({navigation}) => {
-  const [Data, setData] = useState(null);
+const DiskonPage = ({ navigation }) => {
+  const [Data, setData] = useState([]);
   const [SelectData, setSelectData] = useState({});
   const [Index, setIndex] = useState();
   const [EditNama, setEditNama] = useState('');
@@ -34,80 +35,186 @@ const DiskonPage = ({navigation}) => {
   const isFocused = useIsFocused();
 
   const get = async () => {
-    await AsyncStorage.getItem('formdiskon').then(res => {
-      setData(JSON.parse(res));
-    });
+    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    const token = await AsyncStorage.getItem('tokenAccess');
+    await axios
+      .get(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+        sheetid +
+        '/values/Diskon',
+        {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      )
+      .then(res => {
+
+
+        // const a = res.data.values.filter(item=>item[0]==3)
+        // console.log(a[0][1].length)
+        if (res.data.values == undefined) {
+          setItems([]);
+          setRefreshing(false);
+
+          // setModalVisibleLoading(false);
+        } else {
+          setData(res.data.values);
+          // console.log(res.data.values)
+          // setItems(res.data.values);
+          // setLengthData(res.data.values.length)
+          // setRefreshing(false);
+          // setDumyData(res.data.values);
+          // setModalVisibleLoading(false);
+        }
+      }).catch(error => {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+          alert(error.message);
+          setRefreshing(false);
+
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log(error.request);
+          alert(error.message);
+          setRefreshing(false);
+
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message);
+          alert(error.message);
+          setRefreshing(false);
+
+        }
+        // console.log(error.config);
+      });
+
   };
-  const onPress = ({item, i}) => {
+  const onPress = ({ item, i }) => {
     setModalVisible(true);
     setIndex(i);
-    setEditNama(item.nama);
-    setEditDiskon(item.diskon.split('-')[0]);
-    setLengthindex(item.diskon.split('-').length)
+    setEditNama(item[1]);
+    setEditDiskon(item[2].split('-')[0]);
+    setLengthindex(item[2].split('-').length)
     setSelectData(item);
-    {item.diskon.split('-').length<=1?setIsEnabled(true):setIsEnabled(false)}
+    { item[2].split('-').length <= 1 ? setIsEnabled(true) : setIsEnabled(false) }
   };
+  const urledit = async (ispersen) => {
+    try {
+      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const token = await AsyncStorage.getItem('tokenAccess');
+
+      axios.post(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+        sheetid +
+        '/values:batchUpdate',
+        JSON.stringify({
+          data: {
+            values: [[SelectData[0], EditNama, ispersen == true ? EditDiskon + "-%" : EditDiskon]],
+            range: 'Diskon!A' + SelectData[0],
+          },
+          valueInputOption: 'USER_ENTERED',
+        }),
+        {
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      ).then(res => {
+        //  navigation.navigate('dashboard'); 
+          setCek(!Cek)
+
+        setModalVisible(!modalVisible);
+
+      })
+
+    } catch (e) {
+      console.log('EE' + e);
+    }
+  }
   const onPressedit = async () => {
     if (
-     EditNama == '' ||
-     EditNama == null ||
+      EditNama == '' ||
+      EditNama == null ||
       EditDiskon == '' ||
       EditDiskon == null
     ) {
       alert('Tidak Boleh Kosong');
     }
-    else{
-    if(!isEnabled){
-      //persen
-      if (EditDiskon <= 0 || EditDiskon > 100) {
-        alert('Nominal Diskon 1-100');
-      } else {
-      const newIngredients = Data.slice();
-      newIngredients[Index] = {
-        ...newIngredients[Index],
-        nama: EditNama,
-        diskon: EditDiskon+'-%',
-      };
-      await AsyncStorage.setItem('formdiskon', JSON.stringify(newIngredients));
-      setModalVisible(!modalVisible);
-      setCek(!Cek)
+    else {
+      if (!isEnabled) {
+        if (EditDiskon.replace(/\s/g, '') <= 0 || EditDiskon.replace(/\s/g, '') > 100) {
+          alert('Nominal Diskon 1-100');
+        } else {
+          urledit(true)
+        }
+
+      }
+      else {
+        if (EditDiskon.replace(/\s/g, '') <= 0) {
+          alert('Nominal Diskon Tidak Bisa Nol Atau Negatif');
+        } else {
+          urledit(false)
+        }
+      }
+      // if (!isEnabled) {
+      //   //persen
+      //   if (EditDiskon <= 0 || EditDiskon > 100) {
+      //     alert('Nominal Diskon 1-100');
+      //   } else {
+      //     const newIngredients = Data.slice();
+      //     newIngredients[Index] = {
+      //       ...newIngredients[Index],
+      //       nama: EditNama,
+      //       diskon: EditDiskon + '-%',
+      //     };
+      //     await AsyncStorage.setItem('formdiskon', JSON.stringify(newIngredients));
+      //     setModalVisible(!modalVisible);
+      //     setCek(!Cek)
+      //   }
+      // }
+      // else {
+      //   //decimal
+      //   if (EditDiskon <= 0) {
+      //     alert('Nominal Diskon Tidak Bisa Nol Atau Negatif');
+      //   } else {
+      //     const newIngredients = Data.slice();
+      //     newIngredients[Index] = {
+      //       ...newIngredients[Index],
+      //       nama: EditNama,
+      //       diskon: EditDiskon,
+      //     };
+      //     await AsyncStorage.setItem('formdiskon', JSON.stringify(newIngredients));
+      //     setModalVisible(!modalVisible);
+      //     setCek(!Cek)
+      //   }
+      // }
     }
-  }
-    else{
-      //decimal
-      if (EditDiskon <= 0) {
-        alert('Nominal Diskon Tidak Bisa Nol Atau Negatif');
-      }else{
-      const newIngredients = Data.slice();
-      newIngredients[Index] = {
-        ...newIngredients[Index],
-        nama: EditNama,
-        diskon: EditDiskon,
-      };
-      await AsyncStorage.setItem('formdiskon', JSON.stringify(newIngredients));
-      setModalVisible(!modalVisible);
-      setCek(!Cek)
-    }
-    }
-  }
-   
+
   };
-  const onLongPress =(index) => {
-    Alert.alert('Hapus','Yakin Mau Menghapus Data',[
-      {text:'Cancel',onPress:()=>console.log('cancel')},
-        {text:'OK',onPress:()=>onpressdelete(index)}
-    ],{cancelable:false})
-    
-  }
-  const onpressdelete=async(index)=>{
-      Data.splice(index,1)
-      await AsyncStorage.setItem('formdiskon', JSON.stringify(Data));
-      setCek(!Cek)
-      alert('Berhasil')
+  // const onLongPress = (index) => {
+  //   Alert.alert('Hapus', 'Yakin Mau Menghapus Data', [
+  //     { text: 'Cancel', onPress: () => console.log('cancel') },
+  //     { text: 'OK', onPress: () => onpressdelete(index) }
+  //   ], { cancelable: false })
+
+  // }
+  const onpressdelete = async (index) => {
+    Data.splice(index, 1)
+    await AsyncStorage.setItem('formdiskon', JSON.stringify(Data));
+    setCek(!Cek)
+    alert('Berhasil')
   }
   useEffect(() => {
     get();
-  }, [isFocused,Cek]);
+  }, [isFocused, Cek]);
   return (
     <View
       style={{
@@ -115,29 +222,28 @@ const DiskonPage = ({navigation}) => {
         flex: 1,
         backgroundColor: '#fff',
       }}>
-      <View style={{flex:1,marginHorizontal: 16}}>
-        <Text style={{color: '#000', marginTop: 8}}>List Diskon</Text>
-        <ScrollView style={{flex:1}}>
-          {Data &&
+      <View style={{ flex: 1, marginHorizontal: 16 }}>
+        <Text style={{ color: '#000', marginTop: 8 }}>List Diskon</Text>
+        <ScrollView style={{ flex: 1 }}>
+          {Data.length > 1 ?
             Data.map((item, i) => {
               return (
-                <View style={{marginVertical: 12}} key={i}>
+                <View style={{ marginVertical: 12 }} key={i}>
                   <ItemDiskon
-                    namadiskon={item.nama}
-                    diskon={item.diskon}
-                    onPress={() => onPress({item, i})}
-                    onLongPress={()=>onLongPress(i)}
+                    data={item}
+                    onPress={() => onPress({ item, i })}
+                  // onLongPress={() => onLongPress(i)}
                   />
-                </View>
-              );
-            })}
+                </View>)
+            })
+            : <View></View>}
         </ScrollView>
-      </View>
+      </View >
 
       <TouchableOpacity
-        style={{backgroundColor: '#9B5EFF', padding: 18, alignItems: 'center'}}
+        style={{ backgroundColor: '#9B5EFF', padding: 18, alignItems: 'center' }}
         onPress={() => navigation.navigate('formdiskon')}>
-        <Text style={{color: '#fff', fontSize: 18, fontWeight: '500'}}>
+        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500' }}>
           Tambah Diskon
         </Text>
       </TouchableOpacity>
@@ -146,7 +252,7 @@ const DiskonPage = ({navigation}) => {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(!modalVisible)}
-        key={SelectData.iddiskon}>
+        key={SelectData[0]}>
         <TouchableOpacity
           onPress={() => setModalVisible(!modalVisible)}
           style={{
@@ -163,7 +269,7 @@ const DiskonPage = ({navigation}) => {
                   fontSize: 24,
                   fontWeight: '500',
                 }}>
-                Edit
+                EDIT
               </Text>
 
               <Text
@@ -189,69 +295,69 @@ const DiskonPage = ({navigation}) => {
                   paddingHorizontal: 12,
                 }}
               />
-              <View style={{flexDirection: 'row',justifyContent:'space-between'}}>
-          <Text
-            style={{
-              color: '#000',
-              fontSize: 18,
-              fontWeight: '500',
-              marginVertical: 12,
-            }}>
-            Diskon
-          </Text>
-          <View style={{flexDirection: 'row',alignItems:'center'}}>
-            <Text
-              style={{
-                color: '#000',
-                fontSize: 14,
-                marginVertical: 12,
-              }}>
-              Ganti Format
-            </Text>
-            <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={isEnabled ? '#9B5EFF' : '#f4f3f4'}
-              onValueChange={toggleSwitch}
-              value={isEnabled}
-            />
-          </View>
-        </View>
-        {isEnabled?
-        <View style={{paddingHorizontal: 12,borderColor: '#18AECF', borderWidth: 1,borderRadius: 12,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-                <Text style={{color: '#000'}}>Rp.</Text>
-               <TextInput
-               keyboardType='number-pad'
-                 placeholder={'Nama Diskon'}
-                 value={EditDiskon}
-                 style={{
-                   color: '#000',
-                   fontSize: 16,
-                   flex:1
-                 }}
-                 placeholderTextColor={'#000'}
-                 onChangeText={value => setEditDiskon(value)}
-               />
-             
-             </View>
-: <View style={{borderColor: '#18AECF', borderWidth: 1,borderRadius: 12,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-               
-<TextInput
-keyboardType='number-pad'
-  placeholder={'Nama Diskon'}
-  value={EditDiskon}
-  style={{
-    color: '#000',
-    fontSize: 16,
-    paddingLeft: 12,
-    flex:1
-  }}
-  placeholderTextColor={'#000'}
-  onChangeText={value => setEditDiskon(value)}
-/>
-<Text style={{color: '#000',marginRight:12}}>%</Text>
-</View>
-}
-             
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text
+                  style={{
+                    color: '#000',
+                    fontSize: 18,
+                    fontWeight: '500',
+                    marginVertical: 12,
+                  }}>
+                  Diskon
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text
+                    style={{
+                      color: '#000',
+                      fontSize: 14,
+                      marginVertical: 12,
+                    }}>
+                    Ganti Format
+                  </Text>
+                  <Switch
+                    trackColor={{ false: '#767577', true: '#81b0ff' }}
+                    thumbColor={isEnabled ? '#9B5EFF' : '#f4f3f4'}
+                    onValueChange={toggleSwitch}
+                    value={isEnabled}
+                  />
+                </View>
+              </View>
+              {isEnabled ?
+                <View style={{ paddingHorizontal: 12, borderColor: '#18AECF', borderWidth: 1, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ color: '#000' }}>Rp.</Text>
+                  <TextInput
+                    keyboardType='number-pad'
+                    placeholder={'Nama Diskon'}
+                    value={EditDiskon}
+                    style={{
+                      color: '#000',
+                      fontSize: 16,
+                      flex: 1
+                    }}
+                    placeholderTextColor={'#000'}
+                    onChangeText={value => setEditDiskon(value)}
+                  />
+
+                </View>
+                : <View style={{ borderColor: '#18AECF', borderWidth: 1, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                  <TextInput
+                    keyboardType='number-pad'
+                    placeholder={'Nama Diskon'}
+                    value={EditDiskon}
+                    style={{
+                      color: '#000',
+                      fontSize: 16,
+                      paddingLeft: 12,
+                      flex: 1
+                    }}
+                    placeholderTextColor={'#000'}
+                    onChangeText={value => setEditDiskon(value)}
+                  />
+                  <Text style={{ color: '#000', marginRight: 12 }}>%</Text>
+                </View>
+              }
+
               <TouchableOpacity
                 style={{
                   padding: 12,
@@ -261,7 +367,7 @@ keyboardType='number-pad'
                   alignItems: 'center',
                 }}
                 onPress={() => onPressedit()}>
-                <Text style={{color: '#FFF', fontSize: 18, fontWeight: '500'}}>
+                <Text style={{ color: '#FFF', fontSize: 18, fontWeight: '500' }}>
                   Simpan
                 </Text>
               </TouchableOpacity>
@@ -269,7 +375,7 @@ keyboardType='number-pad'
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </View >
   );
 };
 

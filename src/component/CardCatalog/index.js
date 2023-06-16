@@ -60,7 +60,7 @@ const Cardcatalog = ({item, oriented}) => {
       style={styles.wrapCard(oriented)}
       onPress={() => handdlebutton()}>
       <View style={styles.wrapImg(oriented)}>
-        {item[6] == undefined ? (
+        {item[4] == undefined ? (
           item[1].split(' ').length <= 1 ? (
             <View
               style={{
@@ -92,7 +92,7 @@ const Cardcatalog = ({item, oriented}) => {
           )
         ) : (
           <Image
-            source={{uri: item[6]}}
+            source={{uri: item[4]}}
            
             style={styles.image}></Image>
         )}
@@ -101,7 +101,7 @@ const Cardcatalog = ({item, oriented}) => {
       <View style={styles.wrapContentCard}>
         <Text style={styles.textTitle}>{item[1]}</Text>
         <Text style={styles.textCategory}>{item[5]}</Text>
-        <Text style={styles.textStok}>Stok : {item[4]}</Text>
+        <Text style={styles.textStok}>Kategori : {item[3]}</Text>
         <Text style={styles.textHarga}>Rp.{currency.format(item[2])}</Text>
       </View>
     </TouchableOpacity>
