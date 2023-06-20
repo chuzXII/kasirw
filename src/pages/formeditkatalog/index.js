@@ -66,6 +66,7 @@ const FormEdit = ({route, navigation}) => {
       console.log('EE' + e);
     }
   };
+  
   const onInputChange = (value, input) => {
     setForm({
       ...Form,

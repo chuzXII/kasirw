@@ -14,17 +14,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
+import { FlashList } from '@shopify/flash-list';
 
 const DiskonPage = ({ navigation }) => {
   const [Data, setData] = useState([]);
   const [SelectData, setSelectData] = useState({});
-  const [Index, setIndex] = useState();
+
   const [EditNama, setEditNama] = useState('');
   const [EditDiskon, setEditDiskon] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [Cek, setCek] = useState(true);
   const [isEnabled, setIsEnabled] = useState();
-  const [LengthIndex, setLengthindex] = useState();
+
+  const [refreshing, setRefreshing] = useState(false);
+
 
   const toggleSwitch = () => {
     setIsEnabled(!isEnabled);
@@ -49,10 +52,6 @@ const DiskonPage = ({ navigation }) => {
         },
       )
       .then(res => {
-
-
-        // const a = res.data.values.filter(item=>item[0]==3)
-        // console.log(a[0][1].length)
         if (res.data.values == undefined) {
           setItems([]);
           setRefreshing(false);
@@ -60,11 +59,11 @@ const DiskonPage = ({ navigation }) => {
           // setModalVisibleLoading(false);
         } else {
           setData(res.data.values);
+          setRefreshing(false);
+
           // console.log(res.data.values)
           // setItems(res.data.values);
           // setLengthData(res.data.values.length)
-          // setRefreshing(false);
-          // setDumyData(res.data.values);
           // setModalVisibleLoading(false);
         }
       }).catch(error => {
@@ -98,10 +97,8 @@ const DiskonPage = ({ navigation }) => {
   };
   const onPress = ({ item, i }) => {
     setModalVisible(true);
-    setIndex(i);
     setEditNama(item[1]);
     setEditDiskon(item[2].split('-')[0]);
-    setLengthindex(item[2].split('-').length)
     setSelectData(item);
     { item[2].split('-').length <= 1 ? setIsEnabled(true) : setIsEnabled(false) }
   };
@@ -129,7 +126,7 @@ const DiskonPage = ({ navigation }) => {
         },
       ).then(res => {
         //  navigation.navigate('dashboard'); 
-          setCek(!Cek)
+        setCek(!Cek)
 
         setModalVisible(!modalVisible);
 
@@ -139,6 +136,10 @@ const DiskonPage = ({ navigation }) => {
       console.log('EE' + e);
     }
   }
+  const onRefresh = () => {
+    setRefreshing(true);
+    get();
+  };
   const onPressedit = async () => {
     if (
       EditNama == '' ||
@@ -212,6 +213,17 @@ const DiskonPage = ({ navigation }) => {
     setCek(!Cek)
     alert('Berhasil')
   }
+  const renderItem = item => {
+    return (
+      <View style={{ marginVertical: 12 }} >
+        <ItemDiskon
+          data={item}
+          onPress={() => onPress({ item, i })}
+        // onLongPress={() => onLongPress(i)}
+        />
+      </View>
+    )
+  }
   useEffect(() => {
     get();
   }, [isFocused, Cek]);
@@ -224,20 +236,17 @@ const DiskonPage = ({ navigation }) => {
       }}>
       <View style={{ flex: 1, marginHorizontal: 16 }}>
         <Text style={{ color: '#000', marginTop: 8 }}>List Diskon</Text>
-        <ScrollView style={{ flex: 1 }}>
+   
           {Data.length > 1 ?
-            Data.map((item, i) => {
-              return (
-                <View style={{ marginVertical: 12 }} key={i}>
-                  <ItemDiskon
-                    data={item}
-                    onPress={() => onPress({ item, i })}
-                  // onLongPress={() => onLongPress(i)}
-                  />
-                </View>)
-            })
+            <FlashList
+              data={Data}
+              renderItem={item => renderItem(item.item)}
+              estimatedItemSize={30}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
             : <View></View>}
-        </ScrollView>
+    
       </View >
 
       <TouchableOpacity

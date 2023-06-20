@@ -9,11 +9,13 @@ import {
 import React, { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useEffect } from 'react';
 
 const FormDiskon = ({ navigation }) => {
   const [namadiskon, setnamadiskon] = useState('');
   const [diskon, setdiskon] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
+  const [ID, setID] = useState(0);
   const toggleSwitch = () => {
     setIsEnabled(previousState => !previousState);
     setdiskon('');
@@ -34,7 +36,7 @@ const FormDiskon = ({ navigation }) => {
     try {
       const sheetid = await AsyncStorage.getItem('TokenSheet');
       const token = await AsyncStorage.getItem('tokenAccess');
-      const data = [[namadiskon, ispersen==true?diskon+"-%":diskon]]
+      const data = [[ID,namadiskon, ispersen==true?diskon+"-%":diskon]]
 
       axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
         sheetid +
@@ -56,6 +58,26 @@ const FormDiskon = ({ navigation }) => {
     } catch (e) {
       console.log('EE' + e);
     }
+  }
+
+  const get = async () => {
+    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    const token = await AsyncStorage.getItem('tokenAccess');
+    axios.get('https://sheets.googleapis.com/v4/spreadsheets/' +
+      sheetid + '/values/Diskon',
+      {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      },).then((res) => {
+        if (res.data.values == undefined) {
+          setID(0)
+        }
+        else {
+          setID(res.data.values.splice(res.data.values.length - 1)[0][0])
+ 
+        }
+      })
   }
 
   const onPressSubmit = async () => {
@@ -138,6 +160,9 @@ const FormDiskon = ({ navigation }) => {
     }
   };
 
+  useEffect(()=>{
+    get()
+  },[])
   return (
     <View style={{ justifyContent: 'space-between', flex: 1 }}>
       <View style={{ marginHorizontal: 18, marginTop: 12 }}>

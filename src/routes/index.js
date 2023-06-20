@@ -8,7 +8,7 @@ import Cartpage from '../pages/cartpage';
 import Setupage from '../pages/setup';
 import GuidePage from '../pages/guide';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Iabout, Idiskon, Idrawer, Ihistory, Ihome, Ilist, Isexcel, Isprint } from '../assets/icon';
+import { Iabout, Idiskon, Idrawer, Ihistory, Ihome, Ilist, Isexcel, Isprint,Ichart } from '../assets/icon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import SetupPrinter from '../pages/setupprinter';
@@ -63,7 +63,7 @@ const Routes = ({navigation}) => {
       <Drawer.Screen name='historypage' component={HistoryPage} options={{ title: 'Riwayat Transaksi',drawerIcon:({focused, size})=>(<Ihistory/>)}}/>
       <Drawer.Screen name='diskonpage' component={DiskonPage} options={{ title: 'Diskon',drawerIcon:({focused, size})=>(<Idiskon/>)}}/>
       <Drawer.Screen name='pengeluaranpage' component={PengeluaranPage} options={{ title: 'Pengeluaran',drawerIcon:({focused, size})=>(<Ilist/>) }}/>
-      {/* <Drawer.Screen name='statistikpage' component={StatistikPage} options={{ title: 'Statistik',drawerIcon:({focused, size})=>(<Ilist/>) }}/> */}
+      <Drawer.Screen name='statistikpage' component={StatistikPage} options={{ title: 'Statistik',gesturesEnabled: true,drawerIcon:({focused, size})=>(<Ichart/>)}}/>
       <Drawer.Screen name='setupage' component={Setupage} options={{ title: 'Setup Spreedsheet',headerShown: false ,drawerIcon:({focused, size})=>(<Isexcel/>)}}/>
       <Drawer.Screen name='SetupPrinter' component={SetupPrinter} options={{ title: 'Setup Printer',headerShown: false,drawerIcon:({focused, size})=>(<Isprint/>) }}/>
       <Drawer.Screen name='aboutpage' component={AboutPage} options={{ title: 'About',headerShown: false,drawerIcon:({focused, size})=>(<Iabout/>)}}/>
