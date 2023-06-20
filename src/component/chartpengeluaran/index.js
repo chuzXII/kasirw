@@ -99,7 +99,7 @@ const ChartPengeluaran = ({ dataPengeluaran }) => {
                     horizontalLabelRotation={-50}
                     verticalLabelRotation={5}
                     yLabelsOffset={5}
-
+                    formatYLabel={(value) => value.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
                     segments={3}
                     style={{
                         borderRadius: 12,
