@@ -40,7 +40,6 @@ const Dashboard = () => {
   const currency = new Intl.NumberFormat('id-ID');
   const [modalVisibleLoading, setModalVisibleLoading] = useState(false);
   const [modalVisibleCategory, setModalVisibleCategory] = useState(false);
-
   const datacategory = [
     { id: 1, category: 'All' },
     { id: 2, category: 'Mod' },

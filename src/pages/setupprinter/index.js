@@ -1,5 +1,5 @@
 import { useIsFocused } from '@react-navigation/native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ActivityIndicator,
   DeviceEventEmitter,
@@ -14,11 +14,12 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
+import { BluetoothManager } from 'react-native-bluetooth-escpos-printer';
 import { hsdLogo } from '../../assets/image/dummy-logo';
 import { chiilLogo } from '../../assets/image/logo';
 import ItemList from '../../component/itemlist';
 import SamplePrint from '../sampelprinter';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SetupPrinter = () => {
   const [pairedDevices, setPairedDevices] = useState([]);
@@ -27,18 +28,43 @@ const SetupPrinter = () => {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [boundAddress, setBoundAddress] = useState('');
-  const isFocused=useIsFocused()
+  const isFocused = useIsFocused()
 
+  const enableBluetooth = async () => {
+    try {
+      await BluetoothManager.enableBluetooth();
+      console.log('Bluetooth turned on successfully');
+    } catch (error) {
+      console.log('Failed to turn on Bluetooth:', error);
+      // Retry enabling Bluetooth
+      await enableBluetooth();
+    }
+  };
   useEffect(() => {
-    BluetoothManager.isBluetoothEnabled().then(
-      enabled => {
-        setBleOpend(Boolean(enabled));
-        setLoading(false);
-      },
-      err => {
-        err;
-      },
-    );
+    BluetoothManager.isBluetoothEnabled()
+      .then(async (enabled) => {
+        if (enabled) {
+          setBleOpend(Boolean(enabled));
+          setLoading(false);
+          address = await AsyncStorage.getItem('bltaddress');
+          namablt = await AsyncStorage.getItem('bltname');
+          if (address == null || namablt == null) {
+            setBoundAddress('');
+            setName('');
+          } else {
+            setBoundAddress(address);
+            setName(namablt);
+          }
+
+        } else {
+          await enableBluetooth();
+          setBleOpend(true); // Bluetooth has been enabled
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        error;
+      });
 
     if (Platform.OS === 'ios') {
       let bluetoothManagerEmitter = new NativeEventEmitter(BluetoothManager);
@@ -111,7 +137,7 @@ const SetupPrinter = () => {
       } else {
         try {
           ds = JSON.parse(rsp.devices);
-        } catch (e) {}
+        } catch (e) { }
       }
       if (ds && ds.length) {
         let pared = pairedDevices;
@@ -153,13 +179,24 @@ const SetupPrinter = () => {
     [foundDs],
   );
 
-  const connect = row => {
+  const connect = async row => {
     setLoading(true);
     console.log(row)
-    BluetoothManager.connect(row.address).then(
-      s => {
+    if (
+      (await AsyncStorage.getItem('bltaddress')) == null ||
+      (await AsyncStorage.getItem('bltaddress')) == undefined ||
+      (await AsyncStorage.getItem('bltaddress')) == ' '
+    ) {
+      address = row.address;
+    } else {
+      address = await AsyncStorage.getItem('bltaddress');
+    }
+    BluetoothManager.connect(address).then(
+      async s => {
         setLoading(false);
         setBoundAddress(row.address);
+        await AsyncStorage.setItem('bltaddress', row.address);
+        await AsyncStorage.setItem('bltname', row.name || 'UNKNOWN');
         setName(row.name || 'UNKNOWN');
       },
       e => {
@@ -173,10 +210,12 @@ const SetupPrinter = () => {
   const unPair = address => {
     setLoading(true);
     BluetoothManager.unpaire(address).then(
-      s => {
+      async s => {
         setLoading(false);
         setBoundAddress('');
+        await AsyncStorage.setItem('bltaddress', '');
         setName('');
+        await AsyncStorage.setItem('bltname', '');
       },
       e => {
         setLoading(false);
@@ -187,8 +226,8 @@ const SetupPrinter = () => {
 
   const scanDevices = useCallback(() => {
     setLoading(true);
-  
-    setTimeout(()=>{
+
+    setTimeout(() => {
       BluetoothManager.scanDevices().then(
         s => {
           // const pairedDevices = s.paired;
@@ -210,8 +249,8 @@ const SetupPrinter = () => {
           console.log(er);
         },
       );
-    },2000)
-    
+    }, 2000)
+
   }, [foundDs]);
 
   const scan = useCallback(() => {
@@ -227,43 +266,43 @@ const SetupPrinter = () => {
         };
         try {
           let isPermitedLocation = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-        if (Platform.Version >= 30) {
-          let isPermitedBluetooth = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
-          do {
-            const grant = await PermissionsAndroid.requestMultiple([
-              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-              PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-              PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-              PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
-            ]).then(result => {
-              if (
-                result['android.permission.ACCESS_FINE_LOCATION'] &&
-                result['android.permission.BLUETOOTH_CONNECT'] &&
-                result['android.permission.BLUETOOTH_SCAN'] &&
-                result['android.permission.BLUETOOTH_ADVERTISE'] ===
+          if (Platform.Version >= 31) {
+            let isPermitedBluetooth = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+            do {
+              const grant = await PermissionsAndroid.requestMultiple([
+                // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
+              ]).then(result => {
+                if (
+                  result['android.permission.ACCESS_FINE_LOCATION'] &&
+                  result['android.permission.BLUETOOTH_CONNECT'] &&
+                  result['android.permission.BLUETOOTH_SCAN'] &&
+                  result['android.permission.BLUETOOTH_ADVERTISE'] ===
                   PermissionsAndroid.RESULTS.GRANTED
-              ) {
-                scanDevices();
-              } else {
-                console.log('gagal');
-              }
-            });
-          } while (!isPermitedLocation||!isPermitedBluetooth);
+                ) {
+                  scanDevices();
+                } else {
+                  console.log('gagal');
+                }
+              });
+            } while (!isPermitedBluetooth);
 
-          
-        } else {
-          do {
-            var grant = await PermissionsAndroid.request(
-              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            );
-          } while (!isPermitedLocation);
-          if (grant === PermissionsAndroid.RESULTS.GRANTED) {
-            scanDevices();
+
           } else {
-            console.log('Silahkan Ijinkan Lokasi');
+            do {
+              var grant = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+              );
+            } while (!isPermitedLocation);
+            if (grant === PermissionsAndroid.RESULTS.GRANTED) {
+              scanDevices();
+            } else {
+              console.log('Silahkan Ijinkan Lokasi');
+            }
+
           }
-         
-        }
         } catch (error) {
           alert(error)
         }
@@ -300,18 +339,18 @@ const SetupPrinter = () => {
       {boundAddress.length < 1 && (
         <Text style={styles.printerInfo}>Belum ada printer yang terhubung</Text>
       )}
-      <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.sectionTitle}>
           Bluetooth yang terhubung ke HP ini:
         </Text>
-        {loading? <View style={{backgroundColor:'#00BCD4',width:25,height:25,borderRadius:4,alignItems:'center',justifyContent:'center'}}>
-          <Text style={{color: '#000'}}>*</Text>
-        </View>: <TouchableOpacity onPress={() => scan()} style={{backgroundColor:'#00BCD4',width:25,height:25,borderRadius:4,alignItems:'center',justifyContent:'center'}}>
-          <Text style={{color: '#000'}}>*</Text>
+        {loading ? <View style={{ backgroundColor: '#00BCD4', width: 25, height: 25, borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: '#000' }}>*</Text>
+        </View> : <TouchableOpacity onPress={() => scan()} style={{ backgroundColor: '#00BCD4', width: 25, height: 25, borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: '#000' }}>*</Text>
         </TouchableOpacity>}
       </View>
 
-      {loading ? <ActivityIndicator size="large" color="#00ff00" style={{marginBottom:18}}/> : null}
+      {loading ? <ActivityIndicator size="large" color="#00ff00" style={{ marginBottom: 18 }} /> : null}
       <View style={styles.containerList}>
         {pairedDevices.map((item, index) => {
           return (
@@ -327,8 +366,8 @@ const SetupPrinter = () => {
           );
         })}
       </View>
-      <View style={{height: 100}} />
-      <View style={{marginBottom:120}}>
+      <View style={{ height: 100 }} />
+      <View style={{ marginBottom: 120 }}>
       </View>
 
     </ScrollView>
@@ -342,8 +381,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingHorizontal: 20,
   },
-  containerList: {flex: 1, flexDirection: 'column'},
-  bluetoothStatusContainer: {justifyContent: 'flex-end', alignSelf: 'flex-end'},
+  containerList: { flex: 1, flexDirection: 'column' },
+  bluetoothStatusContainer: { justifyContent: 'flex-end', alignSelf: 'flex-end' },
   bluetoothStatus: color => ({
     backgroundColor: color,
     padding: 8,

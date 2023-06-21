@@ -8,6 +8,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import RNRestart from 'react-native-restart';
 import 'react-native-gesture-handler';
+import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
 
 
 
@@ -86,8 +87,84 @@ const App = () => {
       }
     }
   }
+  const Permassion = async () => {
+    try {
+      let isPermitedLocation = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+      if (Platform.Version >= 31) {
+        let isPermitedBluetooth = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+        );
+        do {
+          const grant = await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
+          ]).then(result => {
+            if (
+              result['android.permission.ACCESS_FINE_LOCATION'] &&
+              result['android.permission.BLUETOOTH_CONNECT'] &&
+              result['android.permission.BLUETOOTH_SCAN'] &&
+              result['android.permission.BLUETOOTH_ADVERTISE'] ===
+                PermissionsAndroid.RESULTS.GRANTED
+            ) {
+              Activasionblt();
+              isPermitedLocation = true;
+              isPermitedBluetooth = true;
+            } else {
+              console.log('gagal');
+            }
+          });
+        } while (!isPermitedLocation || !isPermitedBluetooth);
+      } else {
+        // if (!isPermitedExternalStorage) {
+        // Ask for permission
+        do {
+          const granted = await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          ]).then(result => {
+            if (
+              result['android.permission.ACCESS_FINE_LOCATION'] ===
+              PermissionsAndroid.RESULTS.GRANTED
+            ) {
+              console.log('berhasil');
+              Activasionblt();
+              isPermitedLocation = true;
+            } else {
+              console.log('gagal');
+            }
+          });
+          // break;
+        } while (!isPermitedLocation);
+      }
+    } catch (e) {
+      console.log('Error while checking permission');
+      console.log(e);
+    }
+  };
+  const Activasionblt = async () => {
+    const address = await AsyncStorage.getItem('bltaddress');
+    if (address) {
+      BluetoothManager.connect(address)
+        .then(
+          s => {
+            console.log('Paired ' + s);
+          },
+          e => {
+            console.log(JSON.stringify(e));
+            alert(e);
+          },
+        )
+        .catch(e => {
+          console.log(e);
+        });
+    }
+  };
   useEffect(() => {
-    token()
+    Activasionblt()
+    settoken()
   }, [])
 
 

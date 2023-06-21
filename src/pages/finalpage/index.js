@@ -117,15 +117,16 @@ const FinalPage = ({navigation}) => {
         await BluetoothEscposPrinter.printColumn(
           [32],
           [BluetoothEscposPrinter.ALIGN.LEFT],
-          [CartReducer.cartitem[a].item.namaproduk],
+          [CartReducer.cartitem[a].item[1]],
           {},
         ),
         await BluetoothEscposPrinter.printColumn(
           [16, 16],
           [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-          [(CartReducer.cartitem[a].count+'x Rp.'+currency.format(CartReducer.cartitem[a].subTotal)).toString(), ('Rp.'+currency.format(CartReducer.cartitem[a].count * CartReducer.cartitem[a].item.hargaproduk)).toString()],
+          [(CartReducer.cartitem[a].count+'x Rp.'+currency.format(CartReducer.cartitem[a].subTotal)).toString(), ('Rp.'+currency.format(CartReducer.cartitem[a].count * CartReducer.cartitem[a].item[2])).toString()],
           {},
-        )}
+        )
+        }
       await BluetoothEscposPrinter.printText(
         '================================',
         {},
