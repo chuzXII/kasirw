@@ -243,7 +243,7 @@ const HistoryItemPage = ({route,navigation}) => {
         alert('Make sure Whatsapp installed on your device');
       });
   };
-  const onPressdelete=async()=>{
+  const onPressrefund=async()=>{
     try{
     var indexs = [];
    const a = RawData.filter((element,index,array)=>{
@@ -593,7 +593,7 @@ const HistoryItemPage = ({route,navigation}) => {
             </Text>
           </TouchableOpacity>
           {Status=='Refund'?null: <TouchableOpacity
-            onPress={() => onPressdelete()}
+            onPress={() => onPressrefund()}
             style={{
               borderColor:'#CB0000',
               borderWidth: 1,
