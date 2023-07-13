@@ -70,64 +70,67 @@ const Cartpage = () => {
         },
       )
       .then((res) => {
-      if(indexs.length>1){
-        indexs
-          .forEach((e, i) => {
-            axios.post(
-              'https://sheets.googleapis.com/v4/spreadsheets/' +
-                sheetid +
-                '/values:batchUpdate',
-              JSON.stringify({
-                data: {
-                  values: [[listcount[i], stoksisa[i]]],
-                  range: 'Produk!D' + e,
-                },
-                valueInputOption: 'USER_ENTERED',
-              }),
-              {
-                headers: {
-                  'Content-type': 'application/json',
-                  Authorization: 'Bearer ' + token,
-                },
-              },
-            ) .then(res => {
-              if(i+1==indexs.length){
-                setTimeout(()=>{
-                    setModalVisibleLoading(false);
-                    setModalVisible(!modalVisible);
-                    navigation.replace('finalpage');
-                  },3000)
-              }
-            })
-            .catch(e => {
-              console.log(e);
-            });
-          })
-      }
-      else{
-        axios.post(
-          'https://sheets.googleapis.com/v4/spreadsheets/' +
-            sheetid +
-            '/values:batchUpdate',
-          JSON.stringify({
-            data: {
-              values: [[listcount[0], stoksisa[0]]],
-              range: 'Produk!D' + indexs[0],
-            },
-            valueInputOption: 'USER_ENTERED',
-          }),
-          {
-            headers: {
-              'Content-type': 'application/json',
-              Authorization: 'Bearer ' + token,
-            },
-          },
-        ) .then(res => {
-                setModalVisibleLoading(false);
-                setModalVisible(!modalVisible);
-                navigation.replace('finalpage');
-        })
-      }
+        setModalVisibleLoading(false);
+        setModalVisible(!modalVisible);
+        navigation.replace('finalpage');
+      // if(indexs.length>1){
+      //   indexs
+      //     .forEach((e, i) => {
+      //       axios.post(
+      //         'https://sheets.googleapis.com/v4/spreadsheets/' +
+      //           sheetid +
+      //           '/values:batchUpdate',
+      //         JSON.stringify({
+      //           data: {
+      //             values: [[listcount[i], stoksisa[i]]],
+      //             range: 'Produk!D' + e,
+      //           },
+      //           valueInputOption: 'USER_ENTERED',
+      //         }),
+      //         {
+      //           headers: {
+      //             'Content-type': 'application/json',
+      //             Authorization: 'Bearer ' + token,
+      //           },
+      //         },
+      //       ) .then(res => {
+      //         if(i+1==indexs.length){
+      //           setTimeout(()=>{
+      //               setModalVisibleLoading(false);
+      //               setModalVisible(!modalVisible);
+      //               navigation.replace('finalpage');
+      //             },3000)
+      //         }
+      //       })
+      //       .catch(e => {
+      //         console.log(e);
+      //       });
+      //     })
+      // }
+      // else{
+      //   axios.post(
+      //     'https://sheets.googleapis.com/v4/spreadsheets/' +
+      //       sheetid +
+      //       '/values:batchUpdate',
+      //     JSON.stringify({
+      //       data: {
+      //         values: [[listcount[0], stoksisa[0]]],
+      //         range: 'Produk!D' + indexs[0],
+      //       },
+      //       valueInputOption: 'USER_ENTERED',
+      //     }),
+      //     {
+      //       headers: {
+      //         'Content-type': 'application/json',
+      //         Authorization: 'Bearer ' + token,
+      //       },
+      //     },
+      //   ) .then(res => {
+      //           setModalVisibleLoading(false);
+      //           setModalVisible(!modalVisible);
+      //           navigation.replace('finalpage');
+      //   })
+      // }
       })
       .catch(e => {
         console.log(e);
@@ -143,40 +146,39 @@ const Cartpage = () => {
     var listcount = [];
     var checkstok;
     const rawdate = new Date();
-    await axios
-      .get(
-        'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Produk',
-        {
-          headers: {
-            Authorization: 'Bearer ' + token,
-          },
-        },
-      )
-      .then(res => {
-        var value = CartReducer.cartitem.sort((a, b) => (a.id > b.id ? 1 : -1));
-        var b = [];
-        for (let i = 0; i < CartReducer.cartitem.length; i++) {
-          const a = res.data.values.filter(
-            element => element[0] == CartReducer.cartitem[i].item[0],
-          );
-          b.push(a);
-        }
-        const f = b.sort((a, b) => (a[4] > b[4] ? 1 : -1));
-
-        
-          if (f[0][0][4] == 0) {
-            checkstok = true;
-          } else {
-            for (let i = 0; i < CartReducer.cartitem.length; i++) {
-            indexs.push(
-              res.data.values.findIndex(e => e[0] == value[i].item[0]) + 1,
-            );
-            listcount.push(parseInt(value[i].item[3]) + value[i].count);
-            stoksisa.push(value[i].item[4] - value[i].count);
-          }
-        }
+    // await axios
+    //   .get(
+    //     'https://sheets.googleapis.com/v4/spreadsheets/' +
+    //       sheetid +
+    //       '/values/Produk',
+    //     {
+    //       headers: {
+    //         Authorization: 'Bearer ' + token,
+    //       },
+    //     },
+    //   )
+    //   .then(res => {
+    //     var value = CartReducer.cartitem.sort((a, b) => (a.id > b.id ? 1 : -1));
+    //     var b = [];
+    //     for (let i = 0; i < CartReducer.cartitem.length; i++) {
+    //       const a = res.data.values.filter(
+    //         element => element[0] == CartReducer.cartitem[i].item[0],
+    //       );
+    //       b.push(a);
+    //     }
+    //     const f = b.sort((a, b) => (a[4] > b[4] ? 1 : -1));
+    //       if (f[0][0][4] == 0) {
+    //         checkstok = true;
+    //       } else {
+    //         for (let i = 0; i < CartReducer.cartitem.length; i++) {
+    //         indexs.push(
+    //           res.data.values.findIndex(e => e[0] == value[i].item[0]) + 1,
+    //         );
+    //         listcount.push(parseInt(value[i].item[3]) + value[i].count);
+    //         stoksisa.push(value[i].item[4] - value[i].count);
+    //       }
+    //     }
+        // console.log(checkstok)
 
         if (!checkstok) {
           dispatch({type: 'NOMINAL', value: Total});
@@ -201,7 +203,9 @@ const Cartpage = () => {
               'Lunas',
             ]);
           }
-          input({sheetid, token, data, indexs, listcount, stoksisa});
+          // input({sheetid, token, data, indexs, listcount, stoksisa});
+          input({sheetid, token, data, indexs,});
+
         } else {
           Alert.alert(
             'STOK HABIS',
@@ -223,10 +227,10 @@ const Cartpage = () => {
         //     }
         //   });
         // }
-      })
-      .catch(e => {
-        console.log(e);
-      });
+      // })
+      // .catch(e => {
+      //   console.log(e);
+      // });
   };
   const onPressTunai = type => {
     setModalVisibleLoading(true);

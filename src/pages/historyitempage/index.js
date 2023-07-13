@@ -8,14 +8,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import moment from 'moment';
-import {useIsFocused} from '@react-navigation/native';
-import {BluetoothEscposPrinter} from 'react-native-bluetooth-escpos-printer';
+import { useIsFocused } from '@react-navigation/native';
+import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
+import ViewShot, { captureRef } from 'react-native-view-shot';
+import Share from 'react-native-share';
 moment.suppressDeprecationWarnings = true;
-const HistoryItemPage = ({route,navigation}) => {
+const HistoryItemPage = ({ route, navigation }) => {
+  fakturContainer = null;
   const [Data, setData] = useState([]);
   const [RawData, setRawData] = useState([]);
   const [DataTotal, setDataTotal] = useState([]);
@@ -38,7 +41,7 @@ const HistoryItemPage = ({route,navigation}) => {
 
   const currency = new Intl.NumberFormat('id-ID');
   const isFocused = useIsFocused();
-  const {idtrx} = route.params;
+  const { idtrx } = route.params;
   const onPressprint = async () => {
     let columnWidths = [10, 12, 10];
     try {
@@ -167,31 +170,31 @@ const HistoryItemPage = ({route,navigation}) => {
         ['Subtotal', 'Rp.' + currency.format(SubTotal).toString()],
         {},
       );
-      if(ValueDiskon==0){
+      if (ValueDiskon == 0) {
         await BluetoothEscposPrinter.printColumn(
           [16, 16],
           [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-          ['Diskon', 'Rp.'+ValueDiskon ],
+          ['Diskon', 'Rp.' + ValueDiskon],
           {},
         );
       }
-      else if(ValueDiskon.length==1){
+      else if (ValueDiskon.length == 1) {
         await BluetoothEscposPrinter.printColumn(
           [16, 16],
           [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-          ['Diskon', '-Rp.'+ValueDiskon ],
+          ['Diskon', '-Rp.' + ValueDiskon],
           {},
         );
       }
-      else{
+      else {
         await BluetoothEscposPrinter.printColumn(
           [16, 16],
           [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-          ['Diskon', ValueDiskon +'%'],
+          ['Diskon', ValueDiskon + '%'],
           {},
         );
       }
-    
+
       await BluetoothEscposPrinter.printText(
         '================================',
         {},
@@ -229,52 +232,66 @@ const HistoryItemPage = ({route,navigation}) => {
       alert(e.message || 'ERROR');
     }
   };
-  const onPressKirim = () => {
-    let url = `whatsapp://send?text=${`CHILL\n\nJl.kol sugino,Gang Pepabri,Kec.Kademangan,Kab.Bondowoso\n======================================\nTransaksi\t\t\t\t\t\t\t\t\t\t\t\t\t\t${IdTrx}\n${
-      Date[0]
-    }\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t${
-      Date[1]
-    }\nWhatsapp\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t081333768128\n\n=============== Pesanan ===============\n\n`} &phone=6281333768128`;
-    Linking.openURL(url)
-      .then(data => {
-        console.log('WhatsApp Opened');
-      })
-      .catch(() => {
-        alert('Make sure Whatsapp installed on your device');
-      });
+  const onPressKirim = async () => {
+    if (fakturContainer) {
+      try {
+        const uri = await captureRef(fakturContainer, {
+          format: "png",
+          quality: 0.9,
+          result: 'data-uri'
+        });
+        shareImageViaWhatsApp(uri);
+      } catch (error) {
+        console.log("Gagal mengambil tangkapan layar faktur:", error);
+      }
+    }
   };
-  const onPressrefund=async()=>{
-    try{
-    var indexs = [];
-   const a = RawData.filter((element,index,array)=>{
-    if(element[0] == idtrx) {
-      indexs.push(index+1);
+  const shareImageViaWhatsApp = async (base64Data) => {
+    const shareOptions = {
+      // url: `data:image/png;base64,${base64Data}`,
+      url: base64Data,
+      failOnCancel: false,
+      social: Share.Social.WHATSAPP,
+    };
+
+    try {
+      Share.shareSingle(shareOptions);
+    } catch (error) {
+      console.log("Gagal membagikan gambar:", error);
+    }
   }
-   })
-    const sheetid = await AsyncStorage.getItem('TokenSheet');
-    const token = await AsyncStorage.getItem('tokenAccess');
-    indexs.map(e=>{
-      axios.post('https://sheets.googleapis.com/v4/spreadsheets/'+sheetid+'/values:batchUpdate', JSON.stringify({
-        data: {
-          values:[['Refund']],
-          range:'k'+e
-        },
-        valueInputOption:'USER_ENTERED'
-      }),
-      {
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
-      },)
-    })
-    // https://sheets.googleapis.com/v4/spreadsheets/193U-hvY1-HbXF44_dbHUxwFeUimLXgr4Pmlc4GZpZog/values/k1:append
-   
-    navigation.navigate('historypage')
-  }catch(e){
-    console.log(e)
+  const onPressrefund = async () => {
+    try {
+      var indexs = [];
+      const a = RawData.filter((element, index, array) => {
+        if (element[0] == idtrx) {
+          indexs.push(index + 1);
+        }
+      })
+      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const token = await AsyncStorage.getItem('tokenAccess');
+      indexs.map(e => {
+        axios.post('https://sheets.googleapis.com/v4/spreadsheets/' + sheetid + '/values:batchUpdate', JSON.stringify({
+          data: {
+            values: [['Refund']],
+            range: 'k' + e
+          },
+          valueInputOption: 'USER_ENTERED'
+        }),
+          {
+            headers: {
+              'Content-type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+          },)
+      })
+      // https://sheets.googleapis.com/v4/spreadsheets/193U-hvY1-HbXF44_dbHUxwFeUimLXgr4Pmlc4GZpZog/values/k1:append
+
+      navigation.navigate('historypage')
+    } catch (e) {
+      console.log(e)
+    }
   }
-}
 
   const msg = () => {
     console.log(Data);
@@ -290,8 +307,8 @@ const HistoryItemPage = ({route,navigation}) => {
     await axios
       .get(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Transaksi',
+        sheetid +
+        '/values/Transaksi',
         {
           headers: {
             Authorization: 'Bearer ' + token,
@@ -304,8 +321,8 @@ const HistoryItemPage = ({route,navigation}) => {
         setDataTotal(j);
         const srawdate = j[0][5].split(' ');
         const [day, month, year] = srawdate[0].split('-');
-   
-        const rawdate = moment(year+'-'+month+'-'+day)
+
+        const rawdate = moment(year + '-' + month + '-' + day)
           .format('DD MMM yyyy')
           .concat('T' + srawdate[1]);
         setDate(rawdate.split('T'));
@@ -326,21 +343,21 @@ const HistoryItemPage = ({route,navigation}) => {
           setValueDiskon(rawdiskon[0]);
           Total = (subtotal - rawdiskon[0]);
         } else {
-          if(rawdiskon[1].split('-').length<=1){
+          if (rawdiskon[1].split('-').length <= 1) {
             setNamaDiskon(rawdiskon[0]);
             setDiskon(rawdiskon[1].split('-')[0]);
             setValueDiskon(rawdiskon[1].split('-'));
-            Total = (subtotal - rawdiskon[1].split('-')[0] )
-          }else{
+            Total = (subtotal - rawdiskon[1].split('-')[0])
+          } else {
             setNamaDiskon(rawdiskon[0]);
             setDiskon(rawdiskon[1].split('-')[0] / 100);
             setValueDiskon(rawdiskon[1].split('-'));
-            Total = subtotal-(subtotal * rawdiskon[1].split('-')[0] ) / 100;
+            Total = subtotal - (subtotal * rawdiskon[1].split('-')[0]) / 100;
           }
-         
+
         }
 
-       
+
         setSubTotal(subtotal);
         setTotal(Total);
 
@@ -401,220 +418,251 @@ const HistoryItemPage = ({route,navigation}) => {
     get();
   }, [isFocused]);
   return (
-    <View style={{backgroundColor: '#fff', flex: 1}}>
+    <View style={{ backgroundColor: '#fff', flex: 1 }}>
       <ScrollView>
-      <View style={{marginHorizontal: 14}}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingTop: 12,
-          }}>
-          <View>
-            <Text style={{color: '#000', fontFamily: 'InknutAntiqua-Regular'}}>
-              {idtrx}
-            </Text>
-            <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Light'}}>
-              {Date[0]+' '+Date[1]}
-            </Text>
-          </View>
-          <View>
-            <Text style={{color: '#000', fontFamily: 'InknutAntiqua-Regular'}}>
-              Rp.
-              {currency.format(Total)}
-            </Text>
-            <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Light'}}>
-              {Owner}
-            </Text>
-          </View>
-        </View>
-        <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold',paddingTop:6,fontSize:16}}>Catatan :</Text>
-        <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular',paddingTop:4,paddingBottom:16,fontSize:14}}>{Pesan}</Text>
+        <View style={{ marginHorizontal: 14 }}>
+          <ViewShot ref={(ref) => (fakturContainer = ref)}>
+            <View style={{backgroundColor:'#fff'}}>
 
 
-        <View
-          style={{
-            borderStyle: 'dashed',
-            borderBottomWidth: 1,
-            borderColor: '#C3C3C3',
-          }}></View>
-        <View
-          style={{
-            backgroundColor: '#EEFFFC',
-            marginTop: 22,
-            paddingVertical: 16,
-            borderRadius: 8,
-          }}>
-          <View style={{marginHorizontal: 14}}>
-            {DataTotal.map((item, index) => {
-              return (
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems:'center',
-                    paddingVertical: 4,
-                  }}
-                  key={index}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingVertical: 4,
-                    
-                    }}>
-                   
-                   <View>
-                   <Text
-                      style={{
-                        color: '#000',
-                        fontFamily: 'TitilliumWeb-Regular',
-                      }}>
-                 
-                      {item[1]}
-                    </Text>
-                   <Text
-                      style={{
-                        color: '#000',
-                        fontFamily: 'TitilliumWeb-Regular',
-                      }}>
-                      {item[2]}x Rp.{item[3]}
-                    </Text>
-                    </View>
-
-                    
-                  </View>
-
-                  <Text
-                    style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                    Rp.{currency.format(parseInt(item[3]) * item[2])}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: 12,
+                }}>
+                <View>
+                  <Text style={{ color: '#000', fontFamily: 'InknutAntiqua-Regular' }}>
+                    {idtrx}
+                  </Text>
+                  <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Light' }}>
+                    {Date[0] + ' ' + Date[1]}
                   </Text>
                 </View>
-              );
-            })}
+                <View>
+                  <Text style={{ color: '#000', fontFamily: 'InknutAntiqua-Regular' }}>
+                    Rp.
+                    {currency.format(Total)}
+                  </Text>
+                  <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Light' }}>
+                    {Owner}
+                  </Text>
+                </View>
+              </View>
+              <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold', paddingTop: 6, fontSize: 16 }}>Catatan :</Text>
+              <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular', paddingTop: 4, paddingBottom: 16, fontSize: 14 }}>{Pesan}</Text>
 
-            <View
+
+              <View
+                style={{
+                  borderStyle: 'dashed',
+                  borderBottomWidth: 1,
+                  borderColor: '#C3C3C3',
+                }}></View>
+              <View
+                style={{
+                  backgroundColor: '#EEFFFC',
+                  marginTop: 22,
+                  paddingVertical: 16,
+                  borderRadius: 8,
+                }}>
+                <View style={{ marginHorizontal: 14 }}>
+                  {DataTotal.map((item, index) => {
+                    return (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          paddingVertical: 4,
+                        }}
+                        key={index}>
+                        <View
+                          style={{
+                            flex: 1,
+                            paddingVertical: 4,
+
+                          }}>
+
+                          <Text
+                            style={{
+                              color: '#000',
+                              fontFamily: 'TitilliumWeb-Regular',
+                            }}>
+
+                            {item[1]}
+                          </Text>
+                          <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+
+
+                          }}>
+                            <View>
+                              <Text
+                                style={{
+                                  color: '#000',
+                                  fontFamily: 'TitilliumWeb-Regular',
+                                }}>
+                                {item[2]}x Rp.{item[3]}
+                              </Text>
+                            </View>
+                            <View>
+                              <Text
+                                style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                                Rp.{currency.format(parseInt(item[3]) * item[2])}
+                              </Text>
+                            </View>
+                          </View>
+
+
+                        </View>
+
+
+                      </View>
+                    );
+                  })}
+
+                  <View
+                    style={{
+                      borderBottomWidth: 1,
+                      borderColor: '#000',
+                      marginVertical: 12,
+                    }}></View>
+                  <View
+                    style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                      Subtotal
+                    </Text>
+                    <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                      Rp.
+                      {currency.format(SubTotal)}
+                    </Text>
+                  </View>
+                  <View
+                    style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                      Diskon
+                    </Text>
+                    {ValueDiskon == 0 ? <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                      Rp.{ValueDiskon}
+                    </Text> :
+                      ValueDiskon.length == 1 ? <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                        -Rp.{ValueDiskon}
+                      </Text> : <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Regular' }}>
+                        {ValueDiskon}
+                      </Text>}
+
+                  </View>
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginTop: 24,
+                  marginBottom: 12,
+                  marginHorizontal: 14,
+                }}>
+                <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                  Total
+                </Text>
+                <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                  Rp.
+                  {currency.format(Total)}
+                </Text>
+              </View>
+              <View
+                style={{
+                  borderStyle: 'dashed',
+                  borderBottomWidth: 1,
+                  borderColor: '#C3C3C3',
+                }}></View>
+              <View
+                style={{
+                  marginTop: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginHorizontal: 14,
+                }}>
+                <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                  Tunai
+                </Text>
+                <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                  Rp.{currency.format(Tunai)}
+                </Text>
+              </View>
+              <View
+                style={{
+                  marginBottom: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginHorizontal: 14,
+                }}>
+                <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                  Kembalian
+                </Text>
+                <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                  Rp.{currency.format(Tunai - Total)}
+                </Text>
+              </View>
+            </View>
+          </ViewShot>
+
+          <View style={{ alignItems: 'center', flexDirection: Status == 'Refund' ? 'column' : 'row', marginBottom: 18, marginHorizontal: 26 }}>
+            <TouchableOpacity
+              onPress={() => onPressprint()}
               style={{
-                borderBottomWidth: 1,
-                borderColor: '#000',
-                marginVertical: 12,
-              }}></View>
-            <View
-              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                Subtotal
+                flex: 1,
+                borderWidth: 1,
+                alignItems: 'center',
+                padding: 14,
+                borderRadius: 12,
+                marginRight: 12
+              }}>
+              <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                Cetak
               </Text>
-              <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                Rp.
-                {currency.format(SubTotal)}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => onPressKirim()}
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                alignItems: 'center',
+                padding: 14,
+                borderRadius: 12,
+                marginLeft: 12
+              }}>
+              <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Bold' }}>
+                Kirim
               </Text>
-            </View>
-            <View
-              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                Diskon
-              </Text>
-              {ValueDiskon==0?<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                Rp.{ValueDiskon}
-              </Text>:
-              ValueDiskon.length==1?<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                -Rp.{ValueDiskon}
-              </Text>:<Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-                {ValueDiskon}
-              </Text>}
-              
-            </View>
+            </TouchableOpacity>
           </View>
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 24,
-            marginBottom: 12,
-            marginHorizontal: 14,
-          }}>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            Total
-          </Text>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            Rp.
-            {currency.format(Total)}
-          </Text>
-        </View>
-        <View
-          style={{
-            borderStyle: 'dashed',
-            borderBottomWidth: 1,
-            borderColor: '#C3C3C3',
-          }}></View>
-        <View
-          style={{
-            marginTop: 12,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginHorizontal: 14,
-          }}>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            Tunai
-          </Text>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            Rp.{currency.format(Tunai)}
-          </Text>
-        </View>
-        <View
-          style={{
-            marginBottom: 12,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginHorizontal: 14,
-          }}>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            Kembalian
-          </Text>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            Rp.{currency.format(Tunai - Total)}
-          </Text>
-        </View>
-        <View style={{alignItems: 'center',flexDirection:Status=='Refund'?'column':'row',marginBottom:62}}>
-          <TouchableOpacity
-            onPress={() => onPressprint()}
-            style={{
-              borderWidth: 1,
-              alignItems: 'center',
-              padding: 14,
-              borderRadius: 12,
-              marginHorizontal:26,
-              width: Status=='Refund'?'50%':'40%',
-            }}>
-            <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-              Cetak
-            </Text>
-          </TouchableOpacity>
-          {Status=='Refund'?null: <TouchableOpacity
+          {Status == 'Refund' ? null : <TouchableOpacity
             onPress={() => onPressrefund()}
             style={{
-              borderColor:'#CB0000',
+              marginHorizontal: 26,
+              justifyContent: 'center',
+              borderColor: '#CB0000',
               borderWidth: 1,
               alignItems: 'center',
               padding: 14,
               borderRadius: 12,
-              width: '40%',
+              // width: '40%',
             }}>
-            <Text style={{color: '#CB0000', fontFamily: 'TitilliumWeb-Bold'}}>
+            <Text style={{ color: '#CB0000', fontFamily: 'TitilliumWeb-Bold' }}>
               Refund
             </Text>
           </TouchableOpacity>}
-         
-        </View>
 
-        {/* <TouchableOpacity onPress={() => onPressKirim()}>
+          {/* <TouchableOpacity onPress={() => onPressKirim()}>
           <Text style={{color: '#000'}}>Kirim</Text>
         </TouchableOpacity> */}
-      </View>
+        </View>
       </ScrollView>
-     
+
 
       <Modal transparent={true} visible={modalVisibleLoading}>
         <View

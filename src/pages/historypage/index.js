@@ -111,7 +111,7 @@ const HistoryPage = () => {
   };
   const renderItem = Item => {
     return (
-      <View style={{ marginHorizontal: 12, }}>
+      <View style={{ marginHorizontal: 12, flex:1}}>
         <View
           style={{
             flexDirection: 'row',
@@ -148,12 +148,14 @@ const HistoryPage = () => {
         </View>
 
         <View style={{ flex: 1 }}>
+        
           <FlashList
             drawDistance={12}
             data={Item.data}
             renderItem={item => renderSubItem(item.item)}
             estimatedItemSize={70}
           />
+        
         </View>
 
 
@@ -369,7 +371,6 @@ const HistoryPage = () => {
           </View>
         </View>
       ) : (
-
         <View style={{ flex: 1 }}>
           <FlashList
             data={Data}
