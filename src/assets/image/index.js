@@ -22,7 +22,9 @@ import backgroundabout from './backgroundabout.png';
 import splashscreen from './splash.png';
 import logosplash from './logosplash.png';
 import bgdrawer from './bgdrawer.png';
+import sjpg from './2.jpg';
 
 
 
-export{b1,b2,b3,b4,b5,satupng,duapng,tigapng,empatpng,apk1,apk2,apk3,apk4,emptycart,emptyproduct,Logo,backgroundabout,splashscreen,logosplash,bgdrawer}
+
+export{b1,b2,b3,b4,b5,satupng,duapng,tigapng,empatpng,apk1,apk2,apk3,apk4,emptycart,emptyproduct,Logo,backgroundabout,splashscreen,logosplash,bgdrawer,sjpg}

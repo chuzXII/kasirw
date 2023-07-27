@@ -24,6 +24,7 @@ import ListKatalog from '../pages/listkatalogpage';
 import FormEdit from '../pages/formeditkatalog';
 import PengeluaranPage from '../pages/pengeluaranpage';
 import StatistikPage from '../pages/statistikpage';
+import Camscan from '../component/Camscan';
 
 
 
@@ -55,7 +56,7 @@ const Routes = ({ navigation }) => {
             </TouchableOpacity>
           ), headerRight: () => (
             <View style={{flexDirection:'row'}}>
-              <TouchableOpacity onPress={() => Navigation.navigate('formkasir')} style={{alignItems:'center',justifyContent:'center'}}>
+              <TouchableOpacity onPress={() => Navigation.navigate('camscan',true)} style={{alignItems:'center',justifyContent:'center'}}>
                 <Iscan/>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => Navigation.navigate('formkasir')} style={{ borderRadius: 15, backgroundColor: '#9B5EFF', width: 85, height: 30, alignItems: 'center', justifyContent: 'center', marginHorizontal: 12 }}>
@@ -85,6 +86,7 @@ const Routes = ({ navigation }) => {
       {cek == false ? <Stack.Screen name='GuidePage' component={GuidePage} options={{ headerShown: false }} /> : null}
       <Stack.Screen name='Routestack' component={Routestack} options={{ headerShown: false }} />
       <Stack.Screen name='formkasir' component={Formkasir} options={{ title: 'Tambah Katalog' }} />
+      <Stack.Screen name='camscan' component={Camscan} options={{ }} />
       <Stack.Screen name='setupage' component={Setupage} />
       <Stack.Screen name='cartpage' component={Cartpage} options={{ title: 'Keranjang' }} />
       <Stack.Screen name='historyitempage' component={HistoryItemPage} options={{ title: 'Detail History' }} />

@@ -15,10 +15,7 @@ import {
   Image,
 } from 'react-native';
 import { BluetoothManager } from 'react-native-bluetooth-escpos-printer';
-import { hsdLogo } from '../../assets/image/dummy-logo';
-import { chiilLogo } from '../../assets/image/logo';
 import ItemList from '../../component/itemlist';
-import SamplePrint from '../sampelprinter';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SetupPrinter = () => {
@@ -181,7 +178,7 @@ const SetupPrinter = () => {
 
   const connect = async row => {
     setLoading(true);
-    console.log(row)
+
     if (
       (await AsyncStorage.getItem('bltaddress')) == null ||
       (await AsyncStorage.getItem('bltaddress')) == undefined ||
@@ -191,30 +188,28 @@ const SetupPrinter = () => {
     } else {
       address = await AsyncStorage.getItem('bltaddress');
     }
-    BluetoothManager.connect(address).then(
-      async s => {
-        setLoading(false);
+    try {
+      await BluetoothManager.connect(address).then(async s => {
+        setLoading(false)
         setBoundAddress(row.address);
         await AsyncStorage.setItem('bltaddress', row.address);
         await AsyncStorage.setItem('bltname', row.name || 'UNKNOWN');
         setName(row.name || 'UNKNOWN');
-      },
-      e => {
-        setLoading(false);
-        console.log(JSON.stringify(e));
-        alert(e);
-      },
-    );
+      })
+    } catch (e) {
+      setLoading(false)
+      console.log(e)
+    }
   };
 
-  const unPair = address => {
+  const unPair = async address => {
     setLoading(true);
     BluetoothManager.unpaire(address).then(
       async s => {
         setLoading(false);
         setBoundAddress('');
-        await AsyncStorage.setItem('bltaddress', '');
         setName('');
+        await AsyncStorage.setItem('bltaddress', '');
         await AsyncStorage.setItem('bltname', '');
       },
       e => {

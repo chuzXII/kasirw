@@ -8,7 +8,8 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import RNRestart from 'react-native-restart';
 import 'react-native-gesture-handler';
-import {BluetoothManager} from 'react-native-bluetooth-escpos-printer';
+import { BluetoothManager } from 'react-native-bluetooth-escpos-printer';
+import 'react-native-reanimated';
 
 
 
@@ -65,11 +66,16 @@ const App = () => {
       console.log(res)
       await AsyncStorage.setItem('tokenAccess', res.accessToken)
       const user = await GoogleSignin.getCurrentUser()
-      await AsyncStorage.setItem('usergooglesignin',JSON.stringify(user.user))
+      await AsyncStorage.setItem('usergooglesignin', JSON.stringify(user.user))
+
+      const address = await AsyncStorage.getItem('bltaddress');
+      if (address != null || address != '') {
+        Activasionblt(address)
+      }
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         RNRestart.Restart()
-      }else if(error.code === statusCodes.SIGN_IN_REQUIRED){
+      } else if (error.code === statusCodes.SIGN_IN_REQUIRED) {
         await GoogleSignin.signIn()
       }
       else if (error.code === statusCodes.IN_PROGRESS) {
@@ -108,7 +114,7 @@ const App = () => {
               result['android.permission.BLUETOOTH_CONNECT'] &&
               result['android.permission.BLUETOOTH_SCAN'] &&
               result['android.permission.BLUETOOTH_ADVERTISE'] ===
-                PermissionsAndroid.RESULTS.GRANTED
+              PermissionsAndroid.RESULTS.GRANTED
             ) {
               Activasionblt();
               isPermitedLocation = true;
@@ -144,33 +150,33 @@ const App = () => {
       console.log(e);
     }
   };
-  const Activasionblt = async () => {
-    const address = await AsyncStorage.getItem('bltaddress');
+  const Activasionblt = async (address) => {  
     if (address) {
-      BluetoothManager.connect(address)
-        .then(
-          s => {
-            console.log('Paired ' + s);
-          },
-          e => {
-            console.log(JSON.stringify(e));
-            alert(e);
-          },
-        )
-        .catch(e => {
-          console.log(e);
-        });
+      try {
+        BluetoothManager.connect(address)
+          .then(
+            s => {
+              console.log('Paired ' + s);
+            },
+            e => {
+              console.log(JSON.stringify(e));
+              alert(e);
+            },
+          )
+      } catch (e) {
+        console.log(e)
+      }
+
     }
   };
   useEffect(() => {
-    Activasionblt()
     settoken()
   }, [])
 
 
   return (
     <Provider store={store}>
-      
+
       <StatusBar backgroundColor={'#4D5AFF'} animated={true} barStyle="light-content" />
       <NavigationContainer >
         <Routes />

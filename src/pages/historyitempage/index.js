@@ -16,6 +16,11 @@ import { useIsFocused } from '@react-navigation/native';
 import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
+import { Logo, logosplash, sjpg } from '../../assets';
+import { hsdLogo } from '../../assets/image/dummy-logo';
+import { chillLogo } from '../../assets/image/logo';
+
+
 moment.suppressDeprecationWarnings = true;
 const HistoryItemPage = ({ route, navigation }) => {
   fakturContainer = null;
@@ -43,20 +48,19 @@ const HistoryItemPage = ({ route, navigation }) => {
   const isFocused = useIsFocused();
   const { idtrx } = route.params;
   const onPressprint = async () => {
-    let columnWidths = [10, 12, 10];
     try {
-      await BluetoothEscposPrinter.printText('\r\n\r\n', {});
-      // await BluetoothEscposPrinter.printPic(chiilLogo, { width: 100, left:250 });
+      await BluetoothEscposPrinter.printText('\r\n\r\n', {});  
+      await BluetoothEscposPrinter.printPic64(chillLogo, {width: 250, height:250});
       await BluetoothEscposPrinter.printerAlign(
         BluetoothEscposPrinter.ALIGN.CENTER,
       );
       await BluetoothEscposPrinter.setBlob(3);
-      await BluetoothEscposPrinter.printColumn(
-        [32],
-        [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['WIJAYA VAPE'],
-        {},
-      );
+      // await BluetoothEscposPrinter.printColumn(
+      //   [32],
+      //   [BluetoothEscposPrinter.ALIGN.CENTER],
+      //   ['WIJAYA VAPE'],
+      //   {},
+      // );
       await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [32],
@@ -422,7 +426,7 @@ const HistoryItemPage = ({ route, navigation }) => {
       <ScrollView>
         <View style={{ marginHorizontal: 14 }}>
           <ViewShot ref={(ref) => (fakturContainer = ref)}>
-            <View style={{backgroundColor:'#fff'}}>
+            <View style={{ backgroundColor: '#fff' }}>
 
 
               <View

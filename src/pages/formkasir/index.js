@@ -17,6 +17,7 @@ import { setForm } from '../../redux/action';
 import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Iscan } from '../../assets/icon';
 
 const Formkasir = () => {
   const navigation = useNavigation();
@@ -116,7 +117,6 @@ const Formkasir = () => {
             <Label label={'Kategori Produk'} />
             <TouchableOpacity
               style={{
-               
                 borderWidth: 1,
                 borderColor: '#9371FB',
                 borderRadius: 12,
@@ -130,6 +130,17 @@ const Formkasir = () => {
                   .replace(/^\s+/, '')
                   .replace(/\s+$/, '') == '' ? "kategori Produk": FormReducer.form.kategoriproduk}</Text>
             </TouchableOpacity>
+
+            <Label label={'Kode Barcode'} />
+            <Input
+              input={'Kode Barcode'}
+              numberOfLines={1}
+              value={FormReducer.hargaproduk}
+              onChangeText={value => onInputChange(value, 'hargaproduk')}
+              keyboardType={'number-pad'}
+
+            />
+            <Iscan/>
             
 
             <View style={styles.wrapbutton}>

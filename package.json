@@ -11,6 +11,7 @@
     "androidclean": "cd android && ./gradlew clean"
   },
   "dependencies": {
+    "@gemedico/react-native-sounds": "^1.0.2",
     "@react-native-async-storage/async-storage": "^1.17.11",
     "@react-native-community/cli": "^9.3.2",
     "@react-native-google-signin/google-signin": "^8.2.1",
@@ -20,17 +21,22 @@
     "@reduxjs/toolkit": "^1.9.0",
     "@shopify/flash-list": "^1.4.1",
     "axios": "^1.2.0",
+    "deprecated-react-native-prop-types": "^4.1.0",
     "react": "18.1.0",
     "react-native": "0.70.6",
     "react-native-bluetooth-escpos-printer": "^0.0.5",
+    "react-native-camera": "^4.2.1",
     "react-native-chart-kit": "^6.12.0",
     "react-native-cli": "^2.0.1",
     "react-native-date-picker": "^4.2.6",
     "react-native-fs": "^2.20.0",
-    "react-native-gesture-handler": "^2.8.0",
+    "react-native-gesture-handler": "^2.12.0",
     "react-native-image-picker": "^4.10.1",
     "react-native-modern-datepicker": "^1.0.0-beta.91",
-    "react-native-reanimated": "^2.13.0",
+    "react-native-permissions": "^3.8.4",
+    "react-native-ping": "^1.2.7",
+    "react-native-qrcode-scanner": "^1.5.5",
+    "react-native-reanimated": "^2.17.0",
     "react-native-restart": "^0.0.24",
     "react-native-safe-area-context": "^4.4.1",
     "react-native-screens": "^3.18.2",
@@ -56,5 +62,13 @@
   },
   "jest": {
     "preset": "react-native"
+  },
+  "resolutions": {
+    "react-native-permissions": "^3.8.4"
+  },
+  "overrides": {
+    "react-native-qrcode-scanner": {
+      "react-native-permissions": "^3.8.4"
+    }
   }
 }

@@ -18,6 +18,7 @@ import moment from 'moment'
 import { useEffect } from 'react';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { hsdLogo } from '../../assets/image/dummy-logo';
 
 
 const FinalPage = ({navigation}) => {
@@ -38,18 +39,17 @@ const FinalPage = ({navigation}) => {
 
   const dispatch = useDispatch()
   const setup=async()=>{
-    let columnWidths = [10, 12, 10];
     try {
       await BluetoothEscposPrinter.printText('\r\n\r\n', {});
-      // await BluetoothEscposPrinter.printPic(chiilLogo, { width: 100, left:250 });
+      await BluetoothEscposPrinter.printPic64(hsdLogo, {width: 200, height:100});
       await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
       await BluetoothEscposPrinter.setBlob(3);
-      await BluetoothEscposPrinter.printColumn(
-        [32],
-        [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['WIJAYA VAPE'],
-        {},
-      );
+      // await BluetoothEscposPrinter.printColumn(
+      //   [32],
+      //   [BluetoothEscposPrinter.ALIGN.CENTER],
+      //   ['WIJAYA VAPE'],
+      //   {},
+      // );
       await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [32],
