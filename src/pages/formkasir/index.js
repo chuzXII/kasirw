@@ -6,21 +6,21 @@ import {
   View,
   ScrollView,
   Modal,
+  BackHandler,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import dbConn from '../../sqlite';
 import Input from '../../component/input';
 import Label from '../../component/label';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { setForm } from '../../redux/action';
-import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Iscan } from '../../assets/icon';
+import { Iscan, Iscand } from '../../assets/icon';
 
-const Formkasir = () => {
+const Formkasir = ({ route }) => {
   const navigation = useNavigation();
+  // const { barcodes } = route.params;
   const FormReducer = useSelector(state => state.FormReducer);
   const dispatch = useDispatch();
   const [ID, setid] = useState(0);
@@ -35,7 +35,11 @@ const Formkasir = () => {
     { id: 5, category: 'Freebase' },
     { id: 6, category: 'Saltnic' },
   ];
-
+  const handleBackButtonClick=() =>{
+    navigation.goBack();
+    dispatch({ type: 'RM_FORM' });
+    return true;
+  }
   const get = async () => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
@@ -55,11 +59,19 @@ const Formkasir = () => {
         }
       })
   }
+  const openModalkategori=(item)=>{
+    onInputChange(item.category, 'kategoriproduk')
+    setModalVisibleCategory(!modalVisibleCategory) 
+  }
+  const closeModal=()=>{
+    setModalVisibleCategory(!modalVisibleCategory)
+    onInputChange(null, 'kategoriproduk')
+  }
   const onPress = async () => {
     try {
       const sheetid = await AsyncStorage.getItem('TokenSheet');
       const token = await AsyncStorage.getItem('tokenAccess');
-      const data = [[parseInt(ID) + 1, FormReducer.form.namaproduk, FormReducer.form.hargaproduk,FormReducer.form.kategoriproduk.toUpperCase()]]
+      const data = [[parseInt(ID) + 1, FormReducer.form.namaproduk, FormReducer.form.hargaproduk, FormReducer.form.kategoriproduk.toUpperCase(),FormReducer.form.barcodeproduk]]
 
       axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
         sheetid +
@@ -89,6 +101,10 @@ const Formkasir = () => {
   };
   useEffect(() => {
     get()
+    BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handleBackButtonClick);
+    }
   }, [Check])
   return (
     <View style={styles.conatiner}>
@@ -97,51 +113,66 @@ const Formkasir = () => {
 
           <View style={styles.warpcard}>
             <Label label={'Nama Produk'} />
-            <Input
-              input={'Nama Produk'}
-              numberOfLines={1}
-              value={FormReducer.namaproduk}
-              onChangeText={value => onInputChange(value, 'namaproduk')}
-            />
-            <Label label={'Harga Produk'} />
-            <Input
-              input={'Harga Produk'}
-              numberOfLines={1}
-              value={FormReducer.hargaproduk}
-              onChangeText={value => onInputChange(value, 'hargaproduk')}
-              keyboardType={'number-pad'}
+            <View style={styles.formgroup}>
+              <Input
+                input={'Nama Produk'}
+                numberOfLines={1}
+                value={FormReducer.form.namaproduk}
+                onChangeText={value => onInputChange(value, 'namaproduk')}
+              />
+            </View>
 
-            />
-            
+            <Label label={'Harga Produk'} />
+            <View style={styles.formgroup}>
+              <Input
+                input={'Harga Produk'}
+                numberOfLines={1}
+                value={FormReducer.form.hargaproduk}
+                onChangeText={value => onInputChange(value, 'hargaproduk')}
+                keyboardType={'number-pad'}
+
+              />
+            </View>
+
+
 
             <Label label={'Kategori Produk'} />
             <TouchableOpacity
               style={{
                 borderWidth: 1,
-                borderColor: '#9371FB',
+                borderColor: '#1B99D4',
                 borderRadius: 12,
-                backgroundColor: '#B3D6FF',
+                backgroundColor: '#89CFF0',
               }}
               onPress={() => {
                 setModalVisibleCategory(true);
               }}>
-              <Text style={{ marginVertical:12,color:'#000',paddingLeft:8}}>{ FormReducer.form.kategoriproduk == null ||
+              <Text style={{ marginVertical: 12, color: '#000', paddingLeft: 8 }}>{FormReducer.form.kategoriproduk == null ||
                 FormReducer.form.kategoriproduk
                   .replace(/^\s+/, '')
-                  .replace(/\s+$/, '') == '' ? "kategori Produk": FormReducer.form.kategoriproduk}</Text>
+                  .replace(/\s+$/, '') == '' ? "kategori Produk" : FormReducer.form.kategoriproduk}</Text>
             </TouchableOpacity>
 
             <Label label={'Kode Barcode'} />
-            <Input
-              input={'Kode Barcode'}
-              numberOfLines={1}
-              value={FormReducer.hargaproduk}
-              onChangeText={value => onInputChange(value, 'hargaproduk')}
-              keyboardType={'number-pad'}
+            <View style={styles.formgroup}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Input
+                  input={'Kode Barcode'}
+                  numberOfLines={1}
+                  value={FormReducer.form.barcodeproduk}
+                  onChangeText={value => onInputChange(value, 'barcodeproduk')}
+                  keyboardType={'number-pad'}
+                  icon={true}
+                  style={{ flex: 1 ,color:'#000'}}
+                />
+                <TouchableOpacity style={{ marginRight: 12 }} onPress={() => navigation.navigate('camscan', false)}>
+                  <Iscand />
+                </TouchableOpacity>
+              </View>
 
-            />
-            <Iscan/>
-            
+            </View>
+
+
 
             <View style={styles.wrapbutton}>
 
@@ -160,7 +191,7 @@ const Formkasir = () => {
                 ? (
                   <View style={styles.wrapbuttonsub}>
                     <View
-                      style={[styles.button, { backgroundColor: 'rgba(127, 17, 224, 0.5)' }]}>
+                      style={[styles.button, { backgroundColor: 'rgba(21, 27, 37, 0.5)' }]}>
                       <Text style={styles.buttontxt}>Simpan</Text>
                     </View>
                   </View>
@@ -188,7 +219,7 @@ const Formkasir = () => {
             flex: 1,
             backgroundColor: 'rgba(0,0,0,0.8)',
           }}
-          onPress={() => {setModalVisibleCategory(!modalVisibleCategory),onInputChange(null,'kategoriproduk')}}>
+          onPress={() => closeModal()}>
           <View
             style={{
               backgroundColor: '#fff',
@@ -214,7 +245,7 @@ const Formkasir = () => {
                     <TouchableOpacity
                       key={i}
                       style={styles.btnitemcategory}
-                      onPress={() => {onInputChange(item.category,'kategoriproduk'), setModalVisibleCategory(!modalVisibleCategory)}}>
+                      onPress={() => {openModalkategori(item)}}>
                       <Text style={{ color: '#000', textAlign: 'center' }}>
                         {item.category}
                       </Text>
@@ -235,6 +266,13 @@ const DWidth = Dimensions.get('window').width;
 const DHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
+  formgroup: {
+    borderWidth: 1,
+    borderColor: '#1B99D4',
+    borderRadius: 12,
+    backgroundColor: '#89CFF0',
+
+  },
   conatiner: {
     flex: 1,
     justifyContent: 'center',
@@ -276,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
-    backgroundColor: '#18AECF',
+    backgroundColor: '#DBE8E1',
     width: DWidth * 0.3,
     height: DHeight / 20,
   },
@@ -298,7 +336,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: DWidth * 0.7,
     height: DHeight / 15,
-    backgroundColor: '#9B5EFF',
+    backgroundColor: '#151B25',
   },
   buttontxt: {
     color: '#fff',

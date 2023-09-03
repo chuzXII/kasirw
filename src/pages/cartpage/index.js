@@ -14,21 +14,18 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useState } from 'react';
 import CardItem from '../../component/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
-import CardSub from '../../component/CardSub';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import {emptycart, emptyproduct} from '../../assets/image';
+import { emptycart, emptyproduct } from '../../assets/image';
 import moment from 'moment';
-import {useState} from 'react';
+
 
 const Cartpage = () => {
   const currency = new Intl.NumberFormat('id-ID');
-
-  // const [Total,setTotal]=useState()
   const navigation = useNavigation();
   const CartReducer = useSelector(state => state.CartReducer);
   const TRXReducer = useSelector(state => state.TRXReducer);
@@ -41,24 +38,19 @@ const Cartpage = () => {
   const [Diskon, setDiskon] = useState(0);
   const [NamaDiskon, setNamaDiskon] = useState(' ');
   const [Note, setNote] = useState('');
-  const [set, setDataMenu] = useState();
 
   const dispatch = useDispatch();
 
   const renderCartItem = item => {
-    // let count = Cart.getItemCount(this.state.cartList, item);
     return <CardItem item={item} />;
   };
-  const renderSubTotal = item => {
-    // let count = Cart.getItemCount(this.state.cartList, item);
-    return <CardSub item={item} />;
-  };
-  const input = ({sheetid, token, data, indexs, listcount, stoksisa}) => {
+
+  const input = ({ sheetid, token, data, indexs, listcount, stoksisa }) => {
     axios
       .post(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Transaksi!A1:append?valueInputOption=USER_ENTERED',
+        sheetid +
+        '/values/Transaksi!A1:append?valueInputOption=USER_ENTERED',
         JSON.stringify({
           values: data,
         }),
@@ -73,64 +65,6 @@ const Cartpage = () => {
         setModalVisibleLoading(false);
         setModalVisible(!modalVisible);
         navigation.replace('finalpage');
-      // if(indexs.length>1){
-      //   indexs
-      //     .forEach((e, i) => {
-      //       axios.post(
-      //         'https://sheets.googleapis.com/v4/spreadsheets/' +
-      //           sheetid +
-      //           '/values:batchUpdate',
-      //         JSON.stringify({
-      //           data: {
-      //             values: [[listcount[i], stoksisa[i]]],
-      //             range: 'Produk!D' + e,
-      //           },
-      //           valueInputOption: 'USER_ENTERED',
-      //         }),
-      //         {
-      //           headers: {
-      //             'Content-type': 'application/json',
-      //             Authorization: 'Bearer ' + token,
-      //           },
-      //         },
-      //       ) .then(res => {
-      //         if(i+1==indexs.length){
-      //           setTimeout(()=>{
-      //               setModalVisibleLoading(false);
-      //               setModalVisible(!modalVisible);
-      //               navigation.replace('finalpage');
-      //             },3000)
-      //         }
-      //       })
-      //       .catch(e => {
-      //         console.log(e);
-      //       });
-      //     })
-      // }
-      // else{
-      //   axios.post(
-      //     'https://sheets.googleapis.com/v4/spreadsheets/' +
-      //       sheetid +
-      //       '/values:batchUpdate',
-      //     JSON.stringify({
-      //       data: {
-      //         values: [[listcount[0], stoksisa[0]]],
-      //         range: 'Produk!D' + indexs[0],
-      //       },
-      //       valueInputOption: 'USER_ENTERED',
-      //     }),
-      //     {
-      //       headers: {
-      //         'Content-type': 'application/json',
-      //         Authorization: 'Bearer ' + token,
-      //       },
-      //     },
-      //   ) .then(res => {
-      //           setModalVisibleLoading(false);
-      //           setModalVisible(!modalVisible);
-      //           navigation.replace('finalpage');
-      //   })
-      // }
       })
       .catch(e => {
         console.log(e);
@@ -141,10 +75,8 @@ const Cartpage = () => {
     const user = JSON.parse(await AsyncStorage.getItem('usergooglesignin'));
     const token = await AsyncStorage.getItem('tokenAccess');
     const data = [];
-    var indexs = [];
-    var stoksisa = [];
-    var listcount = [];
-    var checkstok;
+    let indexs = [];
+    let checkstok;
     const rawdate = new Date();
     // await axios
     //   .get(
@@ -178,59 +110,58 @@ const Cartpage = () => {
     //         stoksisa.push(value[i].item[4] - value[i].count);
     //       }
     //     }
-        // console.log(checkstok)
+    // console.log(checkstok)
 
-        if (!checkstok) {
-          dispatch({type: 'NOMINAL', value: Total});
+    if (!checkstok) {
+      dispatch({ type: 'NOMINAL', value: Total });
 
-          for (let i = 0; i < CartReducer.cartitem.length; i++) {
-            const namaproduk = CartReducer.cartitem[i].item[1];
-            const hargaproduk = CartReducer.cartitem[i].item[2];
-            const count = CartReducer.cartitem[i].count;
-            const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
-            const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
-            data.push([
-              TRXReducer.id_produk,
-              namaproduk,
-              count,
-              hargaproduk,
-              Total.toString(),
-              tglorder,
-              timestamp,
-              NamaDiskon.concat(' ' + Diskon),
-              Note,
-              user.name,
-              'Lunas',
-            ]);
-          }
-          // input({sheetid, token, data, indexs, listcount, stoksisa});
-          input({sheetid, token, data, indexs,});
+      for (let i = 0; i < CartReducer.cartitem.length; i++) {
+        const namaproduk = CartReducer.cartitem[i].item[1];
+        const hargaproduk = CartReducer.cartitem[i].item[2];
+        const count = CartReducer.cartitem[i].count;
+        const tglorder = moment(rawdate).format('DD-MM-yyyy HH:mm:ss');
+        const timestamp = Date.parse(moment().format('yyyy-MM-DD'));
+        data.push([
+          TRXReducer.id_produk,
+          namaproduk,
+          count,
+          hargaproduk,
+          Total.toString(),
+          tglorder,
+          timestamp,
+          NamaDiskon.concat(' ' + Diskon),
+          Note,
+          user.name,
+          'Lunas',
+        ]);
+      }
+      input({ sheetid, token, data, indexs, });
 
-        } else {
-          Alert.alert(
-            'STOK HABIS',
-            'Ada Stok Yang Lagi Kosong, Silahkan Tambah Terlebih Dahulu LaLu Lanjutkan Transaksi',
-            [{text: 'OK', onPress: () => navigation.replace('listkatalog')}],
-            {cancelable: false},
-          );
-        }
+    } else {
+      Alert.alert(
+        'STOK HABIS',
+        'Ada Stok Yang Lagi Kosong, Silahkan Tambah Terlebih Dahulu LaLu Lanjutkan Transaksi',
+        [{ text: 'OK', onPress: () => navigation.replace('listkatalog') }],
+        { cancelable: false },
+      );
+    }
 
-        // for (let i = 0; i < CartReducer.cartitem.length; i++) {
-        //   res.data.values.filter((element, index, array) => {
-        //     if (element[0] == CartReducer.cartitem[i].item[0]) {
-        //       indexs.push(index + 1);
-        //       var value = CartReducer.cartitem.sort((a, b) =>
-        //         a.id > b.id ? 1 : -1,
-        //       );
-        //       listcount.push(parseInt(value[i].item[3]) + value[i].count);
-        //       stoksisa.push(value[i].item[4] - value[i].count);
-        //     }
-        //   });
-        // }
-      // })
-      // .catch(e => {
-      //   console.log(e);
-      // });
+    // for (let i = 0; i < CartReducer.cartitem.length; i++) {
+    //   res.data.values.filter((element, index, array) => {
+    //     if (element[0] == CartReducer.cartitem[i].item[0]) {
+    //       indexs.push(index + 1);
+    //       var value = CartReducer.cartitem.sort((a, b) =>
+    //         a.id > b.id ? 1 : -1,
+    //       );
+    //       listcount.push(parseInt(value[i].item[3]) + value[i].count);
+    //       stoksisa.push(value[i].item[4] - value[i].count);
+    //     }
+    //   });
+    // }
+    // })
+    // .catch(e => {
+    //   console.log(e);
+    // });
   };
   const onPressTunai = type => {
     setModalVisibleLoading(true);
@@ -260,7 +191,7 @@ const Cartpage = () => {
               0,
             ) *
               Diskon.split('-')[0]) /
-              100;
+            100;
         }
       }
 
@@ -280,14 +211,54 @@ const Cartpage = () => {
     }
   };
   const onPressModalDiskon = async () => {
-    const datadiskon = await AsyncStorage.getItem('formdiskon');
-    setDataDiskon(JSON.parse(datadiskon));
+    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    const token = await AsyncStorage.getItem('tokenAccess');
+    await axios
+      .get(
+        'https://sheets.googleapis.com/v4/spreadsheets/' +
+        sheetid +
+        '/values/Diskon',
+        {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      )
+      .then(res => {
+        if (res.data.values == undefined) {
+          setItems([]);
+        } else {
+          setDataDiskon(res.data.values);
+        }
+      }).catch(error => {
+        if (error.response) {
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+          alert(error.message);
+          setRefreshing(false);
+
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log(error.request);
+          alert(error.message);
+          setRefreshing(false);
+
+        } else {
+          console.log('Error', error.message);
+          alert(error.message);
+          setRefreshing(false);
+
+        }
+      });
     setModalDiskonVisible(true);
   };
   const onPressDiskon = (nama, diskon) => {
     setNamaDiskon(nama.replace(/\s+/g, '-'));
     setDiskon(diskon);
-    dispatch({type: 'DISKON', valuenama: nama, valuediskon: diskon});
+    dispatch({ type: 'DISKON', valuenama: nama, valuediskon: diskon });
     setModalDiskonVisible(!modalDiskonVisible);
   };
   const onLongPressDiskon = () => {
@@ -297,13 +268,13 @@ const Cartpage = () => {
   return (
     <View style={styles.container}>
       <View style={styles.box1}>
-        <StatusBar backgroundColor={'#5C67E4'} barStyle="light-content" />
+        <StatusBar backgroundColor={'#151B25'} barStyle="light-content" />
         <FlatList
           key={'flatlist'}
           data={CartReducer.cartitem}
-          renderItem={({item, index}) => renderCartItem(item, index)}
+          renderItem={({ item }) => renderCartItem(item)}
           keyExtractor={item => item.id}
-          contentInset={{bottom: 150}}
+          contentInset={{ bottom: 150 }}
           contentContainerStyle={{
             paddingBottom:
               CartReducer.cartitem.length > 0
@@ -363,11 +334,11 @@ const Cartpage = () => {
               contentInset={{bottom: 150}}
             /> */}
           </View>
-          <View style={{backgroundColor: '#fff'}}>
+          <View style={{ backgroundColor: '#fff' }}>
             <TouchableOpacity
               style={{
                 textAlign: 'center',
-                borderColor: '#9B5EFF',
+                borderColor: '#034687',
                 borderTopWidth: 1,
                 backgroundColor: '#fff',
                 color: '#fff',
@@ -442,11 +413,11 @@ const Cartpage = () => {
               </View>
             </TouchableOpacity>
           </View>
-          <View style={{backgroundColor: '#fff'}}>
+          <View style={{ backgroundColor: '#fff' }}>
             <TouchableOpacity
               style={{
                 textAlign: 'center',
-                borderColor: '#9B5EFF',
+                borderColor: '#034687',
                 borderTopWidth: 1,
                 backgroundColor: '#fff',
                 color: '#fff',
@@ -497,21 +468,21 @@ const Cartpage = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.box2}>
-            <View style={{width: '50%'}}>
+            <View style={{ width: '50%' }}>
               <Text style={styles.total_price}>
                 Total: Rp.
                 {currency.format(
                   Diskon == 0
                     ? CartReducer.cartitem.reduce(
-                        (result, item) => item.count * item.subTotal + result,
-                        0,
-                      ) - 0
+                      (result, item) => item.count * item.subTotal + result,
+                      0,
+                    ) - 0
                     : Diskon.split('-').length <= 1
-                    ? CartReducer.cartitem.reduce(
+                      ? CartReducer.cartitem.reduce(
                         (result, item) => item.count * item.subTotal + result,
                         0,
                       ) - Diskon.split('-')[0]
-                    : CartReducer.cartitem.reduce(
+                      : CartReducer.cartitem.reduce(
                         (result, item) => item.count * item.subTotal + result,
                         0,
                       ) -
@@ -520,11 +491,11 @@ const Cartpage = () => {
                         0,
                       ) *
                         Diskon.split('-')[0]) /
-                        100,
+                      100,
                 )}
               </Text>
             </View>
-            <View style={{width: '50%'}}>
+            <View style={{ width: '50%' }}>
               <TouchableOpacity
                 style={styles.checkout_container}
                 onPress={() => setModalVisible(true)}>
@@ -572,7 +543,7 @@ const Cartpage = () => {
           console.log('close');
           setModalDiskonVisible(!modalDiskonVisible);
         }}>
-        <View style={{flex: 1, backgroundColor: '#ededed'}}>
+        <View style={{ flex: 1, backgroundColor: '#ededed' }}>
           <View
             style={{
               width: '100%',
@@ -583,8 +554,8 @@ const Cartpage = () => {
             }}>
             <TouchableOpacity
               onPress={() => setModalDiskonVisible(!modalDiskonVisible)}
-              style={{padding: 12}}>
-              <Text style={{color: '#000', fontSize: 18, fontWeight: '500'}}>
+              style={{ padding: 12 }}>
+              <Text style={{ color: '#000', fontSize: 18, fontWeight: '500' }}>
                 Back
               </Text>
             </TouchableOpacity>
@@ -599,7 +570,7 @@ const Cartpage = () => {
             </Text>
           </View>
 
-          <ScrollView style={{marginTop: 12}}>
+          <ScrollView style={{ marginTop: 12 }}>
             {DataDiskon == null ? (
               <View style={styles.imgContainerStyle}>
                 <View style={styles.imgwarpStyle}>
@@ -621,19 +592,19 @@ const Cartpage = () => {
                       elevation: 4,
                     }}
                     key={i}
-                    onPress={() => onPressDiskon(item.nama, item.diskon)}>
+                    onPress={() => onPressDiskon(item[1], item[2])}>
                     <Text
-                      style={{color: '#000', fontSize: 18, fontWeight: '500'}}>
-                      {item.nama}
+                      style={{ color: '#000', fontSize: 18, fontWeight: '500' }}>
+                      {item[1]}
                     </Text>
-                    {item.diskon.split('-').length <= 1 ? (
+                    {item[2].split('-').length <= 1 ? (
                       <Text
                         style={{
                           color: '#000',
                           fontSize: 18,
                           fontWeight: '500',
                         }}>
-                        Rp.{item.diskon.split('-')[0]}
+                        Rp.{item[2].split('-')[0]}
                       </Text>
                     ) : (
                       <Text
@@ -642,7 +613,7 @@ const Cartpage = () => {
                           fontSize: 18,
                           fontWeight: '500',
                         }}>
-                        {item.diskon.split('-')[0]}%
+                        {item[2].split('-')[0]}%
                       </Text>
                     )}
                   </TouchableOpacity>
@@ -659,7 +630,7 @@ const Cartpage = () => {
           setModalVisibleNote(!modalVisibleNote);
           setNote('');
         }}>
-        <View style={{flex: 1, backgroundColor: '#ededed'}}>
+        <View style={{ flex: 1, backgroundColor: '#ededed' }}>
           <View
             style={{
               width: '100%',
@@ -673,8 +644,8 @@ const Cartpage = () => {
                 setModalVisibleNote(!modalVisibleNote);
                 setNote('');
               }}
-              style={{padding: 12}}>
-              <Text style={{color: '#000', fontSize: 18, fontWeight: '500'}}>
+              style={{ padding: 12 }}>
+              <Text style={{ color: '#000', fontSize: 18, fontWeight: '500' }}>
                 Back
               </Text>
             </TouchableOpacity>
@@ -699,7 +670,7 @@ const Cartpage = () => {
             }}>
             Catatan
           </Text>
-          <View style={{justifyContent: 'space-between', flex: 1}}>
+          <View style={{ justifyContent: 'space-between', flex: 1 }}>
             <TextInput
               placeholderTextColor={'#000'}
               multiline={true}
@@ -759,7 +730,7 @@ const Cartpage = () => {
           onPress={() => setModalVisible(!modalVisible)}
           activeOpacity={1}>
           <View style={styles.modalView}>
-            <View style={{marginHorizontal: 14}}>
+            <View style={{ marginHorizontal: 14 }}>
               <TextInput
                 placeholder="Masukan Nilai Tunai"
                 placeholderTextColor={'#000'}
@@ -785,7 +756,7 @@ const Cartpage = () => {
                 }}>
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#9B5EFF',
+                    backgroundColor: '#034687',
                     padding: 6,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -803,11 +774,11 @@ const Cartpage = () => {
                   </Text>
                 </TouchableOpacity>
                 {nominal == null ||
-                nominal == '' ||
-                nominal.replace(/^\s+/, '').replace(/\s+$/, '') == '' ? (
+                  nominal == '' ||
+                  nominal.replace(/^\s+/, '').replace(/\s+$/, '') == '' ? (
                   <View
                     style={{
-                      backgroundColor: 'rgba(127, 17, 224, 0.5)',
+                      backgroundColor: 'rgba(3, 70, 135, 0.5)',
                       width: '50%',
                       padding: 6,
                       alignItems: 'center',
@@ -826,7 +797,7 @@ const Cartpage = () => {
                 ) : (
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#9B5EFF',
+                      backgroundColor: '#034687',
                       padding: 6,
                       width: '50%',
                       alignItems: 'center',
@@ -872,6 +843,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   box2: {
+    backgroundColor:'#fff',
     width: '100%',
     height: 50,
     flexDirection: 'row',
@@ -885,12 +857,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'TitilliumWeb-Bold',
     backgroundColor: '#fff',
-    color: '#9B5EFF',
+    color: '#034687',
   },
   checkout_container: {
     textAlign: 'center',
     height: 50,
-    backgroundColor: '#9B5EFF',
+    backgroundColor: '#034687',
     color: '#fff',
   },
   checkout: {
@@ -920,24 +892,16 @@ const styles = StyleSheet.create({
   },
   btnStyle: {
     padding: 10,
-    backgroundColor: '#695bd1',
+    backgroundColor: '#034687',
     borderRadius: 20,
     margin: 20,
     fontSize: 16,
   },
-  imgContainerStyle: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   imgwarpStyle: {
     marginHorizontal: Dwidth * 0.06,
     height: Dheight / 2.5,
     width: "100%",
   },
-  imageStyle: {
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    alignItems: 'center',
-  },
+
 });

@@ -1,19 +1,23 @@
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, } from 'react-native'
-import React, { useState } from 'react'
+import { StyleSheet, Text, View, KeyboardAvoidingView, Vibration, Dimensions, Alert, } from 'react-native'
+import React, { useState, useRef } from 'react'
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
+import BarcodeMask from 'react-native-barcode-mask';
+import { setForm } from '../../redux/action';
+
 
 const Camscan = (addchart) => {
   const [barcodes, setBarcodes] = useState('')
   const Navigation = useNavigation()
   const dispatch = useDispatch();
+  const scannerRef = useRef(null);
   const TRXReducer = useSelector(state => state.TRXReducer);
   const setCart = (item, idpproduk, count, harga, id_tensaksi) => {
-    var ids = '';
+    let ids = '';
     if (TRXReducer.id_produk == null) {
       ids = id_tensaksi;
     } else {
@@ -34,63 +38,133 @@ const Camscan = (addchart) => {
   };
 
   const onSuccess = async (e) => {
-    setBarcodes(e.data)
-    if (addchart.route.params) {
-      const sheetid = await AsyncStorage.getItem('TokenSheet');
-      const token = await AsyncStorage.getItem('tokenAccess');
-      await axios
-        .get(
-          'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Produk',
-          {
-            headers: {
-              Authorization: 'Bearer ' + token,
-            },
-          },
-        )
-        .then(res => {
-          const item = res.data.values.filter(fill => fill[4] != null ? fill[4] == e.data : null)[0]
-          const rawdate = new Date();
-          const date = moment(rawdate).format('DD-MM-YY').split('-');
-          const id_tensaksi =
-            'TRX-' +
-            date[0] +
-            date[1] +
-            date[2] +
-            Math.floor(Math.random() * 1000000) +
-            1;
-          setidproduk(id_tensaksi);
-          var idpproduk = item[0];
-          var harga = item[2];
-          var count = 1;
-          setCart(item, idpproduk, count, harga, id_tensaksi);
-          Navigation.navigate('Routestack')
+    const { bounds } = e;
 
-        })
+    // Misalnya, koordinat titik kiri atas kotak yang ditentukan
+    const boxTopLeftX = 290; // Ganti dengan koordinat X yang sesuai
+    const boxTopLeftY = 250; // Ganti dengan koordinat Y yang sesuai
+
+    // Misalnya, koordinat titik kanan bawah kotak yang ditentukan
+    const boxBottomRightX = 255; // Ganti dengan koordinat X yang sesuai
+    const boxBottomRightY = 3600; // Ganti dengan koordinat Y yang sesuai
+
+    // Menghitung nilai batas kotak yang ditentukan
+
+    const boxLeft = parseFloat(bounds.origin[0].x);
+    const boxRight = parseFloat(bounds.origin[1].x);
+    const boxTop = parseFloat(bounds.origin[0].y);
+    const boxBottom = parseFloat(bounds.origin[1].y);
+    
+    if (
+      boxLeft >= boxTopLeftX &&
+      boxRight <= boxBottomRightX &&
+      boxTop >= boxTopLeftY &&
+      boxBottom <= boxBottomRightY
+    ) {
+      Vibration.vibrate()
+      setBarcodes(e.data)
+      if (addchart.route.params) {
+        const sheetid = await AsyncStorage.getItem('TokenSheet');
+        const token = await AsyncStorage.getItem('tokenAccess');
+        await axios
+          .get(
+            'https://sheets.googleapis.com/v4/spreadsheets/' +
+            sheetid +
+            '/values/Produk',
+            {
+              headers: {
+                Authorization: 'Bearer ' + token,
+              },
+            },
+          )
+          .then(res => {
+            const item = res.data.values.filter(fill => fill[4] != null ? fill[4] == e.data : null)[0]
+            if (!item) {
+              Alert.alert("Barcode Belum Terdaftar","Barcode Belum Terdaftar",[
+                {
+                  text: 'OK',
+                  onPress: () =>resetactivecam(),
+                },])
+            }
+            else {
+              const rawdate = new Date();
+              const date = moment(rawdate).format('DD-MM-YY').split('-');
+              const id_tensaksi =
+                'TRX-' +
+                date[0] +
+                date[1] +
+                date[2] +
+                Math.floor(Math.random() * 1000000) +
+                1;
+              setidproduk(id_tensaksi);
+              let idpproduk = item[0];
+              let harga = item[2];
+              let count = 1;
+              setCart(item, idpproduk, count, harga, id_tensaksi);
+              Navigation.navigate('Routestack')
+
+            }
+          })
+
+      }
+      else {
+        dispatch(setForm("barcodeproduk", e.data));
+        Navigation.navigate('formkasir')
+      }
+    } else {
+      // console.log(e.origin)
+      resetactivecam()
     }
+
   }
   const handleLayoutMeasured = (event) => {
     const { layout, target } = event.nativeEvent;
     // Access layout properties such as width, height, x, y
-    console.log('Barcode Mask Layout:', layout, target);
+    console.log('Barcode Mask Layout:', event);
   };
+  const resetactivecam=()=>{
+    if (scannerRef.current) {
+      scannerRef.current.reactivate();
+    }
+  }
   return (
     <KeyboardAvoidingView style={styles.root}>
       <View style={styles.upperSection}>
         <QRCodeScanner
           onRead={e => onSuccess(e)}
-          markerStyle={<View><Text>sadasd</Text></View>}
-          bottomContent={<View><Text style={styles.textBold}>{barcodes}</Text></View>} />
-        {/* <BarcodeMask width={300} height={100} edgeColor={'#db6e37'} animatedLineColor={'#db6e37'} lineAnimationDuration={1000} onLayoutMeasured={handleLayoutMeasured}/> */}
-      </View>
-    </KeyboardAvoidingView>
+          ref={scannerRef}
+          showMarker={true}
+          bottomContent={<View><Text style={styles.textBold}>{barcodes}</Text></View>
+          }
+          vibrate={false}
+          customMarker={
+            <View style={styles.maskContainer}>
+                          <BarcodeMask width={320} height={110} outerMaskOpacity={0.6} edgeColor={'#db6e37'} animatedLineColor={'#db6e37'} lineAnimationDuration={1000} />
+              </View>
+          }
+          markerStyle={{position:'absolute',top:70,height:80,width:300}}
+          cameraStyle={{ height:  Dimensions.get('window').height*1}}
+        />
+    </View>
+    </KeyboardAvoidingView >
   )
 }
 
 export default Camscan
 
 const styles = StyleSheet.create({
+  maskContainer: {
+    flex: 1,
+    position: 'absolute',
+    top: -550,
+    left: 0,
+    width: '100%',
+    height: Dimensions.get('screen').height*1.6,
+  },
+  mask: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
   root: {
     flex: 1,
   },

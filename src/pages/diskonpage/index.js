@@ -218,7 +218,7 @@ const DiskonPage = ({ navigation }) => {
       <View style={{ marginVertical: 12 }} >
         <ItemDiskon
           data={item}
-          onPress={() => onPress({ item, i })}
+          onPress={() => onPress({ item })}
         // onLongPress={() => onLongPress(i)}
         />
       </View>
@@ -250,7 +250,7 @@ const DiskonPage = ({ navigation }) => {
       </View >
 
       <TouchableOpacity
-        style={{ backgroundColor: '#9B5EFF', padding: 18, alignItems: 'center' }}
+        style={{ backgroundColor: '#151B25', padding: 18, alignItems: 'center' }}
         onPress={() => navigation.navigate('formdiskon')}>
         <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500' }}>
           Tambah Diskon
@@ -325,7 +325,7 @@ const DiskonPage = ({ navigation }) => {
                   </Text>
                   <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isEnabled ? '#9B5EFF' : '#f4f3f4'}
+                    thumbColor={isEnabled ? '#034687' : '#DBE8E1'}
                     onValueChange={toggleSwitch}
                     value={isEnabled}
                   />
@@ -348,7 +348,7 @@ const DiskonPage = ({ navigation }) => {
                   />
 
                 </View>
-                : <View style={{ borderColor: '#18AECF', borderWidth: 1, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                : <View style={{ borderColor: '#1B99D4', borderWidth: 1, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
 
                   <TextInput
                     keyboardType='number-pad'
@@ -370,7 +370,7 @@ const DiskonPage = ({ navigation }) => {
               <TouchableOpacity
                 style={{
                   padding: 12,
-                  backgroundColor: '#9B5EFF',
+                  backgroundColor: '#151B25',
                   marginTop: 12,
                   borderRadius: 12,
                   alignItems: 'center',

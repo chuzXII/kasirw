@@ -8,15 +8,15 @@ import {
   Dimensions
 } from 'react-native';
 import React from 'react';
-import {backgroundabout} from '../../assets';
-import {Igithub, Imail, Iweb} from '../../assets/icon';
+import { backgroundabout } from '../../assets';
+import { Igithub, Imail, Iweb } from '../../assets/icon';
 
 const AboutPage = () => {
   return (
-    <View style={{height:Dimensions.get('screen').height}}>
+    <View style={{ height: Dimensions.get('screen').height }}>
       <ImageBackground
         source={backgroundabout}
-        style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <View
           style={{
             backgroundColor: 'rgba(255,255,255,0.6)',
@@ -24,8 +24,8 @@ const AboutPage = () => {
             height: 450,
             borderRadius: 24,
           }}>
-          <View style={{marginHorizontal: 20}}>
-            <View style={{alignItems: 'center', marginTop: 28}}>
+          <View style={{ marginHorizontal: 20 }}>
+            <View style={{ alignItems: 'center', marginTop: 28 }}>
               <View
                 style={{
                   backgroundColor: '#61E2FF',
@@ -35,7 +35,7 @@ const AboutPage = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                <Text style={{color: '#000', fontSize: 24, fontWeight: 'bold'}}>
+                <Text style={{ color: '#000', fontSize: 24, fontWeight: 'bold' }}>
                   Contact Me
                 </Text>
               </View>
@@ -49,12 +49,12 @@ const AboutPage = () => {
                 marginVertical: 12,
               }}>
               <Imail />
-              <Text style={{color: '#000', fontSize: 20, marginLeft: 8,fontFamily:'Khula-Regular'}}>
+              <Text style={{ color: '#000', fontSize: 20, marginLeft: 8, fontFamily: 'Khula-Regular' }}>
                 kzkzaj@gmail.com
               </Text>
             </TouchableOpacity>
 
-            <View style={{alignItems: 'center', marginVertical: 12}}>
+            <View style={{ alignItems: 'center', marginVertical: 12 }}>
               <View
                 style={{
                   backgroundColor: '#61E2FF',
@@ -64,7 +64,7 @@ const AboutPage = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                <Text style={{color: '#000', fontSize: 24, fontWeight: 'bold'}}>
+                <Text style={{ color: '#000', fontSize: 24, fontWeight: 'bold' }}>
                   More Information
                 </Text>
               </View>
@@ -81,17 +81,17 @@ const AboutPage = () => {
               }}>
               <Iweb />
 
-              <Text style={{color: '#000', fontSize: 20, marginLeft: 8,fontFamily:'Khula-Regular'}}>
-                https://portfolioil.thecapz.com/
+              <Text style={{ color: '#000', fontSize: 20, marginLeft: 8, fontFamily: 'Khula-Regular' }}>
+              https://authorportfolio.nixie.my.id/
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-            onPress={() =>
-              Linking.openURL('https://github.com/chuzXII')
-            }
-              style={{flexDirection: 'row', alignItems: 'center'}}>
+              onPress={() =>
+                Linking.openURL('https://github.com/chuzXII')
+              }
+              style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Igithub />
-              <Text style={{color: '#000', fontSize: 20, marginLeft: 8,fontFamily:'Khula-Regular'}}>
+              <Text style={{ color: '#000', fontSize: 20, marginLeft: 8, fontFamily: 'Khula-Regular' }}>
                 https://github.com/chuzXII
               </Text>
             </TouchableOpacity>

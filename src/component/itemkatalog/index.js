@@ -1,6 +1,5 @@
 import {Image, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import RNFS from 'react-native-fs';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 const ItemKatalog = ({item, ...res}) => {
@@ -15,7 +14,7 @@ const ItemKatalog = ({item, ...res}) => {
       }}
       {...res}>
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        {item[4] == undefined ? (
+        {item[5] == undefined ? (
           item[1].split(' ').length <= 1 ? (
             <View
               style={{
@@ -52,7 +51,7 @@ const ItemKatalog = ({item, ...res}) => {
             </View>
           )
         ) : (
-          <Image source={{uri: item[4]}} style={styles.image}></Image>
+          <Image source={{uri: item[5]}} style={styles.image}></Image>
         )}
         <View style={{flex: 5, marginLeft: 12}}>
           <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>

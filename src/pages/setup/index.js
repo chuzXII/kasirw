@@ -139,7 +139,7 @@ const SetupPage = ({navigation}) => {
     return (
       <View style={{ height:'100%' }}>
         <View style={styles.header}>
-          <Text style={styles.textheader}>Welcome To Chill </Text>
+          <Text style={styles.textheader}>Welcome To Wijaya POS </Text>
           <Text style={styles.textheader}>Point Of Sale</Text>
         </View>
 
@@ -164,7 +164,9 @@ const SetupPage = ({navigation}) => {
           <Text style={{ justifyContent: 'center', alignItems: 'center', color: '#000', fontSize: 18, textAlign: 'center', marginVertical: 20,fontFamily:'TitilliumWeb-Regular' }}>Silahkan Masukan{"\n"}SpreadsheetID Anda</Text>
           <View style={styles.warpcard}>
             <Label label={'SpreadsheetID'} />
+            <View style={styles.formgroup}>
             <Input input={'SpreadsheetID'} numberOfLines={4} onChangeText={(value)=>onInputChage(value)} value={form}/>
+            </View>
             <View style={styles.wrapbuttonsub}>
               <TouchableOpacity style={styles.button} onPress={()=>btnSubmit()}>
                 <Text style={styles.buttontxt}>OK</Text>
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
   btn: {
     marginTop:14,
     padding: 18,
-    backgroundColor: '#9B5EFF',
+    backgroundColor: '#151B25',
     justifyContent: 'center',
     alignItems: 'center',
     
@@ -273,7 +275,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: DWidth * 0.7,
     height: DHeight / 15,
-    backgroundColor: '#9B5EFF'
+    backgroundColor: '#151B25'
   },
   buttontxt: {
     color: '#fff',
@@ -287,7 +289,14 @@ const styles = StyleSheet.create({
     color: "blue",
     textDecorationLine: 'underline'
 
-  }
+  },
+  formgroup: {
+    borderWidth: 1,
+    borderColor: '#1B99D4',
+    borderRadius: 12,
+    backgroundColor: '#89CFF0',
+
+  },
 })
 
 

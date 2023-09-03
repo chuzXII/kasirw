@@ -2,12 +2,10 @@ import {
   Dimensions,
   Image,
   Modal,
-  ScrollView,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  RefreshControl,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -22,7 +20,7 @@ import { Icash } from '../../assets/icon';
 import { FlashList } from '@shopify/flash-list';
 
 const HistoryPage = () => {
-  const [Data, setData] = useState();
+  const [Data, setData] = useState([]);
   const [StartDate, setStartDate] = useState(moment().format('yyyy-MM-DD'));
   const [EndDate, setEndDate] = useState(moment().format('yyyy-MM-DD'));
   const [modalVisible, setModalVisible] = useState(false);
@@ -186,8 +184,6 @@ const HistoryPage = () => {
         },
       )
       .then(res => {
-        var offset = moment();
-
         const StartTimeStamp = Date.parse(StartDate);
         const EndTimeStamp = Date.parse(EndDate);
         // console.log(Date.parse(StartDate.startOf()))
@@ -202,57 +198,6 @@ const HistoryPage = () => {
             { cancelable: false },
           );
         } else {
-          // const j = res.data.values.filter(
-          //   fill => fill[6] >= StartTimeStamp && fill[6] <= EndTimeStamp,
-          // );
-          // let b = Object.values(
-          //   j.reduce((acc, item) => {
-          //     if (!acc[item[0]])
-          //       acc[item[0]] = {
-          //         job: [],
-          //       };
-          //     acc[item[0]].job.push(parseInt(item[3]) * parseInt(item[2]));
-          //     return acc;
-          //   }, {}),
-          // )
-          // const n = b.map((items, i) =>
-          //   items.job.reduce((result, item) => parseInt(item) + result, 0),
-          // );
-          // const a = j.filter(
-          //   (value, index, self) =>
-          //     index === self.findIndex(t => t[0] === value[0]),
-          // );
-          // a.sort((a, b) => (a[6] > b[6] ? -1 : -1));
-          // n.sort((a, b) => (a[6] > b[6] ? 1 : -1));
-          // // console.log(n);
-          // let s = 0;
-          // const groups = a.reduce((groups, data) => {
-          //   const timestamp = data[6];
-
-          //   // if (!groups[date]&&!groups[timestamp]) {
-          //   if (!groups[timestamp]) {
-          //     // groups[date] = [];
-          //     groups[timestamp] = [];
-          //   }
-          //   groups[timestamp].push([data, n[s++]]);
-          //   return groups;
-          // }, {});
-          // // console.log(groups)
-
-          // const groupArrays = Object.keys(groups).map(timestamp => {
-          //   return {
-          //     timestamp,
-          //     date: moment(timestamp / 1000, 'X').toISOString(),
-          //     data: groups[timestamp],
-          //   };
-          // });
-          // const k = groupArrays.sort((a, b) => {
-          //   return b.timestamp - a.timestamp;
-          // });
-          // // setData(k);
-          // setModalVisibleLoading(false);
-          // setModalVisible(false)
-          // setRefreshing(false);
           const filteredData = res.data.values.filter((fill) => {
             const timestamp = fill[6];
             return timestamp >= StartTimeStamp && timestamp <= EndTimeStamp;
@@ -322,12 +267,10 @@ const HistoryPage = () => {
           alert(error.message);
           setRefreshing(false);
         } else {
-          // Something happened in setting up the request that triggered an Error
           console.log('Error', error.message);
           alert(error.message);
           setRefreshing(false);
         }
-        // console.log(error.config);
       });
   };
   const onRefresh = () => {
@@ -468,9 +411,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#44dfff',
-  },
-  selectedDateStyle: {
-    fontWeight: 'bold',
-    color: '#fff',
   },
 });

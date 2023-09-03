@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text} from 'react-native'
 import React from 'react'
 
 const Label = ({label}) => {
@@ -12,7 +12,7 @@ export default Label
 const styles = StyleSheet.create({
     label:{
         marginVertical:10,
-        color:'#9371FB',
+        color:'#3B86A5',
         fontSize:18,
        
     }

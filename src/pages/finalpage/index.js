@@ -1,6 +1,4 @@
 import {
-  Alert,
-  FlatList,
   Image,
   ScrollView,
   StyleSheet,
@@ -8,17 +6,15 @@ import {
   View,
   TouchableOpacity
 } from 'react-native';
-import React from 'react';
-import {Logo, logosplash} from '../../assets';
+import React,{useState, useEffect } from 'react';
+import {Logo,} from '../../assets';
 import {useDispatch, useSelector} from 'react-redux';
 import { Iprinter } from '../../assets/icon';
-import printer from '../printerpage';
 import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import moment from 'moment'
-import { useEffect } from 'react';
-import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { hsdLogo } from '../../assets/image/dummy-logo';
+
+import { chillLogo } from '../../assets/image/logo';
 
 
 const FinalPage = ({navigation}) => {
@@ -41,20 +37,14 @@ const FinalPage = ({navigation}) => {
   const setup=async()=>{
     try {
       await BluetoothEscposPrinter.printText('\r\n\r\n', {});
-      await BluetoothEscposPrinter.printPic64(hsdLogo, {width: 200, height:100});
+      await BluetoothEscposPrinter.printPic64(chillLogo, {width: 200, height:150});
       await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
       await BluetoothEscposPrinter.setBlob(3);
-      // await BluetoothEscposPrinter.printColumn(
-      //   [32],
-      //   [BluetoothEscposPrinter.ALIGN.CENTER],
-      //   ['WIJAYA VAPE'],
-      //   {},
-      // );
-      await BluetoothEscposPrinter.printText('\r\n', {});
+      // await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
+        ['\x1B\x61\x01Jl. KIS Mangunsarkoro, Kali Nangkaan,Dabasah,Kec.Bondowoso, Kabupaten Bondowoso,Jawa Timur 68216'],
         {},
       );
       await BluetoothEscposPrinter.setBlob(0);
@@ -100,32 +90,28 @@ const FinalPage = ({navigation}) => {
         {},
       );
       // CartReducer.cartitem.map(async(items,index)=>{
-        for(let a = 0;a<CartReducer.cartitem.length;a++){
-        // await BluetoothEscposPrinter.printColumn(
-        //     columnWidths,
-        //     [
-        //       BluetoothEscposPrinter.ALIGN.LEFT,
-        //       BluetoothEscposPrinter.ALIGN.CENTER,
-        //       BluetoothEscposPrinter.ALIGN.RIGHT,
-        //     ],
-        //     [items.item.namaproduk,(items.count+'x '+currency.format(items.subTotal)).toString(), ('Rp.'+currency.format(items.count * items.item.hargaproduk)).toString()],
-        //     {},
-        //   );
+        for (const element of CartReducer.cartitem) {
+          const itemName = element.item[1];
+          const itemCount = element.count;
+          const itemPrice = element.item[2];
+          const itemSubTotal = element.subTotal;
         
-          // console.log(items.item.namaproduk)
-          // console.log((items.count+'x Rp.'+currency.format(items.subTotal)).toString())
-        await BluetoothEscposPrinter.printColumn(
-          [32],
-          [BluetoothEscposPrinter.ALIGN.LEFT],
-          [CartReducer.cartitem[a].item[1]],
-          {},
-        ),
-        await BluetoothEscposPrinter.printColumn(
-          [16, 16],
-          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-          [(CartReducer.cartitem[a].count+'x Rp.'+currency.format(CartReducer.cartitem[a].subTotal)).toString(), ('Rp.'+currency.format(CartReducer.cartitem[a].count * CartReducer.cartitem[a].item[2])).toString()],
-          {},
-        )
+          const formattedItemSubTotal = 'Rp.' + currency.format(itemSubTotal);
+          const formattedTotalPrice = 'Rp.' + currency.format(itemCount * itemPrice);
+        
+          await BluetoothEscposPrinter.printColumn(
+            [32],
+            [BluetoothEscposPrinter.ALIGN.LEFT],
+            [itemName],
+            {}
+          );
+        
+          await BluetoothEscposPrinter.printColumn(
+            [16, 16],
+            [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+            [`${itemCount}x ${formattedItemSubTotal}`, formattedTotalPrice],
+            {}
+          );
         }
       await BluetoothEscposPrinter.printText(
         '================================',
@@ -340,7 +326,7 @@ const FinalPage = ({navigation}) => {
         <View style={{alignItems: 'center',marginVertical:12}}>
         <TouchableOpacity
           style={{
-            backgroundColor: '#9B5EFF',
+            backgroundColor: '#034687',
             width: 50,
             height: 50,
             borderRadius: 30,
@@ -355,7 +341,7 @@ const FinalPage = ({navigation}) => {
       
       
 
-      <TouchableOpacity style={{backgroundColor: '#9B5EFF',padding:16, alignItems: 'center',
+      <TouchableOpacity style={{backgroundColor: '#034687',padding:16, alignItems: 'center',
             justifyContent: 'center',borderTopEndRadius:24,borderTopLeftRadius:24}} onPress={()=>Submit()}>
         <Text style={{color: '#fff',fontSize:18,fontFamily:'TitilliumWeb-Bold'}}>OK</Text>
       </TouchableOpacity>

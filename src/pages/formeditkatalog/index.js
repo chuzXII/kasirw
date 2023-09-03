@@ -1,53 +1,59 @@
 import {
   Dimensions,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ScrollView,
+  Modal,
 } from 'react-native';
-import React from 'react';
-import {useEffect} from 'react';
-import dbConn from '../../sqlite';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {useState} from 'react';
+import React,{ useEffect,useState } from 'react';
+import { useIsFocused} from '@react-navigation/native';
 import Label from '../../component/label';
 import Input from '../../component/input';
-import {useDispatch, useSelector} from 'react-redux';
-import { launchImageLibrary } from 'react-native-image-picker';
-import RNFS from 'react-native-fs';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Iscan, Iscand } from '../../assets/icon';
 
-const FormEdit = ({route, navigation}) => {
+const FormEdit = ({ route, navigation }) => {
   const params = route.params;
   const isFocused = useIsFocused();
-  const [Data, setData] = useState();
-  const FormReducer = useSelector(state => state.FormReducer);
-  const dispatch = useDispatch();
-  const [NameImg, setNameImg] = useState();
-  const [FileImgOri, setFileImgOri] = useState();
-  const [urlimg, setUrlImg] = useState();
+  const [modalVisibleCategory, setModalVisibleCategory] = useState(false);
   const [Form, setForm] = useState({
     id: '',
     namaproduk: '',
     hargaproduk: '',
-    stokterjual:'',
+    barcodeproduk: '',
+    stokterjual: '',
     stok: '',
   });
-
+  const datacategory = [
+    { id: 1, category: 'Mod' },
+    { id: 2, category: 'Pod' },
+    { id: 3, category: 'Accecories' },
+    { id: 4, category: 'Authomizer' },
+    { id: 5, category: 'Freebase' },
+    { id: 6, category: 'Saltnic' },
+  ];
+  const openModalkategori=(item)=>{
+    onInputChange(item.category, 'kategoriproduk')
+    setModalVisibleCategory(!modalVisibleCategory)
+  }
+  const closeModal=()=>{
+    setModalVisibleCategory(!modalVisibleCategory)
+    onInputChange(null, 'kategoriproduk')
+  }
   const onPress = async () => {
     try {
       const sheetid = await AsyncStorage.getItem('TokenSheet');
       const token = await AsyncStorage.getItem('tokenAccess');
       axios.post(
         'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values:batchUpdate',
+        sheetid +
+        '/values:batchUpdate',
         JSON.stringify({
           data: {
-            values: [[Form.id, Form.namaproduk,Form.hargaproduk,Form.stokterjual,Form.stok]],
+            values: [[Form.id, Form.namaproduk, Form.hargaproduk, Form.stokterjual, Form.stok]],
             range: 'Produk!A' + Form.id,
           },
           valueInputOption: 'USER_ENTERED',
@@ -58,15 +64,15 @@ const FormEdit = ({route, navigation}) => {
             Authorization: 'Bearer ' + token,
           },
         },
-      ) .then(res => {
-       navigation.navigate('dashboard');  
-      })  
-     
+      ).then(res => {
+        navigation.navigate('dashboard');
+      })
+
     } catch (e) {
       console.log('EE' + e);
     }
   };
-  
+
   const onInputChange = (value, input) => {
     setForm({
       ...Form,
@@ -83,19 +89,20 @@ const FormEdit = ({route, navigation}) => {
   //       const a = res.assets[0].type.split('/');
   //       setFileImgOri(res.assets[0].uri);
   //       setNameImg(Form.namaproduk + '.' + a[1]);
-      
+
   //     }
   //   });
   // };
 
-  const get =() => {
+  const get = () => {
     try {
-            setForm({
-              id: params.id,
-              namaproduk: params.data[1],
-              hargaproduk:params.data[2],
-              kategoriproduk:params.data[3],
-            });
+      setForm({
+        id: params.id,
+        namaproduk: params.data[1],
+        hargaproduk: params.data[2],
+        kategoriproduk: params.data[3],
+        barcodeproduk: params.data[4]
+      });
     } catch (error) {
       console.log(error);
     }
@@ -105,47 +112,78 @@ const FormEdit = ({route, navigation}) => {
   }, [isFocused]);
   return (
     <View style={styles.conatiner}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center'}}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
         <View style={styles.card}>
           <View style={styles.warpcard}>
             <Label label={'Nama Produk'} />
-            <Input
-              input={'Nama Produk'}
-              value={Form.namaproduk}
-              onChangeText={value => onInputChange(value, 'namaproduk')}
-            />
+            <View style={styles.formgroup}>
+              <Input
+                input={'Nama Produk'}
+                value={Form.namaproduk}
+                onChangeText={value => onInputChange(value, 'namaproduk')}
+              />
+            </View>
             <Label label={'Harga Produk'} />
-            <Input
-              input={'Harga Produk'}
-              value={Form.hargaproduk}
-              onChangeText={value => onInputChange(value, 'hargaproduk')}
-              keyboardType={'number-pad'}
-            />
+            <View style={styles.formgroup}>
+              <Input
+                input={'Harga Produk'}
+                value={Form.hargaproduk}
+                onChangeText={value => onInputChange(value, 'hargaproduk')}
+                keyboardType={'number-pad'}
+              />
+            </View>
             <Label label={'Kategori Produk'} />
-            <Input
-             keyboardType={'number-pad'}
-              input={'Kategori Produk'}
-              value={Form.kategoriproduk}
-              onChangeText={value => onInputChange(value, 'kategoriproduk')}
-            />
+            <TouchableOpacity
+              style={{
+                borderWidth: 1,
+                borderColor: '#1B99D4',
+                borderRadius: 12,
+                backgroundColor: '#89CFF0',
+              }}
+              onPress={() => {
+                setModalVisibleCategory(true);
+              }}>
+              <Text style={{ marginVertical: 12, color: '#000', paddingLeft: 8 }}>{Form.kategoriproduk == null ||
+                Form.kategoriproduk
+                  .replace(/^\s+/, '')
+                  .replace(/\s+$/, '') == '' ? "kategori Produk" : Form.kategoriproduk}</Text>
+            </TouchableOpacity>
+            <Label label={'Kode Barcode'} />
+            <View style={styles.formgroup}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Input
+                  input={'Kode Barcode'}
+                  numberOfLines={1}
+                  value={Form.barcodeproduk}
+                  onChangeText={value => onInputChange(value, 'barcodeproduk')}
+                  keyboardType={'number-pad'}
+                  icon={true}
+                  style={{ flex: 1, color: '#000' }}
+                />
+                <TouchableOpacity style={{ marginRight: 12 }} onPress={() => navigation.navigate('camscan', false)}>
+                  <Iscand />
+                </TouchableOpacity>
+              </View>
+
+            </View>
             <View style={styles.wrapbutton}>
               {Form.namaproduk == null ||
-              Form.namaproduk
-                .replace(/^\s+/, '')
-                .replace(/\s+$/, '') == '' ||
+                Form.namaproduk
+                  .replace(/^\s+/, '')
+                  .replace(/\s+$/, '') == '' ||
                 Form.hargaproduk == null ||
-              Form.hargaproduk
-                .replace(/^\s+/, '')
-                .replace(/\s+$/, '') == '' ||
+                Form.hargaproduk
+                  .replace(/^\s+/, '')
+                  .replace(/\s+$/, '') == '' ||
                 Form.kategoriproduk == null ||
                 Form.kategoriproduk
-                .replace(/^\s+/, '')
-                .replace(/\s+$/, '') == '' ? (
+                  .replace(/^\s+/, '')
+                  .replace(/\s+$/, '') == '' ? (
                 <View style={styles.wrapbuttonsub}>
                   <View
                     style={[
                       styles.button,
-                      {backgroundColor: 'rgba(37,150,190,0.5)'},
+                      { backgroundColor: 'rgba(21, 27, 37,0.5)' },
                     ]}>
                     <Text style={styles.buttontxt}>Simpan</Text>
                   </View>
@@ -163,6 +201,52 @@ const FormEdit = ({route, navigation}) => {
           </View>
         </View>
       </ScrollView>
+      <Modal transparent={true} visible={modalVisibleCategory}>
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+          }}
+          onPress={() => closeModal()}>
+          <View
+            style={{
+              backgroundColor: '#fff',
+              width: DWidth / 1.2,
+              height: DHeight / 2.5,
+              borderRadius: 12,
+
+            }}>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  color: '#000',
+                  fontSize: 20,
+                  fontWeight: '500',
+                  textAlign: 'center',
+                  marginVertical: 12,
+                }}>
+                Category
+              </Text>
+              <ScrollView style={{ flex: 1, marginBottom: 42 }}>
+                {datacategory.map((item, i) => {
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      style={styles.btnitemcategory}
+                      onPress={() => openModalkategori(item)}>
+                      <Text style={{ color: '#000', textAlign: 'center' }}>
+                        {item.category}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -172,6 +256,13 @@ const DWidth = Dimensions.get('window').width;
 const DHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
+  formgroup: {
+    borderWidth: 1,
+    borderColor: '#1B99D4',
+    borderRadius: 12,
+    backgroundColor: '#89CFF0',
+
+  },
   conatiner: {
     flex: 1,
 
@@ -233,10 +324,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: DWidth * 0.7,
     height: DHeight / 15,
-    backgroundColor: '#18AECF',
+    backgroundColor: '#151B25',
   },
   buttontxt: {
     color: '#fff',
     fontSize: 20,
+  },
+  btnitemcategory: {
+    padding: 18,
+    backgroundColor: '#ededed',
   },
 });

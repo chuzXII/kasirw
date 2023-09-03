@@ -1,17 +1,14 @@
-import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
-import React from 'react';
+import {Image, StyleSheet, Text, View} from 'react-native';
+import React,{ useEffect,useState } from 'react';
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
-import { bgdrawer } from '../../assets';
-import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState } from 'react';
+
 
 const CustomDrawer = props => {
   const [user,setUser] = useState({})
- 
   const get=async()=>{
     const user= JSON.parse(await AsyncStorage.getItem('usergooglesignin'))
 setUser(user)
@@ -22,12 +19,13 @@ setUser(user)
   return (
     <View style={{flex:1}}>
    
-        <View style={{height:150,justifyContent:'center',backgroundColor:'#9B5EFF'}}>
+        <View style={{height:150,justifyContent:'center',backgroundColor:'#000080'}}>
           <View style={{alignItems:'center',flexDirection:'row'}}>
           <Image source={{uri:user.photo}} style={{height:65,width:65,borderRadius:50,marginLeft:12}}/>
           <View style={{marginLeft:12}}>
           <Text style={{color:'#fff',fontSize:18,fontFamily:'TitilliumWeb-Bold'}}>{user.name}</Text>
           <Text style={{color:'#fff',fontSize:14,fontFamily:'TitilliumWeb-Regular'}}>{user.email}</Text>
+          
           </View>
           
           </View>
@@ -39,7 +37,7 @@ setUser(user)
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
-      <View style={{alignItems:'center',backgroundColor:'#6098FF'}}>
+      <View style={{alignItems:'center',backgroundColor:'#151B25'}}>
         <Text style={{color:'#fff',marginTop:8,fontWeight:'500',fontFamily:'TitilliumWeb-Bold'}}>Create By Me</Text>
         <Text style={{color:'#fff',marginBottom:8,fontWeight:'500',fontFamily:'TitilliumWeb-Bold'}}>Copyright@2022</Text>
       </View>

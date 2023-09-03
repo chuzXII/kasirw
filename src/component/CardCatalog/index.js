@@ -5,13 +5,10 @@ import {
   Dimensions,
   TouchableOpacity,
   Image,
-  PixelRatio,
 } from 'react-native';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import RNFS from 'react-native-fs';
 import moment from 'moment';
-import {useState} from 'react';
 
 const Cardcatalog = ({item, oriented}) => {
   const dispatch = useDispatch();
@@ -20,7 +17,7 @@ const Cardcatalog = ({item, oriented}) => {
   const TRXReducer = useSelector(state => state.TRXReducer);
 
   const setCart = (item, idpproduk, count, harga, id_tensaksi) => {
-    var ids = '';
+    let ids = '';
     if (TRXReducer.id_produk == null) {
       ids = id_tensaksi;
     } else {
@@ -50,9 +47,9 @@ const Cardcatalog = ({item, oriented}) => {
       Math.floor(Math.random() * 1000000) +
       1;
     setidproduk(id_tensaksi);
-    var idpproduk = item[0];
-    var harga = item[2];
-    var count = 1;
+    let idpproduk = item[0];
+    let harga = item[2];
+    let count = 1;
     setCart(item, idpproduk, count, harga, id_tensaksi);
   };
   return (

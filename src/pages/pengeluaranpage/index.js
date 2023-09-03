@@ -43,7 +43,7 @@ import axios from 'axios';
         const data=[[selectDate,Form.namabarang,Form.jumlahbarang,Form.hargabarang,Form.hargabarang*Form.jumlahbarang,Form.keterangan]]
         axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
         sheetid +
-        '/values/Sheet2!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
+        '/values/Pengeluaran!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
           values: data,
         }),
         {
@@ -51,16 +51,16 @@ import axios from 'axios';
             'Content-type': 'application/json',
             Authorization: 'Bearer ' + token,
           },
-        },).catch((e)=>{console.log(e) 
-          ToastAndroid.show('Gagal', ToastAndroid.SHORT)}).then(()=>{
-            ToastAndroid.show('Berhasil', ToastAndroid.SHORT)
-            setForm({
-              namabarang:'',
-              hargabarang:'',
-              jumlahbarang:'',
-              keterangan:''
-          })
-      })
+        },).then(()=>{
+          ToastAndroid.show('Berhasil', ToastAndroid.SHORT)
+          setForm({
+            namabarang:'',
+            hargabarang:'',
+            jumlahbarang:'',
+            keterangan:''
+        })
+    }).catch((e)=>{console.log(e) 
+          ToastAndroid.show('Gagal', ToastAndroid.SHORT)})
     
     };
     const onInputChange = (value, input) => {
@@ -81,18 +81,25 @@ import axios from 'axios';
         
           <View style={styles.warpcard}>
           <Label label={'Tanggal'} />
-            <TouchableOpacity style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#8D60FF',padding:12,borderRadius:12}}>
-                <Text style={{color:'#fff',fontSize:18}} onPress={()=>setModalVisible(true)}>{selectDate}</Text>
+          <View style={styles.formgroup}>
+          <TouchableOpacity onPress={()=>setModalVisible(true)} style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#034687',padding:12,borderRadius:12}}>
+                <Text style={{color:'#fff',fontSize:18}} >{selectDate}</Text>
             </TouchableOpacity>
+            </View>
+           
      
             <Label label={'Nama Barang'} />
+            <View style={styles.formgroup}>
             <Input
               input={'Nama Barang'}
               numberOfLines={1}
               value={Form.namabarang}
               onChangeText={value => onInputChange(value, 'namabarang')}
             />
+              </View>
+            
             <Label label={'Harga Produk'} />
+            <View style={styles.formgroup}>
             <Input
               input={'Harga Barang'}
               numberOfLines={1}
@@ -100,7 +107,10 @@ import axios from 'axios';
               onChangeText={value => onInputChange(value, 'hargabarang')}
               keyboardType={'number-pad'}
             />
+              </View>
+            
             <Label label={'Jumlah Barang'} />
+            <View style={styles.formgroup}>
             <Input
               input={'Jumlah Brang'}
               numberOfLines={1}
@@ -108,13 +118,18 @@ import axios from 'axios';
               onChangeText={value => onInputChange(value, 'jumlahbarang')}
               keyboardType={'number-pad'}
             />
+              </View>
+           
             <Label label={'Keterangan'} />
+            <View style={styles.formgroup}>
             <Input
               input={'Keterangan'}
               numberOfLines={4}
               value={Form.keterangan}
               onChangeText={value => onInputChange(value, 'keterangan')}
             />
+            </View>
+            
             <View style={styles.wrapbutton}>
               {Form.namabarang == null ||
               Form.namabarang
@@ -125,7 +140,7 @@ import axios from 'axios';
                 ? (
                 <View style={styles.wrapbuttonsub}>
                   <View
-                    style={[styles.button,{backgroundColor: 'rgba(127, 17, 224, 0.5)'}]}>
+                    style={[styles.button,{backgroundColor: 'rgba(21, 27, 37, 0.5)'}]}>
                     <Text style={styles.buttontxt}>Simpan</Text>
                   </View>
                 </View>
@@ -160,7 +175,7 @@ import axios from 'axios';
              borderColor: 'rgba(255, 255, 255, 1)',
            }}
            onSelectedChange={(date)=>setSelectDate(date.split('/')[2]+'-'+date.split('/')[1]+'-'+date.split('/')[0])}
-          current={moment(new Date()).format('yyyy-MM-DD')}
+           current={moment(new Date()).format('yyyy-MM-DD')}
            selected={moment(new Date()).format('yyyy-MM-DD')}
            mode="calendar"
            minuteInterval={30}
@@ -189,6 +204,13 @@ import axios from 'axios';
   const DHeight = Dimensions.get('window').height;
   
   const styles = StyleSheet.create({
+    formgroup: {
+      borderWidth: 1,
+      borderColor: '#1B99D4',
+      borderRadius: 12,
+      backgroundColor: '#89CFF0',
+  
+    },
     conatiner: {
       flex: 1,
       justifyContent: 'center',
@@ -232,7 +254,7 @@ import axios from 'axios';
       borderRadius: 12,
       width: DWidth * 0.7,
       height: DHeight / 15,
-      backgroundColor: '#9B5EFF',
+      backgroundColor: '#151B25',
     },
     buttontxt: {
       color: '#fff',

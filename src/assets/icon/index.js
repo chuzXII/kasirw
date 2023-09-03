@@ -14,6 +14,7 @@ import Ilist from './ilist.svg';
 import Ifilter from './ifilter.svg';
 import Ichart from './ichart.svg';
 import Iscan from './iscan.svg';
+import Iscand from './iscand.svg';
 
 
 
@@ -27,4 +28,5 @@ import Iscan from './iscan.svg';
 
 
 
-export{Idrawer,Iprinter,Imail,Igithub,Iweb,Ihome,Ihistory,Isexcel,Isprint,Iabout,Idiskon,Icash,Ilist,Ifilter,Ichart,Iscan}
+
+export{Idrawer,Iprinter,Imail,Igithub,Iweb,Ihome,Ihistory,Isexcel,Isprint,Iabout,Idiskon,Icash,Ilist,Ifilter,Ichart,Iscan,Iscand}

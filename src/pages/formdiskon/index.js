@@ -274,7 +274,7 @@ const FormDiskon = ({ navigation }) => {
         style={{
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: '#9B5EFF',
+          backgroundColor: '#151B25',
           padding: 18,
         }}
         onPress={() => {

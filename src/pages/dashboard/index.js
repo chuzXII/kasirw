@@ -5,8 +5,6 @@ import {
   View,
   Dimensions,
   Image,
-  LogBox,
-  RefreshControl,
   ActivityIndicator,
   Modal,
   TextInput,
@@ -14,15 +12,10 @@ import {
 import React, { useEffect, useState } from 'react';
 import Cardcatalog from '../../component/CardCatalog';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-// import dbConn from '../../sqlite';
-// import RNFS from 'react-native-fs';
+import { useSelector, useDispatch } from 'react-redux';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { emptyproduct } from '../../assets/image';
-import moment from 'moment';
 import axios from 'axios';
-import FloatingBtn from '../../component/FloatingBtn';
 import { ScrollView } from 'react-native-gesture-handler';
 import { MasonryFlashList } from '@shopify/flash-list';
 import { Ifilter } from '../../assets/icon';
@@ -31,7 +24,7 @@ const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [item, setItems] = useState([]);
   const [DumyData, setDumyData] = useState([]);
-  const [Total, setTotal] = useState();
+
   const [LengthData, setLengthData] = useState(100);
   const isFocused = useIsFocused();
   const navigation = useNavigation();
@@ -64,26 +57,6 @@ const Dashboard = () => {
   const get = async () => {
 
     setModalVisibleLoading(true);
-    // dbConn.transaction(tx => {
-    //   // tx.executeSql('DROP TABLE IF EXISTS produk')
-    //   tx.executeSql(
-    //     'CREATE TABLE IF NOT EXISTS produk(id_produk INTEGER PRIMARY KEY AUTOINCREMENT,namaproduk VARCHAR(100) NOT NULL,hargaproduk VARCHAR(50) NOT NULL,deskproduk VARCHAR(255) NOT NULL,imgname VARCHAR(255) NOT NULL);',
-    //   );
-    // });
-    // dbConn.transaction(tx => {
-    //   tx.executeSql('SELECT * FROM produk', [], (tr, result) => {
-    //     // console.log('exe berhasil')
-    //     var rows = result.rows;
-    //     var total = 0;
-    //     var data = [];
-    //     for (let i = 0; i < rows.length; i++) {
-    //       let item = rows.item(i);
-    //       data.push(item);
-    //       total += parseInt(data[i].hargaproduk);
-    //     }
-    //     setItems(data);
-    //   });
-    // });
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
     await axios
@@ -133,13 +106,10 @@ const Dashboard = () => {
           setRefreshing(false);
 
         } else {
-          // Something happened in setting up the request that triggered an Error
           console.log('Error', error.message);
           alert(error.message);
           setRefreshing(false);
-
         }
-        // console.log(error.config);
       });
 
   };
@@ -157,37 +127,22 @@ const Dashboard = () => {
       else {
         const a = DumyData.filter(fill => fill[3] != null ? fill[3].toLowerCase() == category.toLowerCase() : null)
         setItems(a)
-        // console.log(a)
         setModalVisibleCategory(!modalVisibleCategory)
       }
     }
     else {
       const input = textinput.toLowerCase()
-      if (textinput.toLowerCase() == ' ' || textinput.toLowerCase() == null) {
+      if (input == ' ' || input == null) {
         setItems(DumyData)
-        console.log(DumyData)
       }
       else {
         const results = DumyData.filter(product => {
-          productName = product[1].toLowerCase();
+          const productName = product[1].toLowerCase();
           return productName.includes(textinput.toLowerCase());
         });
 
-        // console.log(results)
         setItems(results)
-        // setSearchResults(results);
-        // const it = DumyData
-        // var outputText = ''
-        // const a = it
-        // for (let i = 0; i < a.length; i++) {
-        //   for (let j = 0; j < a[i].length; j++) {
-        //     if (a[i][j].search(textinput.toLowerCase() != -1)) {
-        //       outputText += '[' + a[i] + '],'
-        //       break;
-        //     }
-        //   }
-        // }
-        // setItems(outputText)
+
       }
     }
 
@@ -208,6 +163,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     get();
+    
   }, [isFocused]);
 
   return (
@@ -437,7 +393,7 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 12,
     marginBottom: 10,
-    backgroundColor: '#9B5EFF',
+    backgroundColor: '#034687',
     borderRadius: 15,
   },
   wrapTextTra: {

@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -16,29 +15,23 @@ import { useIsFocused } from '@react-navigation/native';
 import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
-import { Logo, logosplash, sjpg } from '../../assets';
-import { hsdLogo } from '../../assets/image/dummy-logo';
 import { chillLogo } from '../../assets/image/logo';
 
 
 moment.suppressDeprecationWarnings = true;
 const HistoryItemPage = ({ route, navigation }) => {
-  fakturContainer = null;
+  let fakturContainer = null;
   const [Data, setData] = useState([]);
-  const [RawData, setRawData] = useState([]);
   const [DataTotal, setDataTotal] = useState([]);
   const [modalVisibleLoading, setModalVisibleLoading] = useState(false);
 
-  const [Date, setDate] = useState([]);
+  const [dataDate, setdataDate] = useState([]);
   const [Tunai, setTunai] = useState();
   const [IdTrx, setIdTrx] = useState();
   const [Owner, setOwner] = useState();
   const [Pesan, setPesan] = useState();
   const [Status, setStatus] = useState();
 
-
-  const [NamaDiskon, setNamaDiskon] = useState('');
-  const [Diskon, setDiskon] = useState(0);
   const [ValueDiskon, setValueDiskon] = useState(0);
 
   const [SubTotal, setSubTotal] = useState(0);
@@ -50,37 +43,24 @@ const HistoryItemPage = ({ route, navigation }) => {
   const onPressprint = async () => {
     try {
       await BluetoothEscposPrinter.printText('\r\n\r\n', {});  
-      await BluetoothEscposPrinter.printPic64(chillLogo, {width: 250, height:250});
+      await BluetoothEscposPrinter.printPic64(chillLogo, {width: 200, height:150});
       await BluetoothEscposPrinter.printerAlign(
         BluetoothEscposPrinter.ALIGN.CENTER,
       );
       await BluetoothEscposPrinter.setBlob(3);
-      // await BluetoothEscposPrinter.printColumn(
-      //   [32],
-      //   [BluetoothEscposPrinter.ALIGN.CENTER],
-      //   ['WIJAYA VAPE'],
-      //   {},
-      // );
-      await BluetoothEscposPrinter.printText('\r\n', {});
+      // await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [32],
         [BluetoothEscposPrinter.ALIGN.CENTER],
-        ['Jl. KIS Mangunsarkoro, Kali Nangkaan, Dabasah, Kec. Bondowoso, Kabupaten Bondowoso, Jawa Timur 68216'],
+        ['\x1B\x61\x01Jl. KIS Mangunsarkoro, Kali Nangkaan,Dabasah,Kec.Bondowoso, Kabupaten Bondowoso,Jawa Timur 68216'],
         {},
       );
       await BluetoothEscposPrinter.setBlob(0);
+      
       await BluetoothEscposPrinter.printText(
         '================================',
         {},
       );
-
-      // await BluetoothEscposPrinter.printColumn(
-      //   [16,16],
-      //   [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-      //   ["082140083902",'IG:Chill_idn.co'],
-      //   {},
-      // );
-
       await BluetoothEscposPrinter.printColumn(
         [10, 22],
         [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
@@ -90,7 +70,7 @@ const HistoryItemPage = ({ route, navigation }) => {
       await BluetoothEscposPrinter.printColumn(
         [16, 16],
         [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
-        [Date[0], Date[1]],
+        [dataDate[0], dataDate[1]],
         {},
       );
       await BluetoothEscposPrinter.printColumn(
@@ -111,18 +91,6 @@ const HistoryItemPage = ({ route, navigation }) => {
         ['Instagram', 'wijayavape22'],
         {},
       );
-      // await BluetoothEscposPrinter.printColumn(
-      //   [32],
-      //   [BluetoothEscposPrinter.ALIGN.LEFT],
-      //   ['WA : 082140083902'],
-      //   {},
-      // );
-      // await BluetoothEscposPrinter.printColumn(
-      //   [32],
-      //   [BluetoothEscposPrinter.ALIGN.LEFT],
-      //   ['IG : Chill_idn.co'],
-      //   {},
-      // );
       await BluetoothEscposPrinter.printText('\r\n', {});
       await BluetoothEscposPrinter.printColumn(
         [11, 11, 11],
@@ -135,34 +103,28 @@ const HistoryItemPage = ({ route, navigation }) => {
         {},
       );
       // CartReducer.cartitem.map(async(items,index)=>{
-      for (let a = 0; a < Data.length; a++) {
+        
+      for (const element of Data) {
+        const product = element.produk;
+        const quantity = element.data[0][2];
+        const pricePerUnit = element.data[0][3];
+      
+        const subtotal = quantity * pricePerUnit;
+        const formattedSubtotal = 'Rp.' + currency.format(subtotal);
+      
         await BluetoothEscposPrinter.printColumn(
           [32],
           [BluetoothEscposPrinter.ALIGN.LEFT],
-          [Data[a].produk],
-          {},
-        ),
-          await BluetoothEscposPrinter.printColumn(
-            [16, 16],
-            [
-              BluetoothEscposPrinter.ALIGN.LEFT,
-              BluetoothEscposPrinter.ALIGN.RIGHT,
-            ],
-            [
-              (
-                Data[a].data[0][2] +
-                'x Rp.' +
-                currency.format(Data[a].data[0][3])
-              ).toString(),
-              (
-                'Rp.' +
-                currency.format(
-                  parseInt(Data[a].data[0][3]) * parseInt(Data[a].data[0][2]),
-                )
-              ).toString(),
-            ],
-            {},
-          );
+          [product],
+          {}
+        );
+        await BluetoothEscposPrinter.printColumn(
+          [16, 16],
+          [BluetoothEscposPrinter.ALIGN.LEFT, BluetoothEscposPrinter.ALIGN.RIGHT],
+          [`${quantity}x Rp.${currency.format(pricePerUnit)}`, formattedSubtotal],
+          {}
+        );
+        await BluetoothEscposPrinter.printText('\r\n', {});
       }
       await BluetoothEscposPrinter.printText(
         '================================',
@@ -259,19 +221,13 @@ const HistoryItemPage = ({ route, navigation }) => {
     };
 
     try {
-      Share.shareSingle(shareOptions);
+      await Share.shareSingle(shareOptions);
     } catch (error) {
       console.log("Gagal membagikan gambar:", error);
     }
   }
   const onPressrefund = async () => {
     try {
-      var indexs = [];
-      const a = RawData.filter((element, index, array) => {
-        if (element[0] == idtrx) {
-          indexs.push(index + 1);
-        }
-      })
       const sheetid = await AsyncStorage.getItem('TokenSheet');
       const token = await AsyncStorage.getItem('tokenAccess');
       indexs.map(e => {
@@ -297,13 +253,6 @@ const HistoryItemPage = ({ route, navigation }) => {
     }
   }
 
-  const msg = () => {
-    console.log(Data);
-    Data.map((item, index) => {
-      return item.produk;
-    });
-  };
-
   const get = async () => {
     const sheetid = await AsyncStorage.getItem('TokenSheet');
     const token = await AsyncStorage.getItem('tokenAccess');
@@ -320,7 +269,6 @@ const HistoryItemPage = ({ route, navigation }) => {
         },
       )
       .then(res => {
-        setRawData(res.data.values)
         const j = res.data.values.filter(fill => fill[0] == idtrx);
         setDataTotal(j);
         const srawdate = j[0][5].split(' ');
@@ -329,32 +277,27 @@ const HistoryItemPage = ({ route, navigation }) => {
         const rawdate = moment(year + '-' + month + '-' + day)
           .format('DD MMM yyyy')
           .concat('T' + srawdate[1]);
-        setDate(rawdate.split('T'));
+        setdataDate(rawdate.split('T'));
         setTunai(j[0][4]);
         setIdTrx(j[0][0]);
         setOwner(j[0][9]);
         setPesan(j[0][8]);
         setStatus(j[0][10]);
         const rawdiskon = j[0][7].split(' ');
-        let sDiskon;
         let Total;
         const subtotal = j.reduce(
           (result, item) => parseInt(item[3]) * parseInt(item[2]) + result,
           0,
         );
         if (rawdiskon.length == 1) {
-          setDiskon(rawdiskon[0]);
           setValueDiskon(rawdiskon[0]);
           Total = (subtotal - rawdiskon[0]);
         } else {
           if (rawdiskon[1].split('-').length <= 1) {
-            setNamaDiskon(rawdiskon[0]);
-            setDiskon(rawdiskon[1].split('-')[0]);
             setValueDiskon(rawdiskon[1].split('-'));
             Total = (subtotal - rawdiskon[1].split('-')[0])
           } else {
-            setNamaDiskon(rawdiskon[0]);
-            setDiskon(rawdiskon[1].split('-')[0] / 100);
+           
             setValueDiskon(rawdiskon[1].split('-'));
             Total = subtotal - (subtotal * rawdiskon[1].split('-')[0]) / 100;
           }
@@ -365,31 +308,21 @@ const HistoryItemPage = ({ route, navigation }) => {
         setSubTotal(subtotal);
         setTotal(Total);
 
-        var result = [];
+        let result = [];
         j.forEach(
           (indices => v => {
             if (v in indices) result[indices[v]]++;
             else indices[v] = result.push(1) - 1;
           })({}),
         );
-        // const a = res.data.values.filter(
-        //   (value, index, self) =>
-        //     index === self.findIndex(t => t[0] === value[0]),
-        // );
         const groups = j.reduce((groups, data) => {
           const produk = data[1];
-          // if (!groups[date]&&!groups[timestamp]) {
-
           if (!groups[produk]) {
-            // groups[date] = [];
             groups[produk] = [];
           }
-
           groups[produk].push(data);
           return groups;
         }, {});
-
-        let f = 0;
         const groupArrays = Object.keys(groups).map(produk => {
           return {
             produk,
@@ -441,7 +374,7 @@ const HistoryItemPage = ({ route, navigation }) => {
                     {idtrx}
                   </Text>
                   <Text style={{ color: '#000', fontFamily: 'TitilliumWeb-Light' }}>
-                    {Date[0] + ' ' + Date[1]}
+                    {dataDate[0] + ' ' + dataDate[1]}
                   </Text>
                 </View>
                 <View>
