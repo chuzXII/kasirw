@@ -11,7 +11,6 @@ import {
     ToastAndroid
   } from 'react-native';
   import React, {useEffect, useState} from 'react';
-  import dbConn from '../../sqlite';
   import Input from '../../component/input';
   import Label from '../../component/label';
   import {useNavigation} from '@react-navigation/native';
