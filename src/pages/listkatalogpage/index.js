@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ItemKatalog from '../../component/itemkatalog';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -16,104 +16,119 @@ import { emptyproduct } from '../../assets/image';
 import { FlashList } from '@shopify/flash-list';
 import { TextInput } from 'react-native-gesture-handler';
 import { Ifilter } from '../../assets/icon';
+import BASE_URL from '../../../config';
+import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
+import { useFocusEffect } from '@react-navigation/native';
 
-const ListKatalog = ({ navigation }) => {
+const ListKatalog = ({ route, navigation }) => {
+  const params = route.params
   const [Data, setData] = useState([]);
   const [DumyData, setDumyData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisibleCategory, setModalVisibleCategory] = useState(false);
-
-  const datacategory = [
-    { id: 1, category: 'All' },
-    { id: 2, category: 'Mod' },
-    { id: 3, category: 'Pod' },
-    { id: 4, category: 'Accecories' },
-    { id: 5, category: 'Authomizer' },
-    { id: 6, category: 'Freebase' },
-    { id: 7, category: 'Saltnic' },
-  ];
+  const [Datakateogri, setDatakateogri] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const renderitem = (item) => {
     return (
       <View style={{ marginTop: 18, paddingBottom: 2 }}>
         <ItemKatalog
           item={item.item}
           onPress={() =>
-            navigation.navigate('formedit', { id: item.item[0], data: item.item })
+            navigation.navigate('formedit', { id: item.item.kode_produk, data: item.item })
           }
+          onLongPress={() => onPressdelete(item.item)}
         />
       </View>
     );
   };
+  const onPressdelete = (item) => {
 
-  const get = async () => {
-    try {
-      const sheetid = await AsyncStorage.getItem('TokenSheet');
-      const token = await AsyncStorage.getItem('tokenAccess');
-      await axios
-        .get(
-          'https://sheets.googleapis.com/v4/spreadsheets/' +
-          sheetid +
-          '/values/Produk',
-          {
-            headers: {
-              Authorization: 'Bearer ' + token,
+    Dialog.show({
+      type: ALERT_TYPE.CONFIRM,
+      title: 'Konfirmasi',
+      textBody: 'Apakah Anda yakin ingin melanjutkan?',
+      autoClose: false,
+      onPressYes: async () => {
+        try {
+          const token = await AsyncStorage.getItem('tokenAccess');
+          await axios.delete(`${BASE_URL}/produk/${item.kode_produk}`,
+            {
+              headers: {
+                Authorization: 'Bearer ' + token,
+              },
             },
-          },
-        )
-        .then(res => {
-          if (res.data.values == undefined) {
-            setData([]);
-            setRefreshing(false);
+          )
+        } catch (error) {
+          console.log(error.response)
+        }
+      },
+      // Aksi saat tombol "Tidak" ditekan
+      onPressNo: () => {
+        console.log('Pengguna membatalkan penghapusan!');
+      },
+    })
+    // return(AlertComfirm())
+  }
+  const get = async () => {
 
-          }
-          else {
-            setData(res.data.values);
-            setDumyData(res.data.values)
-            setRefreshing(false);
-          }
-
-        });
+    try {
+      // setModalVisibleLoading(true);
+      const token = await AsyncStorage.getItem('tokenAccess');
+      const [res1, res2] = await Promise.all([
+        axios.get(`${BASE_URL}/produk/${params.data.id_toko}/false`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        }),
+        axios.get(`${BASE_URL}/kategori`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        }),
+      ]);
+      setData(res1.data.data);
+      setDatakateogri(res2.data.data)
+      setDumyData(res1.data.data)
+      setRefreshing(false);
     } catch (error) {
-      console.log(error);
-    }
+
+    };
   };
   const Filter = (textinput, category) => {
-    if (textinput == null) {
-      if (category.toLowerCase() == 'all') {
-        setData(DumyData)
-        setModalVisibleCategory(!modalVisibleCategory)
+    if (category !== null) {
+      setSelectedCategory(category.toLowerCase()); // Simpan kategori yang dipilih
+      if (category.toLowerCase() === "all") {
+        setData(DumyData);
+        setModalVisibleCategory(!modalVisibleCategory);
+      } else {
+        const filteredData = DumyData.filter((fill) =>
+          fill.kategori.nama_kategori
+            ? fill.kategori.nama_kategori.toLowerCase() === category.toLowerCase()
+            : null
+        );
+        setData(filteredData);
+        setModalVisibleCategory(!modalVisibleCategory);
       }
-      else {
-        const a = DumyData.filter(fill => fill[3] != null ? fill[3].toLowerCase() == category.toLowerCase() : null)
-        setData(a)
-        // console.log(a)
-        setModalVisibleCategory(!modalVisibleCategory)
-      }
-    }
-    else {
-      const input = textinput.toLowerCase()
-      if (input == ' ' || input == null) {
-        setData(DumyData)
-      }
-      else {
-        const results = DumyData.filter(product => {
-          const productName = product[1].toLowerCase();
+    } else {
+      const input = textinput.toLowerCase();
+      if (input === " " || input === null) {
+        setData(DumyData);
+      } else {
+        const results = DumyData.filter((product) => {
+          const productName = product.nama_produk.toLowerCase();
           return productName.includes(input);
         });
-        setData(results)
+        setData(results);
       }
     }
-
-
   };
+
   const onRefresh = async () => {
     setRefreshing(true);
     get();
   };
 
-  useEffect(() => {
-    get();
-  }, [1]);
+  useFocusEffect(
+    useCallback(() => {
+      get()
+    }, [])
+  );
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.wrapheader}>
@@ -154,7 +169,7 @@ const ListKatalog = ({ navigation }) => {
 
       <TouchableOpacity
         style={{ backgroundColor: '#151B25', padding: 18, alignItems: 'center' }}
-        onPress={() => navigation.navigate('formkasir', { barcodes: null })}>
+        onPress={() => navigation.navigate('formkasir', { data: params.data })}>
         <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500' }}>
           Tambah Katalog
         </Text>
@@ -187,18 +202,31 @@ const ListKatalog = ({ navigation }) => {
                 Category
               </Text>
               <ScrollView style={{ flex: 1, marginBottom: 42 }}>
-                {datacategory.map((item, i) => {
+                <TouchableOpacity
+                  style={styles.btnitemcategory}
+                  onPress={() => Filter(null, "all")}>
+                  <Text style={{ color: '#000', textAlign: 'center' }}>
+                    all
+                  </Text>
+                </TouchableOpacity>
+                {Datakateogri.map((item, i) => {
+                  const isSelected = selectedCategory === item.nama_kategori.toLowerCase();
                   return (
                     <TouchableOpacity
                       key={i}
-                      style={styles.btnitemcategory}
-                      onPress={() => Filter(null, item.category)}>
-                      <Text style={{ color: '#000', textAlign: 'center' }}>
-                        {item.category}
+                      style={[
+                        styles.btnitemcategory,
+                        isSelected && styles.selectedCategory, // Tambahkan gaya jika dipilih
+                      ]}
+                      onPress={() => Filter(null, item.nama_kategori)}
+                    >
+                      <Text style={{ color: isSelected ? '#fff' : '#000', textAlign: 'center' }}>
+                        {item.nama_kategori}
                       </Text>
                     </TouchableOpacity>
                   );
                 })}
+
               </ScrollView>
             </View>
           </View>
@@ -212,6 +240,9 @@ export default ListKatalog;
 const Dwidth = Dimensions.get('window').width;
 const Dheight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
+  selectedCategory: {
+    backgroundColor: '#151B25', // Warna highlight
+  },
   wrapheader: {
     backgroundColor: '#fff',
     width: '100%',

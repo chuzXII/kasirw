@@ -1,21 +1,24 @@
-import {Image, StyleSheet, Text, View} from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const ItemKatalog = ({item, ...res}) => {
+const ItemKatalog = ({ item, type, ...res }) => {
+  // console.log(style)
   return (
     <TouchableOpacity
-      style={{
-        backgroundColor: '#fff',
-        borderRadius: 6,
-        elevation: 4,
-        marginHorizontal:2
-        
-      }}
+
+      style={[
+        {
+          backgroundColor: getCardColor(type),
+          borderRadius: 6,
+          marginHorizontal: 2,
+          elevation:2,
+        },
+      ]}
       {...res}>
-      <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        {item[5] == undefined ? (
-          item[1].split(' ').length <= 1 ? (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {item.imageUrl == undefined ? (
+          item.nama_produk.split(' ').length <= 1 ? (
             <View
               style={{
                 borderBottomLeftRadius: 6,
@@ -27,9 +30,9 @@ const ItemKatalog = ({item, ...res}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 32, fontWeight: 'bold', color: '#151515'}}>
-                {item[1].slice(0, 1).toUpperCase() +
-                  item[1].slice(1, 2).toUpperCase()}
+                style={{ fontSize: 32, fontWeight: 'bold', color: '#ededed' }}>
+                {item.nama_produk.slice(0, 1).toUpperCase() +
+                  item.nama_produk.slice(1, 2).toUpperCase()}
               </Text>
             </View>
           ) : (
@@ -44,27 +47,31 @@ const ItemKatalog = ({item, ...res}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 32, fontWeight: 'bold', color: '#151515'}}>
-                {item[1].split(' ')[0].slice(0, 1).toUpperCase() +
-                  item[1].split(' ')[1].slice(0, 1).toUpperCase()}
+                style={{ fontSize: 32, fontWeight: 'bold', color: '#ededed' }}>
+                {item.nama_produk.split(' ')[0].slice(0, 1).toUpperCase() +
+                  item.nama_produk.split(' ')[1].slice(0, 1).toUpperCase()}
               </Text>
             </View>
           )
         ) : (
-          <Image source={{uri: item[5]}} style={styles.image}></Image>
+          <Image source={{ uri: item.imageUrl }} style={styles.image}></Image>
         )}
-        <View style={{flex: 5, marginLeft: 12}}>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Bold'}}>
-            {item[1]}
+        <View style={{ flex: 5, marginLeft: 12 }}>
+          <Text style={{ color: gettextColor(type), fontFamily: 'TitilliumWeb-Bold' }}>
+            {item.nama_produk}
           </Text>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Light'}}>
-            Kategori : {item[3]}
+          <Text style={{ color: gettextColor(type), fontFamily: 'TitilliumWeb-Light' }}>
+            Kategori : {item.kategori.nama_kategori}
           </Text>
+          {item.stok > 0 ? <Text style={{ color: gettextColor(type), fontFamily: 'TitilliumWeb-Light' }}>
+            stok : {item.stok}
+          </Text> : <View></View>}
+
         </View>
 
-        <View style={{marginRight: 12}}>
-          <Text style={{color: '#000', fontFamily: 'TitilliumWeb-Regular'}}>
-            Rp.{item[2]}
+        <View style={{ marginRight: 12 }}>
+          <Text style={{ color: gettextColor(type), fontFamily: 'TitilliumWeb-Regular' }}>
+            Rp.{item.harga}
           </Text>
         </View>
       </View>
@@ -73,8 +80,24 @@ const ItemKatalog = ({item, ...res}) => {
 };
 
 export default ItemKatalog;
-
+const getCardColor = (type) => {
+  if (type) {
+    return '#007bff';
+  } else {
+    return '#fff';
+  }
+}
+const gettextColor = (type) => {
+  if (type) {
+    return '#fff';
+  } else {
+    return '#000';
+  }
+}
 const styles = StyleSheet.create({
+  selectedItem: {
+    backgroundColor: '#007bff', // Warna highlight
+  },
   image: {
     borderBottomLeftRadius: 6,
     borderTopLeftRadius: 6,
@@ -82,6 +105,6 @@ const styles = StyleSheet.create({
     width: 80,
     alignItems: 'center',
     justifyContent: 'center',
-    resizeMode:'contain',
+    resizeMode: 'contain',
   },
 });

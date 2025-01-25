@@ -292,9 +292,9 @@ const styles = StyleSheet.create({
   },
   formgroup: {
     borderWidth: 1,
-    borderColor: '#1B99D4',
+    borderColor: '#000',
     borderRadius: 12,
-    backgroundColor: '#89CFF0',
+    backgroundColor: '#fff',
 
   },
 })

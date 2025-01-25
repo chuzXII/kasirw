@@ -16,334 +16,266 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setForm } from '../../redux/action';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Iscan, Iscand } from '../../assets/icon';
+import BASE_URL from '../../../config';
+
+const { width: DWidth, height: DHeight } = Dimensions.get('window');
 
 const Formkasir = ({ route }) => {
+  const params = route.params.data;
   const navigation = useNavigation();
-  // const { barcodes } = route.params;
-  const FormReducer = useSelector(state => state.FormReducer);
+  const FormReducer = useSelector((state) => state.FormReducer);
   const dispatch = useDispatch();
-  const [ID, setid] = useState(0);
+
   const [Check, setCheck] = useState(false);
   const [modalVisibleCategory, setModalVisibleCategory] = useState(false);
+  const [Datakateogri, setDatakateogri] = useState([]);
+  const [errors, setErrors] = useState({});
 
-  const datacategory = [
-    { id: 1, category: 'Mod' },
-    { id: 2, category: 'Pod' },
-    { id: 3, category: 'Accecories' },
-    { id: 4, category: 'Authomizer' },
-    { id: 5, category: 'Freebase' },
-    { id: 6, category: 'Saltnic' },
-  ];
-  const handleBackButtonClick=() =>{
+  const handleBackButtonClick = () => {
     navigation.goBack();
     dispatch({ type: 'RM_FORM' });
     return true;
-  }
+  };
+
   const get = async () => {
-    const sheetid = await AsyncStorage.getItem('TokenSheet');
+    dispatch({ type: 'RM_FORM' })
     const token = await AsyncStorage.getItem('tokenAccess');
-    axios.get('https://sheets.googleapis.com/v4/spreadsheets/' +
-      sheetid + '/values/Produk',
-      {
-        headers: {
-          Authorization: 'Bearer ' + token,
-        },
-      },).then((res) => {
-        if (res.data.values == undefined) {
-          setid(0)
-        }
-        else {
-          setid(res.data.values.splice(res.data.values.length - 1)[0][0])
-
-        }
-      })
-  }
-  const openModalkategori=(item)=>{
-    onInputChange(item.category, 'kategoriproduk')
-    setModalVisibleCategory(!modalVisibleCategory) 
-  }
-  const closeModal=()=>{
-    setModalVisibleCategory(!modalVisibleCategory)
-    onInputChange(null, 'kategoriproduk')
-  }
-  const onPress = async () => {
     try {
-      const sheetid = await AsyncStorage.getItem('TokenSheet');
+      const res = await axios.get(`${BASE_URL}/kategori`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDatakateogri(res.data.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const validateInputs = () => {
+    const newErrors = {};
+    if (!FormReducer.form.namaproduk || FormReducer.form.namaproduk.trim() === '') {
+      newErrors.namaproduk = 'Nama produk harus diisi';
+    }
+    if (!FormReducer.form.hargaproduk || isNaN(FormReducer.form.hargaproduk)) {
+      newErrors.hargaproduk = 'Harga produk harus berupa angka';
+    }
+    if (FormReducer.form.stokproduk && isNaN(FormReducer.form.stokproduk)) {
+      newErrors.stokproduk = 'Stok produk harus berupa angka';
+    }
+    if (!FormReducer.form.kategoriproduk || FormReducer.form.kategoriproduk.trim() === '') {
+      newErrors.kategoriproduk = 'Kategori produk harus dipilih';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const onPress = async () => {
+    if (!validateInputs()) return;
+
+    try {
       const token = await AsyncStorage.getItem('tokenAccess');
-      const data = [[parseInt(ID) + 1, FormReducer.form.namaproduk, FormReducer.form.hargaproduk, FormReducer.form.kategoriproduk.toUpperCase(),FormReducer.form.barcodeproduk]]
-
-      axios.post('https://sheets.googleapis.com/v4/spreadsheets/' +
-        sheetid +
-        '/values/Produk!A1:append?valueInputOption=USER_ENTERED', JSON.stringify({
-          values: data,
-        }),
+      const response = await axios.post(
+        `${BASE_URL}/produk`,
         {
-          headers: {
-            'Content-type': 'application/json',
-            Authorization: 'Bearer ' + token,
-          },
-        },).then(() => {
-          dispatch({ type: 'RM_FORM' })
-          navigation.navigate('dashboard');
-          setCheck(!Check)
-        })
-    } catch (e) {
-      console.log('EE' + e);
+          id_toko: params.id_toko,
+          nama_produk: FormReducer.form.namaproduk,
+          harga: FormReducer.form.hargaproduk,
+          stok: FormReducer.form.stokproduk,
+          kode_kategori: FormReducer.form.idkategori,
+          is_stock_managed: FormReducer.form.stokproduk > 0 ? 1 : 0,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.status === 'success') {
+        dispatch({ type: 'RM_FORM' });
+        navigation.goBack();
+        setCheck(!Check);
+      }
+    } catch (error) {
+      console.log(error.response)
+      alert('Terjadi kesalahan. Silakan coba lagi.');
     }
   };
+
   const onInputChange = (value, input) => {
-    // setForm({
-    //     ...form,
-    //     [input]:value
-    // })
     dispatch(setForm(input, value));
+    setErrors((prev) => ({ ...prev, [input]: null }));
   };
+
   useEffect(() => {
-    get()
-    BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
+    get();
+    BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
     return () => {
-      BackHandler.removeEventListener("hardwareBackPress", handleBackButtonClick);
-    }
-  }, [Check])
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButtonClick);
+    };
+  }, [Check]);
+
   return (
-    <View style={styles.conatiner}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+        <Text style={styles.title}>Form Tambah Produk</Text>
         <View style={styles.card}>
-
-          <View style={styles.warpcard}>
-            <Label label={'Nama Produk'} />
-            <View style={styles.formgroup}>
+          <View style={styles.wrapCard}>
+            <Label label="Nama Produk" />
+            <View style={styles.formGroup}>
               <Input
-                input={'Nama Produk'}
-                numberOfLines={1}
+                input="Nama Produk"
                 value={FormReducer.form.namaproduk}
-                onChangeText={value => onInputChange(value, 'namaproduk')}
+                onChangeText={(value) => onInputChange(value, 'namaproduk')}
               />
             </View>
+            {errors.namaproduk && <Text style={styles.errorText}>{errors.namaproduk}</Text>}
 
-            <Label label={'Harga Produk'} />
-            <View style={styles.formgroup}>
+            <Label label="Harga Produk" />
+            <View style={styles.formGroup}>
               <Input
-                input={'Harga Produk'}
-                numberOfLines={1}
+                input="Harga Produk"
                 value={FormReducer.form.hargaproduk}
-                onChangeText={value => onInputChange(value, 'hargaproduk')}
-                keyboardType={'number-pad'}
-
+                onChangeText={(value) => onInputChange(value, 'hargaproduk')}
+                keyboardType="number-pad"
               />
             </View>
+            {errors.hargaproduk && <Text style={styles.errorText}>{errors.hargaproduk}</Text>}
 
-
-
-            <Label label={'Kategori Produk'} />
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: '#1B99D4',
-                borderRadius: 12,
-                backgroundColor: '#89CFF0',
-              }}
-              onPress={() => {
-                setModalVisibleCategory(true);
-              }}>
-              <Text style={{ marginVertical: 12, color: '#000', paddingLeft: 8 }}>{FormReducer.form.kategoriproduk == null ||
-                FormReducer.form.kategoriproduk
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '') == '' ? "kategori Produk" : FormReducer.form.kategoriproduk}</Text>
-            </TouchableOpacity>
-
-            <Label label={'Kode Barcode'} />
-            <View style={styles.formgroup}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Input
-                  input={'Kode Barcode'}
-                  numberOfLines={1}
-                  value={FormReducer.form.barcodeproduk}
-                  onChangeText={value => onInputChange(value, 'barcodeproduk')}
-                  keyboardType={'number-pad'}
-                  icon={true}
-                  style={{ flex: 1 ,color:'#000'}}
-                />
-                <TouchableOpacity style={{ marginRight: 12 }} onPress={() => navigation.navigate('camscan', false)}>
-                  <Iscand />
-                </TouchableOpacity>
-              </View>
-
+            <Label label="Stok Produk" />
+            <View style={styles.formGroup}>
+              <Input
+                input="Stok Produk"
+                value={FormReducer.form.stokproduk}
+                onChangeText={(value) => onInputChange(value, 'stokproduk')}
+                keyboardType="number-pad"
+              />
             </View>
+            {errors.stokproduk && <Text style={styles.errorText}>{errors.stokproduk}</Text>}
 
+            <Label label="Kategori Produk" />
+            <TouchableOpacity
+              style={styles.formGroup}
+              onPress={() => setModalVisibleCategory(true)}
+            >
+              <Text style={{ color: '#000', padding: 8 }}>
+                {FormReducer.form.kategoriproduk || 'Pilih Kategori'}
+              </Text>
+            </TouchableOpacity>
+            {errors.kategoriproduk && <Text style={styles.errorText}>{errors.kategoriproduk}</Text>}
 
-
-            <View style={styles.wrapbutton}>
-
-              {FormReducer.form.namaproduk == null ||
-                FormReducer.form.namaproduk
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '') == '' ||
-                FormReducer.form.hargaproduk == null ||
-                FormReducer.form.hargaproduk
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '') == '' ||
-                FormReducer.form.kategoriproduk == null ||
-                FormReducer.form.kategoriproduk
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '') == ''
-                ? (
-                  <View style={styles.wrapbuttonsub}>
-                    <View
-                      style={[styles.button, { backgroundColor: 'rgba(21, 27, 37, 0.5)' }]}>
-                      <Text style={styles.buttontxt}>Simpan</Text>
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.wrapbuttonsub}>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={() => onPress()}>
-                      <Text style={styles.buttontxt}>Simpan</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-
+            <View style={styles.wrapButton}>
+              <TouchableOpacity style={styles.button} onPress={onPress}>
+                <Text style={styles.buttonText}>Simpan</Text>
+              </TouchableOpacity>
             </View>
           </View>
-
         </View>
-      </ScrollView>
 
-      <Modal transparent={true} visible={modalVisibleCategory}>
-        <TouchableOpacity
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.8)',
-          }}
-          onPress={() => closeModal()}>
-          <View
-            style={{
-              backgroundColor: '#fff',
-              width: DWidth / 1.2,
-              height: DHeight / 2.5,
-              borderRadius: 12,
-
-            }}>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  color: '#000',
-                  fontSize: 20,
-                  fontWeight: '500',
-                  textAlign: 'center',
-                  marginVertical: 12,
-                }}>
-                Category
-              </Text>
+        <Modal transparent={true} visible={modalVisibleCategory}>
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setModalVisibleCategory(false)}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Category</Text>
               <ScrollView style={{ flex: 1, marginBottom: 42 }}>
-                {datacategory.map((item, i) => {
-                  return (
+                {Datakateogri && Datakateogri.length > 0 ? (
+                  Datakateogri.map((item, i) => (
                     <TouchableOpacity
                       key={i}
                       style={styles.btnitemcategory}
-                      onPress={() => {openModalkategori(item)}}>
-                      <Text style={{ color: '#000', textAlign: 'center' }}>
-                        {item.category}
-                      </Text>
+                      onPress={() => {
+                        dispatch(setForm('kategoriproduk', item.nama_kategori));
+                        dispatch(setForm('idkategori', item.kode_kategori));
+                        setModalVisibleCategory(false);
+                      }}
+                    >
+                      <Text style={{ color: '#000', textAlign: 'center' }}>{item.nama_kategori}</Text>
                     </TouchableOpacity>
-                  );
-                })}
+                  ))
+                ) : (
+                  <Text style={{ color: '#000', textAlign: 'center' }}>Tidak Ada Data Kategori</Text>
+                )}
               </ScrollView>
             </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+          </TouchableOpacity>
+        </Modal>
+      </ScrollView>
     </View>
   );
 };
 
-export default Formkasir;
-const DWidth = Dimensions.get('window').width;
-const DHeight = Dimensions.get('window').height;
-
 const styles = StyleSheet.create({
-  formgroup: {
-    borderWidth: 1,
-    borderColor: '#1B99D4',
-    borderRadius: 12,
-    backgroundColor: '#89CFF0',
-
-  },
-  conatiner: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 12,
-    },
-    shadowOpacity: 0.58,
-    shadowRadius: 16.0,
-
-    elevation: 24,
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+  },
+  title: {
+    color: '#000',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 16,
   },
   card: {
-    borderRadius: 15,
     backgroundColor: '#fff',
-    width: DWidth * 0.9,
-
-  },
-  warpcard: {
-
-    marginHorizontal: DWidth * 0.05,
-    justifyContent: 'center',
-  },
-  wrapbutton: {
-    marginTop: 14,
-  },
-  wrapbuttonsub: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  wrapimg: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  buttonimg: {
-    marginVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: 12,
-    backgroundColor: '#DBE8E1',
-    width: DWidth * 0.3,
-    height: DHeight / 20,
-  },
-  prvimg: {
-    width: DWidth * 0.331,
-    height: DWidth * 0.331,
-    backgroundColor: '#bdbbbb',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
+    padding: 16,
     elevation: 3,
   },
-
-  button: {
-    marginBottom: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    width: DWidth * 0.7,
-    height: DHeight / 15,
-    backgroundColor: '#151B25',
+  wrapCard: {
+    marginVertical: 8,
   },
-  buttontxt: {
+  formGroup: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  wrapButton: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  buttonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  modalOverlay: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    width: DWidth / 1.2,
+    height: DHeight / 3.5,
+    borderRadius: 12,
+  },
+  modalTitle: {
+    color: '#000',
     fontSize: 20,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginVertical: 12,
   },
   btnitemcategory: {
-    padding: 18,
-    backgroundColor: '#ededed',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    alignItems: 'center',
   },
 });
+
+export default Formkasir;

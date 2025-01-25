@@ -22,7 +22,7 @@ import backgroundabout from './backgroundabout.png';
 import splashscreen from './splash.png';
 import logosplash from './logosplash.png';
 import bgdrawer from './bgdrawer.png';
-import sjpg from './2.jpg';
+import sjpg from './10.jpg';
 
 
 

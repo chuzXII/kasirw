@@ -11,6 +11,12 @@ import { setForm } from '../../redux/action';
 
 
 const Camscan = (addchart) => {
+
+  const boxTopLeftX = 400;  
+  const boxTopLeftY = 480; 
+  const boxBottomRightX = 800; 
+  const boxBottomRightY = 520; 
+  
   const [barcodes, setBarcodes] = useState('')
   const Navigation = useNavigation()
   const dispatch = useDispatch();
@@ -40,16 +46,6 @@ const Camscan = (addchart) => {
   const onSuccess = async (e) => {
     const { bounds } = e;
 
-    // Misalnya, koordinat titik kiri atas kotak yang ditentukan
-    const boxTopLeftX = 290; // Ganti dengan koordinat X yang sesuai
-    const boxTopLeftY = 250; // Ganti dengan koordinat Y yang sesuai
-
-    // Misalnya, koordinat titik kanan bawah kotak yang ditentukan
-    const boxBottomRightX = 255; // Ganti dengan koordinat X yang sesuai
-    const boxBottomRightY = 3600; // Ganti dengan koordinat Y yang sesuai
-
-    // Menghitung nilai batas kotak yang ditentukan
-
     const boxLeft = parseFloat(bounds.origin[0].x);
     const boxRight = parseFloat(bounds.origin[1].x);
     const boxTop = parseFloat(bounds.origin[0].y);
@@ -61,7 +57,6 @@ const Camscan = (addchart) => {
       boxTop >= boxTopLeftY &&
       boxBottom <= boxBottomRightY
     ) {
-      Vibration.vibrate()
       setBarcodes(e.data)
       if (addchart.route.params) {
         const sheetid = await AsyncStorage.getItem('TokenSheet');
@@ -80,10 +75,10 @@ const Camscan = (addchart) => {
           .then(res => {
             const item = res.data.values.filter(fill => fill[4] != null ? fill[4] == e.data : null)[0]
             if (!item) {
-              Alert.alert("Barcode Belum Terdaftar","Barcode Belum Terdaftar",[
+              Alert.alert("Barcode Belum Terdaftar", "Barcode Belum Terdaftar", [
                 {
                   text: 'OK',
-                  onPress: () =>resetactivecam(),
+                  onPress: () => resetactivecam(),
                 },])
             }
             else {
@@ -112,17 +107,15 @@ const Camscan = (addchart) => {
         Navigation.navigate('formkasir')
       }
     } else {
-      // console.log(e.origin)
       resetactivecam()
     }
 
   }
   const handleLayoutMeasured = (event) => {
     const { layout, target } = event.nativeEvent;
-    // Access layout properties such as width, height, x, y
     console.log('Barcode Mask Layout:', event);
   };
-  const resetactivecam=()=>{
+  const resetactivecam = () => {
     if (scannerRef.current) {
       scannerRef.current.reactivate();
     }
@@ -139,13 +132,13 @@ const Camscan = (addchart) => {
           vibrate={false}
           customMarker={
             <View style={styles.maskContainer}>
-                          <BarcodeMask width={320} height={110} outerMaskOpacity={0.6} edgeColor={'#db6e37'} animatedLineColor={'#db6e37'} lineAnimationDuration={1000} />
-              </View>
+              <BarcodeMask width={320} height={110} outerMaskOpacity={0.6} edgeColor={'#db6e37'} animatedLineColor={'#db6e37'} lineAnimationDuration={1000} />
+            </View>
           }
-          markerStyle={{position:'absolute',top:70,height:80,width:300}}
-          cameraStyle={{ height:  Dimensions.get('window').height*1}}
+          markerStyle={{ position: 'absolute', top: 70, height: 80, width: 300 }}
+          cameraStyle={{ height: Dimensions.get('window').height * 1 }}
         />
-    </View>
+      </View>
     </KeyboardAvoidingView >
   )
 }
@@ -156,9 +149,9 @@ const styles = StyleSheet.create({
   maskContainer: {
     flex: 1,
     position: 'absolute',
-    top: -550,
+    top: -450,
     left: 0,
-    width: '100%',
+    width: 400,
     height: Dimensions.get('screen').height*1.6,
   },
   mask: {

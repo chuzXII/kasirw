@@ -51,7 +51,6 @@ import axios from 'axios';
             Authorization: 'Bearer ' + token,
           },
         },).then(()=>{
-          ToastAndroid.show('Berhasil', ToastAndroid.SHORT)
           setForm({
             namabarang:'',
             hargabarang:'',
@@ -81,8 +80,8 @@ import axios from 'axios';
           <View style={styles.warpcard}>
           <Label label={'Tanggal'} />
           <View style={styles.formgroup}>
-          <TouchableOpacity onPress={()=>setModalVisible(true)} style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#034687',padding:12,borderRadius:12}}>
-                <Text style={{color:'#fff',fontSize:18}} >{selectDate}</Text>
+          <TouchableOpacity onPress={()=>setModalVisible(true)} style={{  alignItems: 'center',justifyContent: 'center',   backgroundColor: '#fff',padding:12,borderRadius:12}}>
+                <Text style={{color:'#000',fontSize:18}} >{selectDate}</Text>
             </TouchableOpacity>
             </View>
            
@@ -205,9 +204,9 @@ import axios from 'axios';
   const styles = StyleSheet.create({
     formgroup: {
       borderWidth: 1,
-      borderColor: '#1B99D4',
+      borderColor: '#151B25',
       borderRadius: 12,
-      backgroundColor: '#89CFF0',
+      backgroundColor: '#fff',
   
     },
     conatiner: {

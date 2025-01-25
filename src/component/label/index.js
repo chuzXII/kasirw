@@ -12,7 +12,7 @@ export default Label
 const styles = StyleSheet.create({
     label:{
         marginVertical:10,
-        color:'#3B86A5',
+        color:'#000',
         fontSize:18,
        
     }
